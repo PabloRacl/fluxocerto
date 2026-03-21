@@ -1,0 +1,341 @@
+ generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTENTICAÇÃO E USUÁRIOS
+// ============================================
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  categories    Category[]
+  transactions  Transaction[]
+  debts         Debt[]
+  purchases     Purchase[]
+  budgets       Budget[]
+  auditLogs     AuditLog[]
+  notificationPrefs NotificationPref?
+  sessionDuration   Int       @default(7)
+  autoLogoutMinutes Int       @default(30)
+  darkMode          Boolean   @default(false)
+  currency          String    @default("BRL")
+  timezone          String    @default("America/Sao_Paulo")
+}
+
+model Account {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  type      AccountType
+  balance   Int      @default(0)
+  color     String   @default("#047857")
+  icon      String?
+  isActive  Boolean  @default(true)
+  transactions Transaction[]
+  debts      Debt[]
+  purchases    Purchase[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+  CREDIT_CARD
+  DEBIT_CARD
+  CASH
+  INVESTMENT
+  PIX
+  OTHER
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+// ============================================
+// CATEGORIAS
+// ============================================
+model Category {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  type        TransactionType
+  color       String   @default("#047857")
+  icon        String?
+  parentId    String?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  budgetLimit Int?
+  isActive    Boolean  @default(true)
+  transactions Transaction[]
+  debts        Debt[]
+  purchases    Purchase[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([userId])
+  @@index([parentId])
+}
+
+// ============================================
+// TRANSAÇÕES FINANCEIRAS
+// ============================================
+model Transaction {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId       String
+  account         Account  @relation(fields: [accountId], references: [id])
+  categoryId      String
+  category        Category @relation(fields: [categoryId], references: [id])
+  description     String   @db.VarChar(200)
+  amount          Int
+  type            TransactionType
+  status          TransactionStatus
+  occurrenceDate  DateTime
+  dueDate         DateTime?
+  paidAt          DateTime?
+  isRecurring     Boolean  @default(false)
+  recurrenceType  RecurrenceType?
+  recurrenceDay   Int?
+  isInstallment   Boolean  @default(false)
+  installmentTotal Int?
+  installmentCurrent Int?
+  installmentId   String?
+  receiptUrl      String?
+  notes           String?  @db.Text
+  isReconciled    Boolean  @default(false)
+  reconciledAt    DateTime?
+  isDeleted       Boolean  @default(false)
+  deletedAt       DateTime?
+  transactionId   String? @unique
+  purchase        Purchase? @relation(fields: [transactionId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([userId])
+  @@index([accountId])
+  @@index([categoryId])
+  @@index([occurrenceDate])
+  @@index([status])
+  @@index([isDeleted])
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum RecurrenceType {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  BIMONTHLY
+  QUARTERLY
+  SEMIANNUAL
+  ANNUAL
+}
+
+// ============================================
+// DÍVIDAS PARCELADAS
+// ============================================
+model Debt {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId       String
+  account         Account  @relation(fields: [accountId], references: [id])
+  categoryId      String
+  category        Category @relation(fields: [categoryId], references: [id])
+  name            String   @db.VarChar(100)
+  totalAmount     Int
+  installmentValue Int
+  installmentTotal Int
+  installmentPaid Int      @default(0)
+  interestRate    Decimal? @db.Decimal(5, 2)
+  amortizationType AmortizationType?
+  allowsPrepayment Boolean @default(true)
+  startDate       DateTime
+  nextDueDate     DateTime
+  endDate         DateTime?
+  status          DebtStatus
+  isPaidOff       Boolean  @default(false)
+  paidOffAt       DateTime?
+  creditor        String?  @db.VarChar(100)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([userId])
+  @@index([status])
+}
+
+enum DebtStatus {
+  ACTIVE
+  PAID
+  CANCELLED
+}
+
+enum AmortizationType {
+  SAC
+  PRICE
+  FIXED
+}
+
+// ============================================
+// COMPRAS
+// ============================================
+model Purchase {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  description     String   @db.VarChar(200)
+  totalAmount     Int
+  purchaseDate    DateTime
+  storeName       String?  @db.VarChar(100)
+  storeLocation   String?
+  paymentMethod   PaymentMethod
+  accountId       String?
+  account         Account? @relation(fields: [accountId], references: [id])
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id])
+  isInstallment   Boolean  @default(false)
+  installmentTotal Int?
+  installmentValue Int?
+  receiptUrl      String?
+  receiptXml      String?
+  budgetId        String?
+  budget          Budget?  @relation(fields: [budgetId], references: [id])
+  isCompleted     Boolean  @default(true)
+  transactionId   String?
+  transaction     Transaction?
+  items           PurchaseItem[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([userId])
+  @@index([purchaseDate])
+}
+
+model PurchaseItem {
+  id              String   @id @default(uuid())
+  purchaseId      String
+  purchase        Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  name            String   @db.VarChar(200)
+  quantity        Decimal  @db.Decimal(10, 2)
+  unit            String?
+  unitPrice       Int
+  totalPrice      Int
+  category        String?
+  barcode         String?
+  lastPrice       Int?
+  lastPurchaseDate DateTime?
+  createdAt       DateTime @default(now())
+  @@index([purchaseId])
+  @@index([name])
+}
+
+enum PaymentMethod {
+  CASH
+  DEBIT_CARD
+  CREDIT_CARD
+  PIX
+  BANK_TRANSFER
+  OTHER
+}
+
+// ============================================
+// ORÇAMENTO
+// ============================================
+model Budget {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month           Int
+  year            Int
+  globalLimit     Int
+  spentAmount     Int      @default(0)
+  rolloverEnabled Boolean  @default(true)
+  rolloverType    RolloverType @default(NEXT_MONTH)
+  alertThreshold  Int      @default(80)
+  alertEnabled    Boolean  @default(true)
+  purchases       Purchase[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@unique([userId, month, year])
+  @@index([userId])
+}
+
+enum RolloverType {
+  NEXT_MONTH
+  INVESTMENT
+  DEBT_PAYOFF
+  NONE
+}
+
+// ============================================
+// NOTIFICAÇÕES
+// ============================================
+model NotificationPref {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailEnabled    Boolean  @default(true)
+  pushEnabled     Boolean  @default(true)
+  budgetAlert     Boolean  @default(true)
+  dueDateAlert    Boolean  @default(true)
+  dueDateDaysBefore Int    @default(3)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============================================
+// AUDITORIA (V2)
+// ============================================
+model AuditLog {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action          String   @db.VarChar(100)
+  entityType      String   @db.VarChar(50)
+  entityId        String?
+  oldValue        Json?
+  newValue        Json?
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime @default(now())
+  @@index([userId])
+  @@index([createdAt])
+}
