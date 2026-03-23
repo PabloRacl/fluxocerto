@@ -30,12 +30,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar contas do usuário (apenas ativas por padrão)
+    // ✅ CORREÇÃO: Parsear parâmetro includeArchived para lixeira
+    const searchParams = request.nextUrl.searchParams;
+    const includeArchived = searchParams.get("includeArchived") === "true";
+
+    // Construir filtro WHERE
+    const whereClause: any = {
+      userId: user.id,
+    };
+
+    // Se NÃO for incluir arquivadas, filtra apenas ativas
+    if (!includeArchived) {
+      whereClause.isActive = true;
+    }
+
+    // Buscar contas do usuário
     const accounts = await prisma.account.findMany({
-      where: {
-        userId: user.id,
-        isActive: true,
-      },
+      where: whereClause,
       orderBy: {
         name: "asc",
       },

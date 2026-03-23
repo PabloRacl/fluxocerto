@@ -1,10 +1,11 @@
 "use client";
 
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+// ✅ IMPORT DO NOVO MODAL FUTURISTA
+import NewCategoryModal from "./_components/NewCategoryModal";
 
 // Tipo para a categoria
 interface Category {
@@ -47,12 +48,16 @@ const AVAILABLE_ICONS = [
 
 export default function CategoriesPage() {
   console.log("🟢 CategoriasPage carregou!");
-  const {  data: session, status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filterType, setFilterType] = useState<"ALL" | "INCOME" | "EXPENSE">("ALL");
+  
+  // ✅ ESTADOS PARA O MODAL FUTURISTA
+  const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
+  const [parentCategories, setParentCategories] = useState<Category[]>([]);
 
   // Buscar categorias ao carregar a página
   useEffect(() => {
@@ -63,6 +68,7 @@ export default function CategoriesPage() {
 
     if (status === "authenticated") {
       fetchCategories();
+      fetchParentCategories(); // ✅ Buscar categorias pai para o modal
     }
   }, [status, router, filterType]);
 
@@ -75,20 +81,34 @@ export default function CategoriesPage() {
         url += `?type=${filterType}`;
       }
       
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: "include" });
       
       if (!res.ok) {
         throw new Error("Erro ao buscar categorias");
       }
       
       const data = await res.json();
-      setCategories(data);
+      setCategories(Array.isArray(data) ? data : []);
       setError("");
     } catch (err) {
       setError("Não foi possível carregar suas categorias");
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ✅ BUSCAR CATEGORIAS PRINCIPAIS PARA O MODAL
+  const fetchParentCategories = async () => {
+    try {
+      const res = await fetch("/api/categories", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        // Filtrar apenas categorias principais (sem pai)
+        setParentCategories(Array.isArray(data) ? data.filter((c: Category) => !c.parentId) : []);
+      }
+    } catch (err) {
+      console.error("Erro ao buscar categorias pai:", err);
     }
   };
 
@@ -101,6 +121,7 @@ export default function CategoriesPage() {
     try {
       const res = await fetch(`/api/categories/${categoryId}`, {
         method: "DELETE",
+        credentials: "include",
       });
       
       if (res.ok) {
@@ -117,6 +138,20 @@ export default function CategoriesPage() {
       alert("Erro ao arquivar categoria");
       console.error(err);
     }
+  };
+
+  // ✅ HANDLERS DO MODAL
+  const handleOpenModal = () => {
+    setShowNewCategoryModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowNewCategoryModal(false);
+  };
+
+  const handleModalSuccess = () => {
+    setShowNewCategoryModal(false);
+    fetchCategories(); // Atualiza a lista após criar
   };
 
   // Ícones mapeados (Lucide React SVG)
@@ -229,12 +264,17 @@ export default function CategoriesPage() {
           >
             Dashboard
           </button>
-          <Link
-            href="/dashboard/categorias/nova"
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors shadow-lg hover:shadow-emerald-500/30"
+          
+          {/* ✅ BOTÃO QUE ABRE O MODAL FUTURISTA */}
+          <button
+            onClick={handleOpenModal}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors shadow-lg hover:shadow-emerald-500/30 flex items-center gap-2"
           >
-            + Nova Categoria
-          </Link>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Nova Categoria
+          </button>
         </div>
       </header>
 
@@ -308,15 +348,16 @@ export default function CategoriesPage() {
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">Nenhuma categoria cadastrada</h3>
               <p className="text-slate-400 mb-6">Comece adicionando suas primeiras categorias</p>
-              <Link
-                href="/dashboard/categorias/nova"
+              {/* ✅ BOTÃO NO EMPTY STATE TAMBÉM ABRE O MODAL */}
+              <button
+                onClick={handleOpenModal}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 Adicionar Categoria
-              </Link>
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -446,6 +487,14 @@ export default function CategoriesPage() {
           )}
         </div>
       </main>
+
+      {/* ✅ MODAL FUTURISTA PARA NOVA CATEGORIA */}
+      <NewCategoryModal 
+        isOpen={showNewCategoryModal}
+        onClose={handleModalClose}
+        onSuccess={handleModalSuccess}
+        parentCategories={parentCategories}
+      />
     </div>
   );
 }

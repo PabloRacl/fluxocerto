@@ -49,8 +49,25 @@ export default function NewAccountPage() {
     icon: "wallet",
   });
 
+  // ✅ NOVO: Estados para opção "Outro"
+  const [showOtherType, setShowOtherType] = useState(false);
+  const [customType, setCustomType] = useState("");
+
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    setError("");
+  };
+
+  // ✅ NOVO: Handler específico para mudança de tipo
+  const handleTypeChange = (value: string) => {
+    if (value === "OTHER") {
+      setShowOtherType(true);
+      setFormData(prev => ({ ...prev, type: "" })); // Limpa type até preencher custom
+    } else {
+      setShowOtherType(false);
+      setFormData(prev => ({ ...prev, type: value }));
+      setCustomType(""); // Limpa custom se mudar para outro tipo
+    }
     setError("");
   };
 
@@ -60,11 +77,21 @@ export default function NewAccountPage() {
     setError("");
 
     try {
+      // ✅ CORREÇÃO: Usa customType se "Outro" estiver selecionado
+      const finalType = showOtherType && customType.trim() 
+        ? customType.trim().toUpperCase().replace(/\s+/g, "_") 
+        : formData.type;
+
+      if (!formData.name || !finalType) {
+        throw new Error("Nome e tipo são obrigatórios");
+      }
+
       const res = await fetch("/api/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          type: finalType,
           balance: formData.balance ? parseFloat(formData.balance) : 0,
         }),
       });
@@ -171,8 +198,8 @@ export default function NewAccountPage() {
                 Tipo de Conta *
               </label>
               <select
-                value={formData.type}
-                onChange={(e) => handleChange("type", e.target.value)}
+                value={showOtherType ? "OTHER" : formData.type}
+                onChange={(e) => handleTypeChange(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
               >
                 {ACCOUNT_TYPES.map((type) => (
@@ -181,6 +208,27 @@ export default function NewAccountPage() {
                   </option>
                 ))}
               </select>
+
+              {/* ✅ NOVO: Campo personalizado para "Outro" */}
+              {showOtherType && (
+                <div className="mt-4 p-4 bg-slate-800/30 border border-slate-700 rounded-xl">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Especifique o tipo:
+                  </label>
+                  <input
+                    type="text"
+                    value={customType}
+                    onChange={(e) => setCustomType(e.target.value)}
+                    placeholder="Ex: Conta Salário, Conta Digital, etc."
+                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                    autoFocus
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-2">
+                    Digite o tipo personalizado de conta
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Saldo Inicial */}
@@ -250,7 +298,7 @@ export default function NewAccountPage() {
             <div className="flex gap-4 pt-4">
               <button
                 type="submit"
-                disabled={loading || !formData.name}
+                disabled={loading || !formData.name || (showOtherType && !customType.trim())}
                 className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Criando..." : "Criar Conta"}

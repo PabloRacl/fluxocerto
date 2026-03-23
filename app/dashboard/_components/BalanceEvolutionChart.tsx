@@ -1,0 +1,432 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
+import { TrendingUp, TrendingDown } from "lucide-react";
+
+// ============================================
+// TIPOS
+// ============================================
+interface ChartData {
+  month: string;
+  balance: number;
+  income: number;
+  expense: number;
+}
+
+interface BalanceEvolutionChartProps {
+  userId: string;
+}
+
+// ============================================
+// FORMATADORES
+// ============================================
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value / 100); // Converte de centavos para reais
+};
+
+const formatMonth = (month: string) => {
+  const [year, monthNum] = month.split("-");
+  const date = new Date(parseInt(year), parseInt(monthNum) - 1);
+  return date.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
+};
+
+// ============================================
+// COMPONENTE PRINCIPAL
+// ============================================
+export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
+  const [data, setData] = useState<ChartData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [chartType, setChartType] = useState<"line" | "area">("area");
+
+  // ============================================
+  // BUSCAR DADOS DOS ÚLTIMOS 6 MESES
+  // ============================================
+  useEffect(() => {
+    const fetchBalanceData = async () => {
+      try {
+        setLoading(true);
+        
+        // Calcular últimos 6 meses
+        const today = new Date();
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(today.getMonth() - 5);
+        sixMonthsAgo.setDate(1); // Primeiro dia do mês
+
+        // Buscar transações do período
+        const response = await fetch(
+          `/api/dashboard/balance-evolution?startDate=${sixMonthsAgo.toISOString()}&endDate=${today.toISOString()}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Erro ao buscar dados do saldo");
+        }
+
+        const result = await response.json();
+        setData(result.data || []);
+        setError(null);
+      } catch (err) {
+        console.error("Erro ao buscar evolução do saldo:", err);
+        setError("Não foi possível carregar o gráfico");
+        
+        // Dados mockados para desenvolvimento
+        setData([
+          { month: "2025-10", balance: 500000, income: 300000, expense: 200000 },
+          { month: "2025-11", balance: 650000, income: 350000, expense: 200000 },
+          { month: "2025-12", balance: 800000, income: 400000, expense: 250000 },
+          { month: "2026-01", balance: 950000, income: 450000, expense: 300000 },
+          { month: "2026-02", balance: 1100000, income: 500000, expense: 350000 },
+          { month: "2026-03", balance: 1250000, income: 550000, expense: 400000 },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId) {
+      fetchBalanceData();
+    }
+  }, [userId]);
+
+  // ============================================
+  // CALCULAR VARIAÇÃO TOTAL
+  // ============================================
+  const calculateVariation = () => {
+    if (data.length < 2) return { value: 0, percentage: 0 };
+
+    const firstBalance = data[0].balance;
+    const lastBalance = data[data.length - 1].balance;
+    const variation = lastBalance - firstBalance;
+    const percentage = (variation / firstBalance) * 100;
+
+    return { value: variation, percentage };
+  };
+
+  const variation = calculateVariation();
+  const isPositive = variation.value >= 0;
+
+  // ============================================
+  // RENDER: LOADING
+  // ============================================
+  if (loading) {
+    return (
+      <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-1">
+              Evolução do Saldo
+            </h3>
+            <p className="text-sm text-slate-400">Últimos 6 meses</p>
+          </div>
+        </div>
+        <div className="h-[300px] flex items-center justify-center">
+          <div className="animate-pulse flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-slate-400">Carregando gráfico...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================
+  // RENDER: ERROR
+  // ============================================
+  if (error && data.length === 0) {
+    return (
+      <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-1">
+              Evolução do Saldo
+            </h3>
+            <p className="text-sm text-slate-400">Últimos 6 meses</p>
+          </div>
+        </div>
+        <div className="h-[300px] flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-400 mb-2">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-sm text-emerald-400 hover:text-emerald-300 underline"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================
+  // RENDER: PRINCIPAL
+  // ============================================
+  return (
+    <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-lg font-semibold text-white mb-1">
+            Evolução do Saldo
+          </h3>
+          <p className="text-sm text-slate-400">Últimos 6 meses</p>
+        </div>
+        
+        {/* Toggle Tipo de Gráfico */}
+        <div className="flex items-center gap-2 bg-slate-800 rounded-lg p-1">
+          <button
+            onClick={() => setChartType("area")}
+            className={`px-3 py-1 text-xs rounded-md transition-colors ${
+              chartType === "area"
+                ? "bg-emerald-600 text-white"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Área
+          </button>
+          <button
+            onClick={() => setChartType("line")}
+            className={`px-3 py-1 text-xs rounded-md transition-colors ${
+              chartType === "line"
+                ? "bg-emerald-600 text-white"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Linha
+          </button>
+        </div>
+      </div>
+
+      {/* Variação Total */}
+      <div className="mb-6 flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          {isPositive ? (
+            <TrendingUp className="w-5 h-5 text-emerald-400" />
+          ) : (
+            <TrendingDown className="w-5 h-5 text-red-400" />
+          )}
+          <span
+            className={`text-lg font-bold ${
+              isPositive ? "text-emerald-400" : "text-red-400"
+            }`}
+          >
+            {isPositive ? "+" : ""}
+            {formatCurrency(variation.value)}
+          </span>
+          <span
+            className={`text-sm ${
+              isPositive ? "text-emerald-400" : "text-red-400"
+            }`}
+          >
+            ({variation.percentage.toFixed(1)}%)
+          </span>
+        </div>
+        <div className="text-sm text-slate-400">
+          Saldo atual:{" "}
+          <span className="text-white font-semibold">
+            {formatCurrency(data[data.length - 1]?.balance || 0)}
+          </span>
+        </div>
+      </div>
+
+      {/* Gráfico */}
+      <div className="h-[300px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          {chartType === "area" ? (
+            <AreaChart data={data}>
+              <defs>
+                <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="#10B981"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="#10B981"
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#1e293b"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="month"
+                stroke="#64748b"
+                fontSize={12}
+                tickFormatter={formatMonth}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                stroke="#64748b"
+                fontSize={12}
+                tickFormatter={(value) =>
+                  new Intl.NumberFormat("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                    notation: "compact",
+                  }).format(value / 100)
+                }
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload as ChartData;
+                    return (
+                      <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 shadow-xl">
+                        <p className="text-sm font-medium text-white mb-2">
+                          {formatMonth(data.month)}
+                        </p>
+                        <div className="space-y-1">
+                          <div className="flex justify-between gap-4">
+                            <span className="text-xs text-slate-400">
+                              Saldo:
+                            </span>
+                            <span className="text-xs font-semibold text-emerald-400">
+                              {formatCurrency(data.balance)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-4">
+                            <span className="text-xs text-slate-400">
+                              Receitas:
+                            </span>
+                            <span className="text-xs text-emerald-400">
+                              {formatCurrency(data.income)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-4">
+                            <span className="text-xs text-slate-400">
+                              Despesas:
+                            </span>
+                            <span className="text-xs text-red-400">
+                              {formatCurrency(data.expense)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="balance"
+                stroke="#10B981"
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorBalance)"
+              />
+            </AreaChart>
+          ) : (
+            <LineChart data={data}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#1e293b"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="month"
+                stroke="#64748b"
+                fontSize={12}
+                tickFormatter={formatMonth}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                stroke="#64748b"
+                fontSize={12}
+                tickFormatter={(value) =>
+                  new Intl.NumberFormat("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                    notation: "compact",
+                  }).format(value / 100)
+                }
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload as ChartData;
+                    return (
+                      <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 shadow-xl">
+                        <p className="text-sm font-medium text-white mb-2">
+                          {formatMonth(data.month)}
+                        </p>
+                        <div className="space-y-1">
+                          <div className="flex justify-between gap-4">
+                            <span className="text-xs text-slate-400">
+                              Saldo:
+                            </span>
+                            <span className="text-xs font-semibold text-emerald-400">
+                              {formatCurrency(data.balance)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-4">
+                            <span className="text-xs text-slate-400">
+                              Receitas:
+                            </span>
+                            <span className="text-xs text-emerald-400">
+                              {formatCurrency(data.income)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-4">
+                            <span className="text-xs text-slate-400">
+                              Despesas:
+                            </span>
+                            <span className="text-xs text-red-400">
+                              {formatCurrency(data.expense)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="balance"
+                stroke="#10B981"
+                strokeWidth={2}
+                dot={{ fill: "#10B981", r: 4 }}
+                activeDot={{ r: 6, fill: "#34D399" }}
+              />
+            </LineChart>
+          )}
+        </ResponsiveContainer>
+      </div>
+
+      {/* Legenda */}
+      <div className="mt-4 flex items-center justify-center gap-6 text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-emerald-500" />
+          <span className="text-slate-400">Saldo Acumulado</span>
+        </div>
+      </div>
+    </div>
+  );
+}
