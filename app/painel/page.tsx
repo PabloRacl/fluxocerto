@@ -1324,18 +1324,6 @@ export default function DashboardPage() {
                         </div>
                         <ArrowRight className="w-4 h-4 text-slate-500 group-hover/link:translate-x-1 transition-transform" />
                       </Link>
-                      <Link
-                        href="/painel/metas"
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition-colors group/link"
-                      >
-                        <div className="flex items-center gap-2">
-                          <TargetIcon className="w-4 h-4 text-amber-400" />
-                          <span className="text-sm text-slate-300">
-                            Metas Financeiras
-                          </span>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-slate-500 group-hover/link:translate-x-1 transition-transform" />
-                      </Link>
                     </div>
                   </div>
                 </TooltipTrigger>
@@ -1347,8 +1335,7 @@ export default function DashboardPage() {
                         Relatórios e Análises
                       </p>
                       <p className="text-sm text-slate-300">
-                        Acesse relatórios mensais, por categoria, exporte dados
-                        e acompanhe metas financeiras
+                        Acesse relatórios mensais, por categoria e exporte dados
                       </p>
                     </div>
                   </div>
