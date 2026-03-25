@@ -99,6 +99,7 @@ export function ExpensesByCategoryChart({
   const [chartType, setChartType] = useState<"pie" | "donut">("donut");
   const [period, setPeriod] = useState<"month" | "year">("month");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   // ============================================
   // BUSCAR DADOS DAS CATEGORIAS
@@ -186,6 +187,8 @@ export function ExpensesByCategoryChart({
   // CALCULAR TOTAL GERAL
   // ============================================
   const totalExpenses = data.reduce((sum, item) => sum + item.value, 0);
+  const displayData = showAll ? data : data.slice(0, 5);
+  const hasMore = data.length > 5;
 
   // ============================================
   // ✅ TOOLTIP MELHORADO
@@ -236,9 +239,10 @@ export function ExpensesByCategoryChart({
   // ✅ LEGENDA CUSTOMIZADA COM PORCENTAGEM
   // ============================================
   const CustomLegend = ({ payload }: any) => {
+    const displayPayload = showAll ? payload : payload.slice(0, 5);
     return (
       <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
-        {payload.map((entry: any, index: number) => (
+        {displayPayload.map((entry: any, index: number) => (
           <button
             key={`legend-${index}`}
             onClick={() =>
@@ -262,6 +266,22 @@ export function ExpensesByCategoryChart({
             </span>
           </button>
         ))}
+        {hasMore && !showAll && (
+          <button
+            onClick={() => setShowAll(true)}
+            className="px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-all"
+          >
+            +{data.length - 5} mais
+          </button>
+        )}
+        {showAll && hasMore && (
+          <button
+            onClick={() => setShowAll(false)}
+            className="px-3 py-1.5 text-xs text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-lg transition-all"
+          >
+            Ver menos
+          </button>
+        )}
       </div>
     );
   };
@@ -441,7 +461,7 @@ export function ExpensesByCategoryChart({
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={data}
+              data={displayData}
               cx="50%"
               cy="50%"
               innerRadius={chartType === "donut" ? 80 : 0}
@@ -453,7 +473,7 @@ export function ExpensesByCategoryChart({
               onMouseEnter={(_, index) => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              {data.map((entry, index) => (
+              {displayData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={entry.color}

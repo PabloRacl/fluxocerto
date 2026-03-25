@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/biblioteca/prisma";
 import { authOptions } from "@/biblioteca/autenticacao";
 
+export const dynamic = "force-dynamic";
+
 // GET - Previsão de Saldo Futuro
 export async function GET(request: NextRequest) {
   try {

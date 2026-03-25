@@ -402,10 +402,13 @@ async function main() {
 
   console.log(`\n✅ Total de ${totalTransacoes} transações criadas`);
 
-  // 5. Popular catálogo de produtos
+  // 5. Criar Compras de teste
+  await seedCompras(contas, todasCategorias, user);
+
+  // 6. Popular catálogo de produtos
   await seedProdutos();
 
-  // 6. Resumo Final
+  // 7. Resumo Final
   console.log("\n📊 RESUMO DO SEED:");
   console.log("==================");
   console.log(`👤 Usuário: ${user.email}`);
@@ -474,6 +477,366 @@ function gerarDescricaoAleatoria(categoria: string): string {
 
   const opcoes = descricoes[categoria] || ["Despesa Diversa"];
   return opcoes[Math.floor(Math.random() * opcoes.length)];
+}
+
+// ============================================
+// COMPRAS DE TESTE
+// ============================================
+
+async function seedCompras(contas: any[], categorias: any[], user: any) {
+  console.log("🛒 Criando compras de teste...");
+
+  const contaPrincipal =
+    contas.find((c: any) => c.type === "CHECKING") || contas[0];
+  const categoriaAlimentacao =
+    categorias.find((c: any) => c.name === "Alimentação") || categorias[0];
+
+  const compras = [
+    {
+      description: "Compra semanal - Supermercado",
+      totalAmount: 35890,
+      purchaseDate: new Date("2026-03-15"),
+      storeName: "Atacadão",
+      paymentMethod: "PIX",
+      items: [
+        {
+          name: "Arroz Branco 5kg",
+          quantity: 1,
+          unit: "pac",
+          unitPrice: 2290,
+          totalPrice: 2290,
+        },
+        {
+          name: "Feijão Carioca 1kg",
+          quantity: 2,
+          unit: "pac",
+          unitPrice: 750,
+          totalPrice: 1500,
+        },
+        {
+          name: "Óleo de Soja 900ml",
+          quantity: 2,
+          unit: "un",
+          unitPrice: 650,
+          totalPrice: 1300,
+        },
+        {
+          name: "Leite Integral 1L",
+          quantity: 6,
+          unit: "un",
+          unitPrice: 550,
+          totalPrice: 3300,
+        },
+        {
+          name: "Peito de Frango 1kg",
+          quantity: 2,
+          unit: "kg",
+          unitPrice: 1890,
+          totalPrice: 3780,
+        },
+        {
+          name: "Macarrão Espaguete 500g",
+          quantity: 3,
+          unit: "pac",
+          unitPrice: 350,
+          totalPrice: 1050,
+        },
+        {
+          name: "Molho de Tomate 340g",
+          quantity: 4,
+          unit: "un",
+          unitPrice: 320,
+          totalPrice: 1280,
+        },
+        {
+          name: "Café em Pó 500g",
+          quantity: 1,
+          unit: "pac",
+          unitPrice: 1890,
+          totalPrice: 1890,
+        },
+      ],
+    },
+    {
+      description: "Feira da semana",
+      totalAmount: 12500,
+      purchaseDate: new Date("2026-03-17"),
+      storeName: "Feira Livre",
+      paymentMethod: "CASH",
+      items: [
+        {
+          name: "Banana Prata 1kg",
+          quantity: 2,
+          unit: "kg",
+          unitPrice: 590,
+          totalPrice: 1180,
+        },
+        {
+          name: "Maçã Fuji 1kg",
+          quantity: 1,
+          unit: "kg",
+          unitPrice: 790,
+          totalPrice: 790,
+        },
+        {
+          name: "Tomate 1kg",
+          quantity: 1,
+          unit: "kg",
+          unitPrice: 690,
+          totalPrice: 690,
+        },
+        {
+          name: "Alface Crespa",
+          quantity: 2,
+          unit: "un",
+          unitPrice: 290,
+          totalPrice: 580,
+        },
+        {
+          name: "Cenoura 1kg",
+          quantity: 1,
+          unit: "kg",
+          unitPrice: 390,
+          totalPrice: 390,
+        },
+        {
+          name: "Ovos Brancos Dúzia",
+          quantity: 2,
+          unit: "dz",
+          unitPrice: 1290,
+          totalPrice: 2580,
+        },
+      ],
+    },
+    {
+      description: "Limpeza mensal",
+      totalAmount: 8950,
+      purchaseDate: new Date("2026-03-10"),
+      storeName: "Supermercado Extra",
+      paymentMethod: "CREDIT_CARD",
+      items: [
+        {
+          name: "Detergente 500ml",
+          quantity: 3,
+          unit: "un",
+          unitPrice: 290,
+          totalPrice: 870,
+        },
+        {
+          name: "Sabão em Pó 1kg",
+          quantity: 1,
+          unit: "pac",
+          unitPrice: 1290,
+          totalPrice: 1290,
+        },
+        {
+          name: "Água Sanitária 2L",
+          quantity: 1,
+          unit: "un",
+          unitPrice: 590,
+          totalPrice: 590,
+        },
+        {
+          name: "Papel Higiênico 12un",
+          quantity: 1,
+          unit: "pac",
+          unitPrice: 1690,
+          totalPrice: 1690,
+        },
+        {
+          name: "Esponja de Aço 8un",
+          quantity: 1,
+          unit: "pac",
+          unitPrice: 390,
+          totalPrice: 390,
+        },
+        {
+          name: "Saco de Lixo 50L 10un",
+          quantity: 2,
+          unit: "pac",
+          unitPrice: 890,
+          totalPrice: 1780,
+        },
+      ],
+    },
+    {
+      description: "Compras do mês",
+      totalAmount: 52750,
+      purchaseDate: new Date("2026-03-01"),
+      storeName: "Atacadão",
+      paymentMethod: "DEBIT_CARD",
+      items: [
+        {
+          name: "Arroz Branco 5kg",
+          quantity: 2,
+          unit: "pac",
+          unitPrice: 2290,
+          totalPrice: 4580,
+        },
+        {
+          name: "Feijão Carioca 1kg",
+          quantity: 4,
+          unit: "pac",
+          unitPrice: 750,
+          totalPrice: 3000,
+        },
+        {
+          name: "Óleo de Soja 900ml",
+          quantity: 3,
+          unit: "un",
+          unitPrice: 650,
+          totalPrice: 1950,
+        },
+        {
+          name: "Café em Pó 500g",
+          quantity: 2,
+          unit: "pac",
+          unitPrice: 1890,
+          totalPrice: 3780,
+        },
+        {
+          name: "Açúcar Cristal 1kg",
+          quantity: 2,
+          unit: "pac",
+          unitPrice: 420,
+          totalPrice: 840,
+        },
+        {
+          name: "Sal Refinado 1kg",
+          quantity: 1,
+          unit: "pac",
+          unitPrice: 250,
+          totalPrice: 250,
+        },
+        {
+          name: "Leite Integral 6un",
+          quantity: 2,
+          unit: "cx",
+          unitPrice: 2990,
+          totalPrice: 5980,
+        },
+        {
+          name: "Manteiga c/Sal 200g",
+          quantity: 2,
+          unit: "un",
+          unitPrice: 890,
+          totalPrice: 1780,
+        },
+        {
+          name: "Queijo Mussarela 300g",
+          quantity: 2,
+          unit: "pac",
+          unitPrice: 1490,
+          totalPrice: 2980,
+        },
+        {
+          name: "Presunto 200g",
+          quantity: 3,
+          unit: "pac",
+          unitPrice: 690,
+          totalPrice: 2070,
+        },
+        {
+          name: "Peito de Frango 1kg",
+          quantity: 3,
+          unit: "kg",
+          unitPrice: 1890,
+          totalPrice: 5670,
+        },
+        {
+          name: "Carne Moída 1kg",
+          quantity: 2,
+          unit: "kg",
+          unitPrice: 3290,
+          totalPrice: 6580,
+        },
+        {
+          name: "Ovos Brancos 30un",
+          quantity: 1,
+          unit: "un",
+          unitPrice: 2890,
+          totalPrice: 2890,
+        },
+        {
+          name: "Papel Higiênico 12un",
+          quantity: 1,
+          unit: "pac",
+          unitPrice: 1690,
+          totalPrice: 1690,
+        },
+        {
+          name: "Sabão em Pó 1kg",
+          quantity: 1,
+          unit: "pac",
+          unitPrice: 1290,
+          totalPrice: 1290,
+        },
+        {
+          name: "Amaciante 2L",
+          quantity: 1,
+          unit: "un",
+          unitPrice: 1490,
+          totalPrice: 1490,
+        },
+      ],
+    },
+    {
+      description: "Compras rápidas",
+      totalAmount: 4560,
+      purchaseDate: new Date("2026-03-20"),
+      storeName: "Padaria do Bairro",
+      paymentMethod: "PIX",
+      items: [
+        {
+          name: "Pão Francês 1kg",
+          quantity: 1,
+          unit: "kg",
+          unitPrice: 1290,
+          totalPrice: 1290,
+        },
+        {
+          name: "Pão de Forma 500g",
+          quantity: 1,
+          unit: "pac",
+          unitPrice: 890,
+          totalPrice: 890,
+        },
+        {
+          name: "Iogurte Natural 170g",
+          quantity: 4,
+          unit: "un",
+          unitPrice: 350,
+          totalPrice: 1400,
+        },
+      ],
+    },
+  ];
+
+  for (const compra of compras) {
+    await prisma.purchase.create({
+      data: {
+        userId: user.id,
+        description: compra.description,
+        totalAmount: compra.totalAmount,
+        purchaseDate: compra.purchaseDate,
+        storeName: compra.storeName,
+        paymentMethod: compra.paymentMethod as any,
+        accountId: contaPrincipal?.id,
+        categoryId: categoriaAlimentacao?.id,
+        items: {
+          create: compra.items.map((item) => ({
+            name: item.name,
+            quantity: item.quantity,
+            unit: item.unit,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+          })),
+        },
+      },
+    });
+  }
+
+  console.log(`✅ ${compras.length} compras criadas!`);
 }
 
 // ============================================
