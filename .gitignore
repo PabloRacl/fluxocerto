@@ -33,4 +33,4 @@ uploadthing/*
 
 # Coverage
 coverage
-.nyc_output
+.nyc_outputnul

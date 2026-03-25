@@ -5,12 +5,12 @@ export default withAuth(
   function middleware(req) {
     // Verifica se o token existe e é válido
     const token = req.nextauth.token;
-    
+
     if (!token) {
       // Redireciona para login se não houver token
-      return NextResponse.redirect(new URL("/login", req.url));
+      return NextResponse.redirect(new URL("/entrar", req.url));
     }
-    
+
     // Token válido, permite acesso
     return NextResponse.next();
   },
@@ -19,19 +19,25 @@ export default withAuth(
       authorized: ({ token }) => !!token,
     },
     pages: {
-      signIn: "/login",
+      signIn: "/entrar",
     },
-  }
+  },
 );
 
 // Rotas que DEVEM ser protegidas
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/configuracoes/:path*", 
+    "/painel/:path*",
+    "/configuracoes/:path*",
     "/perfil/:path*",
-    "/api/accounts/:path*",
-    "/api/categories/:path*",
-    "/api/transactions/:path*",
+    "/api/contas/:path*",
+    "/api/categorias/:path*",
+    "/api/transacoes/:path*",
+    "/api/dividas/:path*",
+    "/api/compras/:path*",
+    "/api/metas/:path*",
+    "/api/notificacoes/:path*",
+    "/api/relatorios/:path*",
+    "/api/painel/:path*",
   ],
 };

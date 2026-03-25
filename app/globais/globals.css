@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Cores principais - Tema Verde Floresta */
+  --primary: 162 86% 24%; /* #047857 */
+  --primary-foreground: 0 0% 100%;
+
+  /* Cores complementares */
+  --secondary: 217 91% 60%;
+  --secondary-foreground: 0 0% 100%;
+
+  /* Fundo e texto */
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+
+  /* Cards e superfícies */
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  /* Elementos de UI */
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  /* Bordas e inputs */
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 162 86% 24%;
+
+  /* Estados */
+  --success: 158 64% 31%;
+  --warning: 38 92% 50%;
+  --danger: 3 77% 51%;
+  --info: 217 91% 60%;
+
+  /* Utilitários */
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 3 77% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Bordas arredondadas */
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 11%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 162 86% 24%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 217 91% 60%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 217 33% 17%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 3 77% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --ring: 162 86% 24%;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
+/* ============================================
+   ANIMAÇÕES PERSONALIZADAS - FLUXOCERTO
+   ============================================ */
+
+/* Gradiente animado no background */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Flutuação suave */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(2deg);
+  }
+}
+
+/* Flutuação com delay */
+@keyframes floatDelayed {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(-2deg);
+  }
+}
+
+/* Pulsação suave */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Brilho/glow */
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+  }
+}
+
+/* Partículas flutuantes */
+@keyframes particleFloat {
+  0% {
+    transform: translateY(100vh) translateX(0px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(50px);
+    opacity: 0;
+  }
+}
+
+/* Subida de gráfico */
+@keyframes chartRise {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Rotação suave */
+@keyframes slowRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Classes utilitárias de animação */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: floatDelayed 8s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-pulse-slow {
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* Partículas individuais com delays diferentes */
+.particle-1 {
+  animation: particleFloat 20s linear infinite;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  animation: particleFloat 25s linear infinite;
+  animation-delay: 2s;
+}
+
+.particle-3 {
+  animation: particleFloat 22s linear infinite;
+  animation-delay: 4s;
+}
+
+.particle-4 {
+  animation: particleFloat 28s linear infinite;
+  animation-delay: 1s;
+}
+
+.particle-5 {
+  animation: particleFloat 24s linear infinite;
+  animation-delay: 3s;
+}
+
+/* Efeito de vidro/blur */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-effect {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

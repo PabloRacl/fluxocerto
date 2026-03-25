@@ -30,23 +30,35 @@ model User {
   purchases         Purchase[]
   sessions          Session[]
   transactions      Transaction[]
+  reportHistories   ReportHistory[]
+  metas             Meta[]
+  assinaturas       Assinatura[]
+  lembretes         Lembrete[]
+  estoque           Estoque[]
+  listasCompra      ListaCompra[]
 }
 
 model Account {
-  id           String        @id @default(uuid())
-  userId       String
-  name         String
-  type         AccountType
-  balance      Int           @default(0)
-  color        String        @default("#047857")
-  icon         String?
-  isActive     Boolean       @default(true)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  debts        Debt[]
-  purchases    Purchase[]
-  transactions Transaction[]
+  id              String        @id @default(uuid())
+  userId          String
+  name            String
+  type            AccountType
+  balance         Int           @default(0)
+  color           String        @default("#047857")
+  icon            String?
+  isActive        Boolean       @default(true)
+  diaFechamento   Int?          // Cartão: dia do fechamento da fatura
+  diaVencimento   Int?          // Cartão: dia do vencimento
+  limiteCredito   Int?          // Cartão: limite total em centavos
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  isDeleted       Boolean       @default(false)
+  deletedAt       DateTime?
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  debts           Debt[]
+  purchases       Purchase[]
+  transactions    Transaction[]
+  assinaturas     Assinatura[]
 
   @@index([userId])
 }
@@ -80,6 +92,8 @@ model Category {
   parentId     String?
   budgetLimit  Int?
   isActive     Boolean         @default(true)
+  isArchived   Boolean         @default(false)
+  archivedAt   DateTime?
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   parent       Category?       @relation("CategoryHierarchy", fields: [parentId], references: [id])
@@ -88,6 +102,8 @@ model Category {
   debts        Debt[]
   purchases    Purchase[]
   transactions Transaction[]
+  metas        Meta[]
+  assinaturas  Assinatura[]
 
   @@index([userId])
   @@index([parentId])
@@ -154,6 +170,8 @@ model Debt {
   isPaidOff        Boolean           @default(false)
   paidOffAt        DateTime?
   creditor         String?           @db.VarChar(100)
+  isDeleted        Boolean           @default(false)
+  deletedAt        DateTime?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   account          Account           @relation(fields: [accountId], references: [id])
@@ -183,6 +201,8 @@ model Purchase {
   budgetId         String?
   isCompleted      Boolean        @default(true)
   transactionId    String?
+  isDeleted        Boolean        @default(false)
+  deletedAt        DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   account          Account?       @relation(fields: [accountId], references: [id])
@@ -226,6 +246,8 @@ model Budget {
   rolloverType    RolloverType @default(NEXT_MONTH)
   alertThreshold  Int          @default(80)
   alertEnabled    Boolean      @default(true)
+  isDeleted       Boolean      @default(false)
+  deletedAt       DateTime?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -298,6 +320,33 @@ enum RecurrenceType {
   ANNUAL
 }
 
+model ReportHistory {
+  id           String      @id @default(uuid())
+  userId       String
+  type         ReportType
+  parameters   Json?
+  fileUrl      String?
+  fileName     String
+  status       LogStatus   @default(GENERATED)
+  createdAt    DateTime    @default(now())
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum ReportType {
+  FINANCIAL_MONTHLY
+  CATEGORY_ANALYSIS
+  TRANSACTION_HISTORY
+}
+
+enum LogStatus {
+  GENERATED
+  FAILED
+  PROCESSING
+}
+
 enum DebtStatus {
   ACTIVE
   PAID
@@ -324,4 +373,149 @@ enum RolloverType {
   INVESTMENT
   DEBT_PAYOFF
   NONE
+}
+
+// ============================================
+// NOVAS ENTIDADES — EXPANSÃO ENTERPRISE
+// ============================================
+
+model Meta {
+  id            String    @id @default(uuid())
+  usuarioId     String
+  nome          String    @db.VarChar(100)
+  descricao     String?
+  valorAlvo     Int       // em centavos
+  montanteAtual Int       @default(0)
+  prazo         DateTime?
+  categoriaId   String?
+  icone         String?
+  cor           String    @default("#10B981")
+  concluida     Boolean   @default(false)
+  concluidaEm   DateTime?
+  excluida      Boolean   @default(false)
+  excluidaEm    DateTime?
+  criadoEm      DateTime  @default(now())
+  atualizadoEm  DateTime  @updatedAt
+  usuario       User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  categoria     Category? @relation(fields: [categoriaId], references: [id])
+
+  @@index([usuarioId])
+}
+
+model Assinatura {
+  id               String          @id @default(uuid())
+  usuarioId        String
+  nome             String          @db.VarChar(100)
+  descricao        String?
+  valor            Int             // em centavos
+  ciclo            CicloAssinatura
+  proximaRenovacao DateTime
+  categoriaId      String?
+  contaId          String?
+  ativa            Boolean         @default(true)
+  canceladaEm      DateTime?
+  excluida         Boolean         @default(false)
+  excluidaEm       DateTime?
+  criadoEm         DateTime        @default(now())
+  atualizadoEm     DateTime        @updatedAt
+  usuario          User            @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  categoria        Category?       @relation(fields: [categoriaId], references: [id])
+  conta            Account?        @relation(fields: [contaId], references: [id])
+
+  @@index([usuarioId])
+  @@index([proximaRenovacao])
+}
+
+model Lembrete {
+  id                   String       @id @default(uuid())
+  usuarioId            String
+  titulo               String       @db.VarChar(200)
+  mensagem             String?
+  tipo                 TipoLembrete
+  diasAntesDeNotificar Int          @default(3)
+  notificarEm          DateTime
+  lido                 Boolean      @default(false)
+  lidoEm               DateTime?
+  referenciaId         String?      // ID genérico da entidade (transação, dívida, etc.)
+  referenciaTipo       String?      // "TRANSACAO", "DIVIDA", "ASSINATURA", "META"
+  criadoEm             DateTime     @default(now())
+  usuario              User         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([notificarEm])
+  @@index([lido])
+}
+
+enum CicloAssinatura {
+  SEMANAL
+  QUINZENAL
+  MENSAL
+  BIMESTRAL
+  TRIMESTRAL
+  SEMESTRAL
+  ANUAL
+}
+
+enum TipoLembrete {
+  VENCIMENTO_DIVIDA
+  ALERTA_ORCAMENTO
+  RENOVACAO_ASSINATURA
+  PROGRESSO_META
+  VENCIMENTO_TRANSACAO
+  ALERTA_LIMITE_CARTAO
+  GERAL
+}
+
+// ============================================
+// MERCADO / FEIRA — CONTROLE DE ESTOQUE
+// ============================================
+
+model Estoque {
+  id            String    @id @default(uuid())
+  usuarioId     String
+  nome          String    @db.VarChar(200)
+  categoria     String?   @db.VarChar(100)
+  quantidade    Decimal   @db.Decimal(10, 2) @default(0)
+  unidade       String    @default("un")
+  precoMedio     Int       @default(0) // em centavos
+  precoUltimo    Int       @default(0)
+  ultimaCompra  DateTime?
+  validade      DateTime?
+  estoqueMinimo Decimal   @db.Decimal(10, 2) @default(1)
+  ativo         Boolean   @default(true)
+  criadoEm      DateTime  @default(now())
+  atualizadoEm  DateTime  @updatedAt
+  usuario       User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([categoria])
+}
+
+model ListaCompra {
+  id            String    @id @default(uuid())
+  usuarioId     String
+  nome          String    @db.VarChar(200)
+  concluida     Boolean   @default(false)
+  concluidaEm   DateTime?
+  criadoEm      DateTime  @default(now())
+  usuario       User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  itens         ListaCompraItem[]
+
+  @@index([usuarioId])
+}
+
+model ListaCompraItem {
+  id            String    @id @default(uuid())
+  listaId       String
+  nome          String    @db.VarChar(200)
+  quantidade    Decimal   @db.Decimal(10, 2) @default(1)
+  unidade       String    @default("un")
+  comprado      Boolean   @default(false)
+  precoMaximo   Int?      // em centavos
+  observacao    String?
+  ordem         Int       @default(0)
+  criadoEm      DateTime  @default(now())
+  lista         ListaCompra @relation(fields: [listaId], references: [id], onDelete: Cascade)
+
+  @@index([listaId])
 }
