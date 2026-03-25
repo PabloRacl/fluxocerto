@@ -71,7 +71,7 @@ export default function CategoriesReportPage() {
       });
 
       const response = await fetch(
-        `/api/reports/by-category?${params.toString()}`,
+        `/api/relatorios/categorias?${params.toString()}`,
         { credentials: "include" },
       );
 
@@ -91,7 +91,7 @@ export default function CategoriesReportPage() {
 
   const handleExport = () => {
     const link = document.createElement("a");
-    link.href = `/api/reports/export-categories?month=${selectedMonth}&year=${selectedYear}&type=${typeFilter}`;
+    link.href = `/api/relatorios/exportar-categorias?month=${selectedMonth}&year=${selectedYear}&type=${typeFilter}`;
     link.download = `categorias_${selectedMonth}_${selectedYear}.csv`;
     link.click();
   };
