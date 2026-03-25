@@ -39,5 +39,10 @@ export const config = {
     "/api/notificacoes/:path*",
     "/api/relatorios/:path*",
     "/api/painel/:path*",
+    "/api/listas/:path*",
+    "/api/estoque/:path*",
+    "/api/orcamentos/:path*",
+    "/api/lembretes/:path*",
+    "/api/configuracoes/:path*",
   ],
 };
