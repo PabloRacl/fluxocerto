@@ -11,6 +11,9 @@ import {
   TrendingDown,
   CreditCard,
   ShoppingBag,
+  ShoppingCart,
+  Package,
+  Bell,
   PieChart,
   Settings,
   LogOut,
@@ -1510,6 +1513,206 @@ export default function DashboardPage() {
                       <p className="text-sm text-slate-300">
                         Visualize seus ativos menos passivos com breakdown por
                         tipo de conta e gráfico de composição
+                      </p>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Card de Listas de Compras */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/painel/listas"
+                    className="group p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-md rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 hover:shadow-lg hover:shadow-emerald-500/10 transition-all relative block"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <ShoppingCart className="w-6 h-6 text-emerald-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-white">
+                        Listas de Compras
+                      </h3>
+                    </div>
+                    <p className="text-sm text-slate-400 mb-3">
+                      Organize suas compras com listas inteligentes
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-emerald-400">
+                      <CheckCircle className="w-3 h-3" />
+                      <span>Crie e gerencie listas</span>
+                    </div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 border-slate-700 text-white shadow-xl max-w-xs">
+                  <div className="flex items-start gap-2">
+                    <Info className="w-4 h-4 text-emerald-400 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-emerald-300 mb-1">
+                        Listas de Compras
+                      </p>
+                      <p className="text-sm text-slate-300">
+                        Crie listas com itens, quantidades e preços máximos.
+                        Marque itens como comprados.
+                      </p>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Card de Estoque */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/painel/estoque"
+                    className="group p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-md rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 hover:shadow-lg hover:shadow-emerald-500/10 transition-all relative block"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Package className="w-6 h-6 text-emerald-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-white">
+                        Estoque
+                      </h3>
+                    </div>
+                    <p className="text-sm text-slate-400 mb-3">
+                      Controle de itens, quantidades e validades
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-emerald-400">
+                      <AlertTriangle className="w-3 h-3" />
+                      <span>Alertas de estoque baixo</span>
+                    </div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 border-slate-700 text-white shadow-xl max-w-xs">
+                  <div className="flex items-start gap-2">
+                    <Info className="w-4 h-4 text-emerald-400 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-emerald-300 mb-1">
+                        Controle de Estoque
+                      </p>
+                      <p className="text-sm text-slate-300">
+                        Gerencie itens com quantidades, preços, validades e
+                        alertas de estoque mínimo.
+                      </p>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Card de Orçamentos */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/painel/orcamentos"
+                    className="group p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-md rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 hover:shadow-lg hover:shadow-emerald-500/10 transition-all relative block"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <PiggyBank className="w-6 h-6 text-emerald-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-white">
+                        Orçamentos
+                      </h3>
+                    </div>
+                    <p className="text-sm text-slate-400 mb-3">
+                      Defina limites mensais de gastos
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-emerald-400">
+                      <Target className="w-3 h-3" />
+                      <span>Controle seu teto de gastos</span>
+                    </div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 border-slate-700 text-white shadow-xl max-w-xs">
+                  <div className="flex items-start gap-2">
+                    <Info className="w-4 h-4 text-emerald-400 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-emerald-300 mb-1">
+                        Orçamentos
+                      </p>
+                      <p className="text-sm text-slate-300">
+                        Defina limites mensais com alertas configuráveis e barra
+                        de progresso.
+                      </p>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Card de Lembretes */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/painel/lembretes"
+                    className="group p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-md rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 hover:shadow-lg hover:shadow-emerald-500/10 transition-all relative block"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Bell className="w-6 h-6 text-emerald-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-white">
+                        Lembretes
+                      </h3>
+                    </div>
+                    <p className="text-sm text-slate-400 mb-3">
+                      Crie lembretes para datas importantes
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-emerald-400">
+                      <Clock className="w-3 h-3" />
+                      <span>Notificações personalizadas</span>
+                    </div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 border-slate-700 text-white shadow-xl max-w-xs">
+                  <div className="flex items-start gap-2">
+                    <Info className="w-4 h-4 text-emerald-400 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-emerald-300 mb-1">
+                        Lembretes
+                      </p>
+                      <p className="text-sm text-slate-300">
+                        Crie lembretes financeiros com tipos variados e datas de
+                        notificação.
+                      </p>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Card de Configurações */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/painel/configuracoes"
+                    className="group p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-md rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 hover:shadow-lg hover:shadow-emerald-500/10 transition-all relative block"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Settings className="w-6 h-6 text-emerald-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-white">
+                        Configurações
+                      </h3>
+                    </div>
+                    <p className="text-sm text-slate-400 mb-3">
+                      Personalize sua experiência
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-emerald-400">
+                      <Settings className="w-3 h-3" />
+                      <span>Perfil, sessão e preferências</span>
+                    </div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 border-slate-700 text-white shadow-xl max-w-xs">
+                  <div className="flex items-start gap-2">
+                    <Info className="w-4 h-4 text-emerald-400 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-emerald-300 mb-1">
+                        Configurações
+                      </p>
+                      <p className="text-sm text-slate-300">
+                        Configure perfil, duração de sessão, moeda, fuso horário
+                        e modo escuro.
                       </p>
                     </div>
                   </div>
