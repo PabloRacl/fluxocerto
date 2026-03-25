@@ -473,6 +473,7 @@ enum TipoLembrete {
 model Estoque {
   id            String    @id @default(uuid())
   usuarioId     String
+  produtoId     String?   // Referência ao produto do catálogo
   nome          String    @db.VarChar(200)
   categoria     String?   @db.VarChar(100)
   quantidade    Decimal   @db.Decimal(10, 2) @default(0)
@@ -482,6 +483,7 @@ model Estoque {
   ultimaCompra  DateTime?
   validade      DateTime?
   estoqueMinimo Decimal   @db.Decimal(10, 2) @default(1)
+  barcode       String?   @db.VarChar(50)
   ativo         Boolean   @default(true)
   criadoEm      DateTime  @default(now())
   atualizadoEm  DateTime  @updatedAt
@@ -489,6 +491,24 @@ model Estoque {
 
   @@index([usuarioId])
   @@index([categoria])
+  @@index([barcode])
+}
+
+// Catálogo de produtos do atacarejo
+model Produto {
+  id            String    @id @default(uuid())
+  nome          String    @unique @db.VarChar(200)
+  categoria     String    @db.VarChar(100)
+  unidade       String    @default("un")
+  precoMedio    Int       @default(0) // em centavos
+  barcode       String?   @unique @db.VarChar(50)
+  imagem        String?   // URL da imagem
+  popular       Boolean   @default(false) // itens mais comuns
+  criadoEm      DateTime  @default(now())
+
+  @@index([categoria])
+  @@index([barcode])
+  @@index([popular])
 }
 
 model ListaCompra {
