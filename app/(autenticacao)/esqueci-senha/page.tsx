@@ -9,6 +9,7 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [debugLink, setDebugLink] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,7 +25,9 @@ export default function ForgotPasswordPage() {
       });
 
       if (res.ok) {
+        const data = await res.json();
         setSent(true);
+        if (data.debugLink) setDebugLink(data.debugLink);
       } else {
         const data = await res.json();
         setError(data.error || "Erro ao solicitar recuperação");
@@ -55,6 +58,18 @@ export default function ForgotPasswordPage() {
             <div className="p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl text-blue-200 text-sm">
               Se o e-mail estiver cadastrado, você receberá instruções em instantes. Verifique também sua caixa de spam.
             </div>
+
+            {debugLink && (
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl animate-pulse">
+                <p className="text-[10px] text-emerald-500 uppercase font-black mb-2">Protocolo Debug Ativo</p>
+                <Link 
+                  href={debugLink}
+                  className="text-xs text-white underline hover:text-emerald-400 break-all"
+                >
+                  Confirmar Acesso: {debugLink}
+                </Link>
+              </div>
+            )}
             <Link 
               href="/entrar"
               className="block w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"

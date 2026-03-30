@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
             "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: "FluxoCerto <noreply@fluxocerto.com.br>",
+            from: "FluxoCerto <onboarding@resend.dev>",
             to: [email],
             subject: "Recuperação de Acesso Neural - FluxoCerto",
             html: `
@@ -71,7 +71,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ message: "Protocolo de recuperação iniciado." });
+    return NextResponse.json({ 
+      message: "Protocolo de recuperação iniciado.",
+      // Retornamos o link apenas em desenvolvimento para facilitar seu teste
+      debugLink: process.env.NODE_ENV === "development" ? resetUrl : undefined
+    });
   } catch (error) {
     console.error("Erro na recuperação de senha:", error);
     return NextResponse.json({ error: "Erro interno no protocolo de segurança" }, { status: 500 });

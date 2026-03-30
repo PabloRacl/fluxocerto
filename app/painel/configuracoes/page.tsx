@@ -33,14 +33,14 @@ export default function ConfiguracoesPage() {
       setForm({
         name: u.name || "",
         email: u.email || "",
-        sessionDuration: String(u.sessionDuration),
-        autoLogoutMinutes: String(u.autoLogoutMinutes),
-        darkMode: u.darkMode,
-        currency: u.currency,
-        timezone: u.timezone,
+        sessionDuration: String(u.sessionDuration || 7),
+        autoLogoutMinutes: String(u.autoLogoutMinutes || 30),
+        darkMode: u.darkMode || false,
+        currency: u.currency || "BRL",
+        timezone: u.timezone || "America/Sao_Paulo",
       });
     } catch {
-      console.error("Erro");
+      console.error("Erro ao carregar configurações");
     } finally {
       setLoading(false);
     }
@@ -49,12 +49,14 @@ export default function ConfiguracoesPage() {
   useEffect(() => {
     if (status === "authenticated") fetchConfig();
   }, [status, fetchConfig]);
+
   if (status === "loading")
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <RefreshCw className="w-8 h-8 animate-spin text-emerald-500" />
       </div>
     );
+
   if (status === "unauthenticated") {
     router.push("/entrar");
     return null;
@@ -115,7 +117,7 @@ export default function ConfiguracoesPage() {
       });
       if (res.ok) alert("Configurações salvas!");
     } catch {
-      console.error("Erro");
+      console.error("Erro ao salvar");
     } finally {
       setSaving(false);
     }
@@ -170,7 +172,55 @@ export default function ConfiguracoesPage() {
               </div>
             </div>
 
-            {/* Sessão */}
+            {/* Gestão de Dados (Zona de Perigo) */}
+            <div className="bg-slate-900/50 rounded-xl border border-red-500/10 p-6 overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                 <AlertCircle className="w-24 h-24 text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-red-400 mb-1 flex items-center gap-2">
+                <Database className="w-5 h-5" /> Zona de Perigo Neural
+              </h3>
+              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-6">Controle e Purificação de Dados</p>
+              
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleDataReset("mappings", "Mapeamentos de Notas")}
+                    className="flex items-center gap-3 p-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl text-left transition-all"
+                  >
+                    <div className="p-2 bg-red-500/10 rounded-lg">
+                      <RefreshCw className="w-4 h-4 text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">Resetar Mapeamentos</p>
+                      <p className="text-[10px] text-slate-500">Limpa a memória de IA das notas.</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => handleDataReset("transactions", "Transações")}
+                    className="flex items-center gap-3 p-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl text-left transition-all"
+                  >
+                    <div className="p-2 bg-red-500/10 rounded-lg">
+                      <Trash2 className="w-4 h-4 text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">Limpar Transações</p>
+                      <p className="text-[10px] text-slate-500">Reseta o histórico financeiro.</p>
+                    </div>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => handleDataReset("full_account_delete", "MINHA CONTA")}
+                  className="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-red-600/10 hover:bg-red-600/20 border border-red-600/20 rounded-xl text-red-500 font-black text-xs uppercase tracking-widest transition-all"
+                >
+                  <Skull className="w-4 h-4" /> EXCLUIR MINHA CONTA PERMANENTEMENTE
+                </button>
+              </div>
+            </div>
+
+            {/* Sessão e Segurança */}
             <div className="bg-slate-900/50 rounded-xl border border-slate-800 p-6">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Sessão e Segurança
@@ -274,54 +324,6 @@ export default function ConfiguracoesPage() {
                   />
                   <span className="text-white">Modo escuro</span>
                 </label>
-              </div>
-            </div>
-
-            {/* Gestão de Dados (Zona de Perigo) */}
-            <div className="bg-slate-900/50 rounded-xl border border-red-500/10 p-6 overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                 <AlertCircle className="w-24 h-24 text-red-500" />
-              </div>
-              <h3 className="text-lg font-bold text-red-400 mb-1 flex items-center gap-2">
-                <Database className="w-5 h-5" /> Zona de Perigo Neural
-              </h3>
-              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-6">Controle e Purificação de Dados</p>
-              
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handleDataReset("mappings", "Mapeamentos de Notas")}
-                    className="flex items-center gap-3 p-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl text-left transition-all"
-                  >
-                    <div className="p-2 bg-red-500/10 rounded-lg">
-                      <RefreshCw className="w-4 h-4 text-red-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-white">Resetar Mapeamentos</p>
-                      <p className="text-[10px] text-slate-500">Limpa a memória de IA das notas.</p>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => handleDataReset("transactions", "Transações")}
-                    className="flex items-center gap-3 p-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl text-left transition-all"
-                  >
-                    <div className="p-2 bg-red-500/10 rounded-lg">
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-white">Limpar Transações</p>
-                      <p className="text-[10px] text-slate-500">Reseta o histórico financeiro.</p>
-                    </div>
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => handleDataReset("full_account_delete", "MINHA CONTA")}
-                  className="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-red-600/10 hover:bg-red-600/20 border border-red-600/20 rounded-xl text-red-500 font-black text-xs uppercase tracking-widest transition-all"
-                >
-                  <Skull className="w-4 h-4" /> EXCLUIR MINHA CONTA PERMANENTEMENTE
-                </button>
               </div>
             </div>
 
