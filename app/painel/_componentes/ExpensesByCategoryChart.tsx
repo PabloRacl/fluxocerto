@@ -509,6 +509,31 @@ export function ExpensesByCategoryChart({
         </div>
       </div>
 
+      {/* Botão Chamativo - Análise de Categorias */}
+      <div className="mt-4 relative z-10">
+        <button
+          onClick={() => setShowAllModal(true)}
+          className="w-full group relative flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-black text-xs uppercase tracking-widest overflow-hidden transition-all duration-300"
+          style={{
+            background: "linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(249,115,22,0.15) 100%)",
+            border: "1px solid rgba(239,68,68,0.3)",
+            boxShadow: "0 0 0 0 rgba(239,68,68,0.3)",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 0 16px 2px rgba(239,68,68,0.35)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.6)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(239,68,68,0.3)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.3)";
+          }}
+        >
+          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-red-400/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+          <span className="relative z-10 bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">Ver Detalhamento por Categoria</span>
+          <svg className="w-3.5 h-3.5 text-red-400 group-hover:translate-x-1 transition-transform relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+        </button>
+      </div>
+
       {/* Modal Ver Mais Categorias (usando AnimatedModal existente) */}
       <AnimatedModal
         isOpen={showAllModal}

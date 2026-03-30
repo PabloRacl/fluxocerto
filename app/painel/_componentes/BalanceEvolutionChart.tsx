@@ -540,6 +540,32 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
           <span className="text-slate-400">Despesas</span>
         </div>
       </div>
+
+      {/* Botão de Análise Completa */}
+      <div className="mt-5 relative z-10">
+        <button
+          onClick={() => window.location.href = '/painel/transacoes'}
+          className="w-full group relative flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-black text-xs uppercase tracking-widest overflow-hidden transition-all duration-300"
+          style={{
+            background: "linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.15) 100%)",
+            border: "1px solid rgba(52,211,153,0.3)",
+            boxShadow: "0 0 0 0 rgba(52,211,153,0.3)",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 0 16px 2px rgba(52,211,153,0.35)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(52,211,153,0.6)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(52,211,153,0.3)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(52,211,153,0.3)";
+          }}
+        >
+          {/* Linha de brilho que varre o botão */}
+          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+          <span className="relative z-10 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Ver Relatório Completo</span>
+          <svg className="w-3.5 h-3.5 text-emerald-400 group-hover:translate-x-1 transition-transform relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+        </button>
+      </div>
     </div>
   );
 }
