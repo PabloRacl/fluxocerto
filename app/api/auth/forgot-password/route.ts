@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const resetUrl = `${process.env.NEXTAUTH_URL}/resetar-senha?token=${resetToken}`;
+    const baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin || "http://localhost:3000";
+    const resetUrl = `${baseUrl}/resetar-senha?token=${resetToken}`;
 
     // TODO: Implementar envio real via Resend/SendGrid
     // Por enquanto, logamos no terminal para teste em desenvolvimento
