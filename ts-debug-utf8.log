@@ -1,8 +1,0 @@
-﻿app/painel/assinaturas/page.tsx(172,11): error TS2322: Type '{ title: string; subtitle: string; onRefresh: () => Promise<void>; onNew: () => void; newButtonText: string; showFilters: true; filters: Element; }' is not assignable to type 'IntrinsicAttributes & PageHeaderProps'.
-  Property 'showFilters' does not exist on type 'IntrinsicAttributes & PageHeaderProps'.
-app/painel/dividas/page.tsx(240,11): error TS2322: Type '{ title: string; subtitle: string; onRefresh: () => Promise<void>; onNew: () => void; newButtonText: string; showFilters: true; filters: Element; }' is not assignable to type 'IntrinsicAttributes & PageHeaderProps'.
-  Property 'showFilters' does not exist on type 'IntrinsicAttributes & PageHeaderProps'.
-app/painel/metas/page.tsx(183,11): error TS2322: Type '{ title: string; subtitle: string; onRefresh: () => Promise<void>; onNew: () => void; newButtonText: string; showFilters: true; filters: Element; }' is not assignable to type 'IntrinsicAttributes & PageHeaderProps'.
-  Property 'showFilters' does not exist on type 'IntrinsicAttributes & PageHeaderProps'.
-app/painel/notificacoes/page.tsx(157,9): error TS2322: Type '{ title: string; subtitle: string; onRefresh: () => Promise<void>; showFilters: true; filters: Element; }' is not assignable to type 'IntrinsicAttributes & PageHeaderProps'.
-  Property 'showFilters' does not exist on type 'IntrinsicAttributes & PageHeaderProps'.

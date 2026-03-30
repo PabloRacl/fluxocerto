@@ -1,1 +1,0 @@
-﻿app/api/painel/projecao/route.ts(9,52): error TS2339: Property 'user' does not exist on type '{ id: string; email?: string | null | undefined; name?: string | null | undefined; }'.

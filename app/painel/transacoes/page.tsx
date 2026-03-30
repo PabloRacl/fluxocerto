@@ -593,22 +593,6 @@ export default function TransactionsPage() {
             <RefreshCw className="w-5 h-5" />
           </button>
 
-          {/* Botão Exportar */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={handleExport}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:block">Exportar</span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Exportar transações</p>
-            </TooltipContent>
-          </Tooltip>
-
           {/* Nova Transação */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -986,7 +970,7 @@ export default function TransactionsPage() {
                                 )}
                                 {transaction.notes && (
                                   <span className="text-[9px] font-medium text-slate-500 italic max-w-[150px] truncate">
-                                    // {transaction.notes}
+                                    {"// " + transaction.notes}
                                   </span>
                                 )}
                               </div>
