@@ -1667,9 +1667,11 @@ function ImportarNFModal({
           ...dadosExtraidos,
           items: dadosExtraidos.items.map((item: any) => ({
             ...item,
-            categoryId: item.mappedCategoryId || "",
-            accountId: item.mappedAccountId || "",
+            categoryId: item.categoryId || item.mappedCategoryId || "",
+            accountId: item.accountId || item.mappedAccountId || "",
             category: item.category || "",
+            confidence: item.confidence || "none",
+            suggestionIcon: item.suggestionIcon || null
           })),
         });
       }
@@ -1750,6 +1752,9 @@ function ImportarNFModal({
       categoryId: item.categoryId || null,
       accountId: item.accountId || null,
     }));
+
+    // Auto-save mappings para aprendizado neural
+    saveMapping();
 
     const payload = {
       description: parsedData.description,
@@ -1939,6 +1944,12 @@ function ImportarNFModal({
                         <span className="text-[10px] font-bold text-emerald-400/80">
                           {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unitPrice)}
                         </span>
+                        {item.confidence !== "none" && (
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                            <span className="text-[10px]">{item.suggestionIcon || "🧠"}</span>
+                            <span className="text-[8px] font-black text-blue-400 uppercase tracking-tighter">Sugestão Neural</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
