@@ -6,7 +6,7 @@ import { Shield, Users, Trash2, Edit2, ShieldAlert, CheckCircle2 } from "lucide-
 import { motion } from "framer-motion";
 import { api } from "@/biblioteca/http-client";
 
-const fetcher = (url: string) => api.get<any[]>(url).then(res => res.data);
+const fetcher = (url: string) => api.get<any[]>(url);
 
 export default function AdminDashboardPage() {
   const { data: users, error, mutate } = useSWR("/api/admin/users", fetcher);
