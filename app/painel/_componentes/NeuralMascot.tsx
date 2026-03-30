@@ -10,6 +10,7 @@ interface NeuralMascotProps {
   showScan?: boolean;
   level?: number;
   isSpeaking?: boolean;
+  equippedItems?: number[];
 }
 
 export function NeuralMascot({ 
@@ -18,7 +19,8 @@ export function NeuralMascot({
   className = "",
   showScan = true,
   level = 1,
-  isSpeaking = false
+  isSpeaking = false,
+  equippedItems
 }: NeuralMascotProps) {
   const src = mood === "WORRIED" 
     ? "/mascote/sapo_preocupado_dark.png" 
@@ -77,50 +79,50 @@ export function NeuralMascot({
           priority
         />
 
-        {/* --- INÍCIO DOS COSMÉTICOS (Plano de Evolução: 10 Níveis a cada 5) --- */}
+        {/* --- INÍCIO DOS COSMÉTICOS --- */}
         {/* Lvl 5: Óculos de Sol */}
-        {level >= 5 && (
-          <div className="absolute top-[32%] left-[49%] -translate-x-1/2 -translate-y-1/2 z-30 drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)]" style={{ fontSize: sizePixels * 0.45 }}>
+        {((equippedItems ? equippedItems.includes(5) : level >= 5)) && (
+          <div className="absolute top-[35%] left-[50%] -translate-x-1/2 -translate-y-1/2 z-30 drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)] flex items-center justify-center leading-none" style={{ fontSize: sizePixels * 0.45 }}>
              🕶️
           </div>
         )}
         {/* Lvl 10: Gravata Social */}
-        {level >= 10 && (
-          <div className="absolute top-[65%] left-[50%] -translate-x-1/2 -translate-y-1/2 z-20 drop-shadow-md" style={{ fontSize: sizePixels * 0.35 }}>
+        {((equippedItems ? equippedItems.includes(10) : level >= 10)) && (
+          <div className="absolute top-[68%] left-[50%] -translate-x-1/2 -translate-y-1/2 z-20 drop-shadow-md flex items-center justify-center leading-none" style={{ fontSize: sizePixels * 0.35 }}>
              👔
           </div>
         )}
         {/* Lvl 15: Cordão de Ouro Ostentação */}
-        {level >= 15 && (
-          <div className="absolute top-[67%] left-[50%] -translate-x-1/2 -translate-y-1/2 z-30 drop-shadow-xl" style={{ fontSize: sizePixels * 0.3 }}>
+        {((equippedItems ? equippedItems.includes(15) : level >= 15)) && (
+          <div className="absolute top-[72%] left-[49%] -translate-x-1/2 -translate-y-1/2 z-30 drop-shadow-xl flex items-center justify-center leading-none" style={{ fontSize: sizePixels * 0.3 }}>
              🏅
           </div>
         )}
         {/* Lvl 20: Relógio de Luxo  */}
-        {level >= 20 && (
-          <div className="absolute top-[50%] left-[80%] -translate-x-1/2 -translate-y-1/2 z-30 drop-shadow-md" style={{ fontSize: sizePixels * 0.25, transform: 'rotate(20deg)' }}>
+        {((equippedItems ? equippedItems.includes(20) : level >= 20)) && (
+          <div className="absolute top-[52%] left-[82%] -translate-x-1/2 -translate-y-1/2 z-30 drop-shadow-md flex items-center justify-center leading-none" style={{ fontSize: sizePixels * 0.25, transform: 'translate(-50%, -50%) rotate(20deg)' }}>
              ⌚
           </div>
         )}
         {/* Lvl 25: Chapéu de Cartola (Substituído pela Coroa no 30) */}
-        {level >= 25 && level < 30 && (
-          <div className="absolute top-[5%] left-[50%] -translate-x-[40%] -translate-y-1/2 z-30 drop-shadow-xl" style={{ fontSize: sizePixels * 0.5, transform: 'rotate(10deg)' }}>
+        {((equippedItems ? equippedItems.includes(25) : level >= 25 && level < 30)) && (
+          <div className="absolute top-[8%] left-[50%] -translate-x-[40%] -translate-y-1/2 z-30 drop-shadow-xl flex items-center justify-center leading-none" style={{ fontSize: sizePixels * 0.5, transform: 'translate(-40%, -50%) rotate(10deg)' }}>
              🎩
           </div>
         )}
         {/* Lvl 30: Coroa de Mestre */}
-        {level >= 30 && (
-          <div className="absolute top-[3%] left-[50%] -translate-x-[40%] -translate-y-1/2 z-30 drop-shadow-2xl" style={{ fontSize: sizePixels * 0.5, transform: 'rotate(15deg)' }}>
+        {((equippedItems ? equippedItems.includes(30) : level >= 30)) && (
+          <div className="absolute top-[8%] left-[50%] -translate-x-[40%] -translate-y-1/2 z-30 drop-shadow-2xl flex items-center justify-center leading-none" style={{ fontSize: sizePixels * 0.5, transform: 'translate(-40%, -50%) rotate(15deg)' }}>
              👑
           </div>
         )}
         {/* Lvl 35: Diamante Brilhante */}
-        {level >= 35 && (
+        {((equippedItems ? equippedItems.includes(35) : level >= 35)) && (
            <motion.div 
              animate={{ y: [-5, 5, -5] }}
              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-             className="absolute top-[20%] left-[15%] -translate-x-1/2 -translate-y-1/2 z-30 drop-shadow-[0_0_15px_rgba(167,139,250,0.8)]" 
-             style={{ fontSize: sizePixels * 0.3 }}
+             className="absolute top-[25%] left-[18%] -translate-x-1/2 -translate-y-1/2 z-30 drop-shadow-[0_0_15px_rgba(167,139,250,0.8)] flex items-center justify-center leading-none" 
+             style={{ fontSize: sizePixels * 0.3, transform: 'translate(-50%, -50%)' }}
            >
              💎
            </motion.div>

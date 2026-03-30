@@ -151,10 +151,10 @@ export function MascotAssistant({
           initial={{ opacity: 0, x: 100, scale: 0.8 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 100, scale: 0.8 }}
-          className="fixed bottom-24 right-8 z-[100] flex items-end gap-4 pointer-events-none"
+          className="fixed bottom-[100px] right-4 md:bottom-24 md:right-8 z-[100] flex flex-col md:flex-row items-end md:items-end gap-2 md:gap-4 pointer-events-none"
         >
           {/* Bolha de Fala Holográfica */}
-          <div className="pointer-events-auto relative bg-slate-950/60 backdrop-blur-3xl border border-white/10 p-6 rounded-[2.5rem] rounded-br-none shadow-[0_30px_90px_rgba(0,0,0,0.6)] max-w-[300px] mb-8 group/bubble transition-all duration-500 hover:border-emerald-500/30">
+          <div className="pointer-events-auto relative bg-slate-950/60 backdrop-blur-3xl border border-white/10 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] md:rounded-br-none shadow-[0_30px_90px_rgba(0,0,0,0.6)] w-[260px] md:w-[300px] md:mb-8 group/bubble transition-all duration-500 hover:border-emerald-500/30">
             
             {/* Efeito de Vidro HUD e Scan Line interna */}
             <div className="absolute inset-0 bg-emerald-500/[0.03] blur-xl pointer-events-none" />
@@ -221,13 +221,17 @@ export function MascotAssistant({
             </div>
 
             {/* Rabo da Bolha Moderno */}
-            <div className="absolute -bottom-2 right-12 w-8 h-4 overflow-hidden">
+            <div className="hidden md:block absolute -bottom-2 right-12 w-8 h-4 overflow-hidden">
                <div className="w-4 h-4 bg-slate-950/60 border-r border-b border-white/10 transform rotate-45 -mt-2 mx-auto shadow-2xl" />
+            </div>
+            {/* Rabo Mobile */}
+            <div className="md:hidden absolute -bottom-2 right-[50%] translate-x-1/2 w-8 h-4 overflow-hidden">
+               <div className="w-4 h-4 bg-slate-950/60 border-b border-r border-white/10 transform rotate-45 -mt-2 mx-auto shadow-2xl" />
             </div>
           </div>
 
           {/* O Mascote 3D (Mentor) */}
-          <div className="mb-4">
+          <div className="mb-2 md:mb-4 self-center md:self-auto transform scale-75 md:scale-100 origin-bottom">
              <NeuralMascot size="lg" mood="HAPPY" level={userLevel} isSpeaking={isSpeaking} />
           </div>
 

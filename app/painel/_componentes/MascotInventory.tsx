@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NeuralMascot } from "./NeuralMascot";
 import { X, Lock, CheckCircle2, TrendingUp, Trophy, Zap } from "lucide-react";
@@ -25,6 +26,23 @@ const ITEMS = [
 ];
 
 export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps) {
+  const [equippedItems, setEquippedItems] = useState<number[]>([]);
+
+  // Initially equip all unlocked items when the modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setEquippedItems(ITEMS.filter(item => level >= item.level).map(item => item.level));
+    }
+  }, [isOpen, level]);
+
+  const toggleItem = (itemLevel: number) => {
+    setEquippedItems(prev => 
+      prev.includes(itemLevel) 
+        ? prev.filter(l => l !== itemLevel) 
+        : [...prev, itemLevel]
+    );
+  };
+
   return (
     <AnimatedModal
       isOpen={isOpen}
@@ -47,7 +65,7 @@ export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps
 
           <div className="relative z-10 mb-8 transform group-hover:scale-110 transition-transform duration-700">
              <div className="absolute inset-0 bg-emerald-500/20 blur-[50px] rounded-full animate-pulse" />
-             <NeuralMascot size="xl" level={level} showScan={true} />
+             <NeuralMascot size="xl" level={level} showScan={true} equippedItems={equippedItems} />
           </div>
 
           <div className="text-center relative z-10">
@@ -73,31 +91,35 @@ export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps
           
           {ITEMS.map((item, idx) => {
             const isUnlocked = level >= item.level;
+            const isEquipped = equippedItems.includes(item.level);
+
             return (
-              <motion.div
+              <motion.button
                 key={idx}
+                onClick={() => isUnlocked && toggleItem(item.level)}
                 initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.05, type: "spring", stiffness: 100 }}
-                className={`relative flex items-center gap-5 p-5 rounded-3xl border transition-all duration-500 group/item overflow-hidden ${
+                className={`w-full text-left relative flex items-center gap-5 p-5 rounded-3xl border transition-all duration-500 group/item overflow-hidden ${
                   isUnlocked 
-                  ? 'bg-slate-900/60 border-white/5 hover:border-emerald-500/40 hover:bg-slate-900/80' 
+                  ? (isEquipped ? 'bg-emerald-950/40 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-slate-900/60 border-white/5 hover:border-emerald-500/40 hover:bg-slate-900/80')
                   : 'bg-slate-950/40 border-white/[0.02] opacity-40 grayscale pointer-events-none'
                 }`}
               >
                 {/* Item Background Glow */}
                 {isUnlocked && (
-                  <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/5 blur-3xl group-hover/item:opacity-100 transition-opacity" />
+                  <div className={`absolute -right-8 -bottom-8 w-24 h-24 blur-3xl transition-opacity ${isEquipped ? 'bg-emerald-500/20 opacity-100' : 'bg-emerald-500/5 group-hover/item:opacity-100 opacity-0'}`} />
                 )}
 
                 <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-4xl shrink-0 transition-all duration-500 relative ${
                   isUnlocked 
-                  ? 'bg-slate-950 border border-emerald-500/20 shadow-inner group-hover/item:scale-110 group-hover/item:rotate-3' 
+                  ? (isEquipped ? 'bg-emerald-950 border border-emerald-400/50 shadow-inner scale-110 rotate-3' : 'bg-slate-950 border border-emerald-500/20 shadow-inner group-hover/item:scale-110 group-hover/item:rotate-3') 
                   : 'bg-slate-950/60 border border-white/5'
-                }`}>
+                }`}
+                style={{ lineHeight: 1 }}>
                   {isUnlocked ? (
                     <>
-                      <span className="relative z-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{item.icon}</span>
+                      <span className="relative z-10 flex items-center justify-center leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{item.icon}</span>
                       <div className="absolute inset-0 bg-emerald-500/5 rounded-2xl blur-md" />
                     </>
                   ) : <Lock className="w-6 h-6 text-slate-700" />}
@@ -105,26 +127,26 @@ export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps
 
                 <div className="flex-1 min-w-0 relative z-10">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className={`text-sm font-black tracking-tight uppercase ${isUnlocked ? 'text-white' : 'text-slate-600'}`}>
+                    <span className={`text-sm font-black tracking-tight uppercase ${isUnlocked ? (isEquipped ? 'text-emerald-400' : 'text-white') : 'text-slate-600'}`}>
                       {item.name}
                     </span>
                     <div className={`px-2 py-0.5 rounded-md text-[9px] font-black tracking-tighter transition-colors ${
-                      isUnlocked ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-900 text-slate-700'
+                      isUnlocked ? (isEquipped ? 'bg-emerald-500 text-slate-950 border border-emerald-400' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20') : 'bg-slate-900 text-slate-700'
                     }`}>
                       LVL {item.level}
                     </div>
                   </div>
-                  <p className="text-[11px] text-slate-500 font-medium leading-normal italic line-clamp-2">
+                  <p className={`text-[11px] font-medium leading-normal italic line-clamp-2 ${isEquipped ? 'text-emerald-500/70' : 'text-slate-500'}`}>
                     {isUnlocked ? item.desc : "Sincronização insuficiente para descriptografar item."}
                   </p>
                 </div>
 
                 {isUnlocked && (
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                  <div className={`absolute right-4 top-1/2 -translate-y-1/2 transition-opacity ${isEquipped ? 'opacity-100' : 'opacity-0 group-hover/item:opacity-50'}`}>
+                     <CheckCircle2 className={`w-5 h-5 ${isEquipped ? 'text-emerald-400' : 'text-emerald-500/50'}`} />
                   </div>
                 )}
-              </motion.div>
+              </motion.button>
             );
           })}
         </div>
