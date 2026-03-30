@@ -1,89 +1,37 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { prisma } from "@/biblioteca/prisma";
-import { authOptions } from "@/biblioteca/autenticacao";
+import { NextRequest } from "next/server";
+import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
+import { tratarErro } from "@/biblioteca/tratar-erro";
+import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
+import { schemaCriarLista } from "@/validacoes/lista.schema";
+import { listaService } from "@/servicos/ListaService";
 
+// ============================================
+// GET - Listar Listas de Compras
+// ============================================
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-    if (!user)
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 },
-      );
+    const user = await obterUsuarioAutenticado();
+    const listas = await listaService.listar(user.id);
 
-    const listas = await prisma.listaCompra.findMany({
-      where: { usuarioId: user.id },
-      include: { itens: { orderBy: { ordem: "asc" } } },
-      orderBy: { criadoEm: "desc" },
-    });
-
-    return NextResponse.json({ listas });
+    return sucesso({ listas });
   } catch (error) {
-    console.error("Erro ao listar listas:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return tratarErro(error);
   }
 }
 
+// ============================================
+// POST - Criar Nova Lista e Itens
+// ============================================
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-    if (!user)
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 },
-      );
-
+    const user = await obterUsuarioAutenticado();
     const body = await request.json();
-    const { nome, itens } = body;
+    const dados = schemaCriarLista.parse(body);
 
-    if (!nome) {
-      return NextResponse.json(
-        { error: "Nome é obrigatório" },
-        { status: 400 },
-      );
-    }
+    const lista = await listaService.criar(user.id, dados);
 
-    const lista = await prisma.listaCompra.create({
-      data: {
-        usuarioId: user.id,
-        nome,
-        itens: itens?.length
-          ? {
-              create: itens.map((item: any, i: number) => ({
-                nome: item.nome,
-                quantidade: item.quantidade || 1,
-                unidade: item.unidade || "un",
-                precoMaximo: item.precoMaximo
-                  ? Math.round(item.precoMaximo * 100)
-                  : null,
-                observacao: item.observacao || null,
-                ordem: i,
-              })),
-            }
-          : undefined,
-      },
-      include: { itens: true },
-    });
-
-    return NextResponse.json(
-      { message: "Lista criada", lista },
-      { status: 201 },
-    );
+    return criadoComSucesso({ message: "Lista criada", lista });
   } catch (error) {
-    console.error("Erro ao criar lista:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return tratarErro(error);
   }
 }

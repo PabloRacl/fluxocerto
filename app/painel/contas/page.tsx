@@ -11,23 +11,29 @@ import {
   Plus,
   RefreshCw,
   Edit2,
-  Trash2,
-  Eye,
-  ArrowUpRight,
-  AlertTriangle,
-  CreditCard,
-  Calendar,
-  ArrowLeft,
   Archive,
+  Activity,
+  Zap,
+  Cpu,
+  Shield,
+  CreditCard as CardIcon,
+  AlertTriangle,
+  Eye,
+  Trash2,
+  ArrowUpRight,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/componentes/ui/tooltip";
-// ✅ IMPORT DO MODAL FUTURISTA
+import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+// ✅ IMPORT DOS MODAIS FUTURISTAS
 import NewAccountModal from "./_componentes/NewAccountModal";
+import EditAccountModal from "./_componentes/EditAccountModal";
 
 // ============================================
 // FORMATADOR DE MOEDA (BRL)
@@ -71,8 +77,9 @@ export default function AccountsPage() {
     {},
   );
 
-  // ✅ ESTADO PARA CONTROLAR O MODAL
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<any>(null);
 
   // ✅ ESTADO PARA DADOS DE FATURA DOS CARTÕES
   const [cartaoData, setCartaoData] = useState<Record<string, any>>({});
@@ -223,18 +230,16 @@ export default function AccountsPage() {
     }));
   };
 
+  const handleEdit = (account: any) => {
+    setSelectedAccount(account);
+    setShowEditModal(true);
+  };
+
   // ============================================
   // RENDER: LOADING
   // ============================================
   if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-4" />
-          <p className="text-slate-400">Carregando contas...</p>
-        </div>
-      </div>
-    );
+    return <NeuralLoading message="Sincronizando Nódulos de Contas..." variant="full" />;
   }
 
   // ============================================
@@ -251,87 +256,65 @@ export default function AccountsPage() {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-slate-950">
-        {/* Header */}
-        <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => router.push("/painel")}
-                  className="text-slate-400 hover:text-white transition-colors flex items-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span className="hidden sm:inline">Voltar</span>
-                </button>
-                <div>
-                  <h1 className="text-xl font-bold text-white">
-                    Minhas Contas
-                  </h1>
-                  <p className="text-sm text-slate-400">
-                    Gerencie suas contas bancárias e cartões
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {/* Toggle: Ativas / Arquivadas */}
-                <div className="flex items-center bg-slate-800 rounded-lg p-1">
-                  <button
-                    onClick={() => setShowArchived(false)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                      !showArchived
-                        ? "bg-emerald-600 text-white"
-                        : "text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    <Wallet className="w-3 h-3" />
-                    Ativas
-                  </button>
-                  <button
-                    onClick={() => setShowArchived(true)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                      showArchived
-                        ? "bg-amber-600 text-white"
-                        : "text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    <Archive className="w-3 h-3" />
-                    Lixeira
-                    {accounts.filter((a) => !a.isActive).length > 0 && (
-                      <span className="ml-1 px-1.5 py-0.5 text-xs bg-slate-700 rounded-full">
-                        {accounts.filter((a) => !a.isActive).length}
-                      </span>
-                    )}
-                  </button>
-                </div>
-
-                <button
-                  onClick={fetchAccounts}
-                  className="p-2 text-slate-400 hover:text-emerald-400 transition-colors"
-                  title="Atualizar"
-                >
-                  <RefreshCw className="w-5 h-5" />
-                </button>
-
-                {/* ✅ BOTÃO QUE ABRE O MODAL (substitui o Link) */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => setShowNewAccountModal(true)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span className="hidden sm:block">Nova Conta</span>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-slate-800 border-slate-700 text-white shadow-xl">
-                    <p>Cadastrar nova conta bancária</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
+        {/* Header Componentizado com Breadcrumbs Automáticos */}
+        <PageHeader 
+          title="Contas Bancárias" 
+          description="Gerencie suas contas bancárias e cartões"
+          breadcrumbs={[ { label: "Contas Bancárias" } ]}
+        >
+          {/* Toggle: Ativas / Arquivadas */}
+          <div className="flex items-center gap-2 mr-2">
+            <div className="flex bg-slate-800 rounded-lg p-1">
+              <button
+                onClick={() => setShowArchived(false)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${!showArchived ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-white"}`}
+              >
+                <Wallet className="w-3 h-3" />
+                Ativas
+                {accounts.filter((a) => a.isActive).length > 0 && (
+                  <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${!showArchived ? "bg-emerald-500 text-white" : "bg-slate-700 text-slate-300"}`}>
+                    {accounts.filter((a) => a.isActive).length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setShowArchived(true)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${showArchived ? "bg-amber-600 text-white" : "text-slate-400 hover:text-white"}`}
+              >
+                <Archive className="w-3 h-3" />
+                Lixeira
+                {accounts.filter((a) => !a.isActive).length > 0 && (
+                  <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${showArchived ? "bg-amber-500 text-white" : "bg-slate-700 text-slate-300"}`}>
+                    {accounts.filter((a) => !a.isActive).length}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
-        </header>
+
+          <button
+            onClick={fetchAccounts}
+            className="p-2 text-slate-400 hover:text-emerald-400 transition-colors"
+            title="Atualizar"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setShowNewAccountModal(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:block">Nova Conta</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-slate-800 border-slate-700 text-white shadow-xl">
+              <p>Cadastrar nova conta bancária</p>
+            </TooltipContent>
+          </Tooltip>
+        </PageHeader>
 
         {/* Conteúdo Principal */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -401,7 +384,7 @@ export default function AccountsPage() {
             </div>
           )}
 
-          {/* Grid de Cards */}
+          {/* Grid de Cards HUD 2.0 */}
           {!loading && !error && accounts.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {accounts
@@ -409,292 +392,263 @@ export default function AccountsPage() {
                   showArchived ? !account.isActive : account.isActive,
                 )
                 .map((account) => (
-                  <Tooltip key={account.id}>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={`relative p-6 bg-slate-900/50 backdrop-blur-md rounded-2xl border transition-all hover:-translate-y-1 hover:shadow-xl ${
-                          account.isActive
-                            ? "border-slate-800 hover:border-emerald-500/50"
-                            : "border-amber-500/30 bg-amber-500/5"
-                        }`}
-                        style={{
-                          borderLeft: `4px solid ${account.color}`,
-                        }}
-                      >
-                        {/* Badge de Arquivado */}
-                        {!account.isActive && (
-                          <div className="absolute top-3 right-3 px-2 py-1 text-xs font-medium rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                            Arquivada
-                          </div>
-                        )}
+                  <div key={account.id} className="relative group">
+                    <div
+                      className={`relative p-6 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border transition-all duration-500 overflow-hidden ${
+                        account.isActive
+                          ? "border-white/5 hover:border-emerald-500/30"
+                          : "border-amber-500/20 bg-amber-500/5"
+                      }`}
+                      style={{
+                        boxShadow: account.isActive ? `0 0 40px rgba(0,0,0,0.2)` : `0 0 20px rgba(245,158,11,0.1)`
+                      }}
+                    >
+                      {/* Laser Scan Animation */}
+                      <motion.div 
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                        style={{ skewX: -20 }}
+                      />
 
-                        {/* Header do Card */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div
-                            className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
-                            style={{
-                              backgroundColor: `${account.color}20`,
-                              color: account.color,
-                            }}
-                          >
-                            {getIcon(account.icon)}
-                          </div>
-
-                          {/* Ações */}
-                          <div className="flex items-center gap-1">
-                            {account.isActive ? (
-                              <>
-                                {/* Toggle Visibilidade do Saldo */}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleBalanceVisibility(account.id);
-                                  }}
-                                  className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </button>
-
-                                {/* Editar */}
-                                <Link
-                                  href={`/painel/contas/${account.id}/editar`}
-                                  className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                </Link>
-
-                                {/* Arquivar */}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleArchive(account.id);
-                                  }}
-                                  className="p-2 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                {/* Restaurar */}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleRestore(account.id);
-                                  }}
-                                  className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
-                                >
-                                  <RefreshCw className="w-4 h-4" />
-                                </button>
-                                {/* Excluir Permanentemente */}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeletePermanent(account.id);
-                                  }}
-                                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                  title="Excluir Permanentemente"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
-                          </div>
+                      {/* Badge de Arquivado */}
+                      {!account.isActive && (
+                        <div className="absolute top-4 right-4 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)] z-10">
+                          Offline
                         </div>
+                      )}
 
-                        {/* Conteúdo */}
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-1">
-                            {account.name}
-                          </h3>
-                          <p className="text-sm text-slate-400 mb-3 capitalize">
-                            {account.type === "CREDIT_CARD"
-                              ? "💳 Cartão de Crédito"
-                              : account.type?.toLowerCase().replace("_", " ")}
-                          </p>
-
-                          {/* Saldo */}
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-xs text-slate-500 mb-1">
-                                Saldo
-                              </p>
-                              <p
-                                className={`text-xl font-bold ${
-                                  account.balance >= 0
-                                    ? "text-emerald-400"
-                                    : "text-red-400"
-                                }`}
-                              >
-                                {hiddenBalances[account.id]
-                                  ? "••••••"
-                                  : formatCurrency(account.balance)}
-                              </p>
+                      {/* Header do Card */}
+                      <div className="flex items-start justify-between mb-6 relative z-10">
+                        <div
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(0,0,0,0.3)] border border-white/5 relative group-hover:scale-110 transition-transform duration-500"
+                          style={{
+                            backgroundColor: `${account.color}15`,
+                            color: account.color,
+                            boxShadow: `0 0 20px ${account.color}20`
+                          }}
+                        >
+                          {getIcon(account.icon)}
+                          {/* Pulsing Dot */}
+                          {account.isActive && (
+                            <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-slate-950" style={{ backgroundColor: account.color }}>
+                              <div className="absolute inset-0 rounded-full animate-ping opacity-75" style={{ backgroundColor: account.color }} />
                             </div>
-
-                            {/* Link Ver Transações */}
-                            <Link
-                              href={`/painel/transacoes?conta=${account.id}`}
-                              className="flex items-center gap-1 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-                            >
-                              Ver transações
-                              <ArrowUpRight className="w-4 h-4" />
-                            </Link>
-                          </div>
-
-                          {/* ✅ INFORMAÇÕES DE CARTÃO DE CRÉDITO */}
-                          {account.type === "CREDIT_CARD" &&
-                            cartaoData[account.id] && (
-                              <div className="mt-4 p-3 bg-slate-800/50 rounded-lg space-y-2">
-                                {/* Limite */}
-                                {cartaoData[account.id].limite?.total > 0 && (
-                                  <div>
-                                    <div className="flex justify-between text-xs mb-1">
-                                      <span className="text-slate-400">
-                                        Limite usado
-                                      </span>
-                                      <span
-                                        className={
-                                          cartaoData[account.id].limite
-                                            .percentualUsado > 80
-                                            ? "text-red-400"
-                                            : "text-slate-300"
-                                        }
-                                      >
-                                        {
-                                          cartaoData[account.id].limite
-                                            .percentualUsado
-                                        }
-                                        %
-                                      </span>
-                                    </div>
-                                    <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-                                      <div
-                                        className={`h-full rounded-full transition-all ${
-                                          cartaoData[account.id].limite
-                                            .percentualUsado > 90
-                                            ? "bg-red-500"
-                                            : cartaoData[account.id].limite
-                                                  .percentualUsado > 70
-                                              ? "bg-amber-500"
-                                              : "bg-emerald-500"
-                                        }`}
-                                        style={{
-                                          width: `${Math.min(100, cartaoData[account.id].limite.percentualUsado)}%`,
-                                        }}
-                                      />
-                                    </div>
-                                    <div className="flex justify-between text-xs text-slate-500 mt-1">
-                                      <span>
-                                        Disponível:{" "}
-                                        {hiddenBalances[account.id]
-                                          ? "•••"
-                                          : formatCurrency(
-                                              cartaoData[account.id].limite
-                                                .disponivel,
-                                            )}
-                                      </span>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Fatura Atual */}
-                                <div className="flex items-center justify-between text-xs">
-                                  <div className="flex items-center gap-1.5 text-slate-400">
-                                    <CreditCard className="w-3 h-3" />
-                                    <span>Fatura atual</span>
-                                  </div>
-                                  <span className="text-white font-medium">
-                                    {hiddenBalances[account.id]
-                                      ? "•••"
-                                      : formatCurrency(
-                                          cartaoData[account.id].faturaAtual
-                                            ?.total || 0,
-                                        )}
-                                  </span>
-                                </div>
-
-                                {/* Vencimento */}
-                                {cartaoData[account.id].faturaAtual
-                                  ?.vencimento && (
-                                  <div className="flex items-center justify-between text-xs">
-                                    <div className="flex items-center gap-1.5 text-slate-400">
-                                      <Calendar className="w-3 h-3" />
-                                      <span>Vencimento</span>
-                                    </div>
-                                    <span className="text-slate-300">
-                                      {new Date(
-                                        cartaoData[account.id].faturaAtual
-                                          .vencimento,
-                                      ).toLocaleDateString("pt-BR")}
-                                    </span>
-                                  </div>
-                                )}
-
-                                {/* Alerta de limite */}
-                                {cartaoData[account.id].limite
-                                  ?.percentualUsado > 80 && (
-                                  <div className="flex items-center gap-1 text-xs text-red-400 pt-1">
-                                    <AlertTriangle className="w-3 h-3" />
-                                    {cartaoData[account.id].limite
-                                      .percentualUsado > 95
-                                      ? "Limite quase esgotado!"
-                                      : "Limite acima de 80%"}
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                          )}
                         </div>
 
-                        {/* Footer */}
-                        <div className="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
-                          <span>
-                            Criada em{" "}
-                            {new Date(account.createdAt).toLocaleDateString(
-                              "pt-BR",
-                            )}
-                          </span>
+                        {/* Ações Neural */}
+                        <div className="flex items-center gap-1 bg-slate-950/50 backdrop-blur-md p-1 rounded-xl border border-white/5 opacity-40 group-hover:opacity-100 transition-opacity">
+                          {account.isActive ? (
+                            <>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); toggleBalanceVisibility(account.id); }}
+                                className="p-2 text-slate-500 hover:text-blue-400 transition-colors"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleEdit(account); }}
+                                className="p-2 text-slate-500 hover:text-emerald-400 transition-colors"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleArchive(account.id); }}
+                                className="p-2 text-slate-500 hover:text-amber-500 transition-colors"
+                              >
+                                <Archive className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleRestore(account.id); }}
+                                className="p-2 text-slate-500 hover:text-emerald-400 transition-colors"
+                              >
+                                <RefreshCw className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeletePermanent(account.id); }}
+                                className="p-2 text-slate-500 hover:text-red-500 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
-                    </TooltipTrigger>
-                  </Tooltip>
+
+                      {/* Identificação */}
+                      <div className="mb-6 relative z-10">
+                        <h3 className="text-lg font-black text-white uppercase tracking-tight group-hover:text-emerald-400 transition-colors mb-1">
+                          {account.name}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                           <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
+                             {account.type === "CREDIT_CARD" ? "Neural Card" : "Vault Node"}
+                           </span>
+                           <span className="text-[9px] font-medium text-slate-600 italic">
+                             ID: {account.id.slice(0, 8)}
+                           </span>
+                        </div>
+                      </div>
+
+                      {/* Saldo Principal */}
+                      <div className="mb-6 p-4 bg-white/[0.02] rounded-2xl border border-white/5 relative z-10 group/balance overflow-hidden transition-all hover:bg-white/[0.04]">
+                         <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: account.color }} />
+                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Poder de Fluxo</p>
+                         <div className="flex items-baseline justify-between">
+                            <p
+                              className={`text-2xl font-black tabular-nums tracking-tighter ${
+                                account.balance >= 0 ? "text-emerald-400" : "text-red-500"
+                              }`}
+                              style={{ textShadow: `0 0 20px ${account.balance >= 0 ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}` }}
+                            >
+                              {hiddenBalances[account.id] ? "••••••" : formatCurrency(account.balance)}
+                            </p>
+                            <Link
+                              href={`/painel/transacoes?conta=${account.id}`}
+                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 transition-all"
+                            >
+                              <ArrowUpRight className="w-4 h-4" />
+                            </Link>
+                         </div>
+                      </div>
+
+                      {/* Info Cartão Premium */}
+                      {account.type === "CREDIT_CARD" && cartaoData[account.id] && (
+                        <div className="space-y-4 pt-2 relative z-10">
+                          {/* Limite Neural */}
+                          {cartaoData[account.id].limite?.total > 0 && (
+                            <div>
+                               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+                                  <span className="text-slate-500">Capacidade de Crédito</span>
+                                  <span className={cartaoData[account.id].limite.percentualUsado > 80 ? "text-red-400" : "text-slate-300"}>
+                                    {cartaoData[account.id].limite.percentualUsado}%
+                                  </span>
+                               </div>
+                               <div className="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden p-[1.5px] border border-white/5">
+                                 <motion.div
+                                   initial={{ width: 0 }}
+                                   animate={{ width: `${Math.min(100, cartaoData[account.id].limite.percentualUsado)}%` }}
+                                   transition={{ duration: 1.5, ease: "easeOut" }}
+                                   className={`h-full rounded-full shadow-[0_0_10px_currentColor]`}
+                                   style={{ 
+                                     background: cartaoData[account.id].limite.percentualUsado > 90 ? '#EF4444' : (cartaoData[account.id].limite.percentualUsado > 70 ? '#F59E0B' : account.color),
+                                     color: cartaoData[account.id].limite.percentualUsado > 90 ? '#EF4444' : (cartaoData[account.id].limite.percentualUsado > 70 ? '#F59E0B' : account.color)
+                                   }}
+                                 />
+                               </div>
+                               <div className="flex justify-between text-[9px] font-black text-slate-600 mt-2 uppercase tracking-widest">
+                                  <span>Usado: {formatCurrency(cartaoData[account.id].limite.total - cartaoData[account.id].limite.disponivel)}</span>
+                                  <span>Livre: {formatCurrency(cartaoData[account.id].limite.disponivel)}</span>
+                               </div>
+                            </div>
+                          )}
+
+                          {/* Fatura HUD */}
+                          <div className="grid grid-cols-2 gap-3">
+                             <div className="p-3 bg-white/[0.02] rounded-xl border border-white/5">
+                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Fatura Atual</p>
+                                <p className="text-sm font-black text-white">
+                                  {hiddenBalances[account.id] ? "•••" : formatCurrency(cartaoData[account.id].faturaAtual?.total || 0)}
+                                </p>
+                             </div>
+                             <div className="p-3 bg-white/[0.02] rounded-xl border border-white/5">
+                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Reset Ciclo</p>
+                                <p className="text-sm font-black text-blue-400">
+                                  {cartaoData[account.id].faturaAtual?.vencimento ? new Date(cartaoData[account.id].faturaAtual.vencimento).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit' }) : "N/D"}
+                                </p>
+                             </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Footer Metadata */}
+                      <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-slate-600 relative z-10">
+                        <div className="flex items-center gap-1.5 font-medium italic lowercase text-[10px]">
+                           <Activity className="w-3 h-3" />
+                           last_sync: {new Date(account.updatedAt || account.createdAt).toLocaleDateString("pt-BR")}
+                        </div>
+                        {account.isActive ? (
+                           <span className="text-emerald-500/50 group-hover:text-emerald-400 transition-colors">Neural_Active</span>
+                        ) : (
+                           <span className="text-amber-500/50">Node_Offline</span>
+                        )}
+                      </div>
+
+                      {/* Glow Line Bottom Individual */}
+                      <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                           <motion.div 
+                             className="h-full"
+                             style={{ backgroundColor: account.color }}
+                             initial={{ x: "-100%" }}
+                             whileHover={{ x: "0%" }}
+                             transition={{ duration: 0.6 }}
+                           />
+                      </div>
+                    </div>
+                  </div>
                 ))}
             </div>
           )}
 
-          {/* Resumo no Rodapé */}
+          {/* Resumo Neural no Rodapé */}
           {!loading && !error && accounts.length > 0 && !showArchived && (
-            <div className="mt-8 p-4 bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-sm text-slate-400">
-                  <span className="text-white font-semibold">
-                    {accounts.filter((a) => a.isActive).length}
-                  </span>{" "}
-                  contas ativas
+            <motion.div 
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="mt-12 p-8 bg-slate-950/60 backdrop-blur-2xl rounded-[2.5rem] border border-white/5 relative overflow-hidden group"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent pointer-events-none" />
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-8 relative z-10">
+                <div className="flex items-center gap-6">
+                   <div className="w-16 h-16 rounded-[1.5rem] bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+                      <Shield className="w-8 h-8 text-blue-400" />
+                   </div>
+                   <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">Capacidade Operacional</p>
+                      <h4 className="text-sm font-black text-white uppercase tracking-widest">
+                        <span className="text-blue-400">{accounts.filter((a) => a.isActive).length}</span> NÓDULOS_SYNC ATIVOS
+                      </h4>
+                   </div>
                 </div>
-                <div className="text-lg font-bold text-white">
-                  Total:{" "}
-                  <span
-                    className={
-                      accounts.reduce((sum, a) => sum + a.balance, 0) >= 0
-                        ? "text-emerald-400"
-                        : "text-red-400"
-                    }
-                  >
-                    {formatCurrency(
-                      accounts.reduce((sum, a) => sum + a.balance, 0),
-                    )}
-                  </span>
+                
+                <div className="text-right">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Poder de Fluxo Total</p>
+                  <div className="flex items-baseline gap-3">
+                    <span 
+                      className={`text-3xl font-black tabular-nums tracking-tighter ${
+                        accounts.reduce((sum, a) => sum + (a.isActive ? a.balance : 0), 0) >= 0 ? "text-emerald-400" : "text-red-500"
+                      }`}
+                      style={{ textShadow: `0 0 30px ${accounts.reduce((sum, a) => sum + (a.isActive ? a.balance : 0), 0) >= 0 ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}` }}
+                    >
+                      {formatCurrency(accounts.reduce((sum, a) => sum + (a.isActive ? a.balance : 0), 0))}
+                    </span>
+                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest px-2 py-1 bg-white/5 rounded-lg">BRL_CORE</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
         </main>
 
-        {/* ✅ MODAL FUTURISTA PARA NOVA CONTA */}
         <NewAccountModal
           isOpen={showNewAccountModal}
-          onClose={() => setShowNewAccountModal(false)}
+          onClose={() => {
+            setShowNewAccountModal(false);
+            fetchAccounts();
+          }}
+        />
+
+        {/* ✅ MODAL FUTURISTA PARA EDITAR CONTA */}
+        <EditAccountModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedAccount(null);
+            fetchAccounts();
+          }}
+          account={selectedAccount}
         />
       </div>
     </TooltipProvider>

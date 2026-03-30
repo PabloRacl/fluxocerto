@@ -1,153 +1,38 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/biblioteca/autenticacao";
-import { prisma } from "@/biblioteca/prisma";
+import { NextRequest } from "next/server";
+import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
+import { tratarErro } from "@/biblioteca/tratar-erro";
+import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
+import { schemaCriarConta } from "@/validacoes/conta.schema";
+import { contaService } from "@/servicos/ContaService";
 
 // ============================================
-// GET: Listar todas as contas do usuário logado
+// GET - Listar todas as contas do usuário
 // ============================================
 export async function GET(request: NextRequest) {
   try {
-    // Verificar autenticação
-    const session = await getServerSession(authOptions);
+    const user = await obterUsuarioAutenticado();
+    const includeArchived =
+      request.nextUrl.searchParams.get("includeArchived") === "true";
 
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    // Buscar usuário pelo email
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 },
-      );
-    }
-
-    // ✅ CORREÇÃO: Parsear parâmetro includeArchived para lixeira
-    const searchParams = request.nextUrl.searchParams;
-    const includeArchived = searchParams.get("includeArchived") === "true";
-
-    // Construir filtro WHERE
-    const whereClause: any = {
-      userId: user.id,
-    };
-
-    // Se NÃO for incluir arquivadas, filtra apenas ativas
-    if (!includeArchived) {
-      whereClause.isActive = true;
-    }
-
-    // Buscar contas do usuário
-    const accounts = await prisma.account.findMany({
-      where: whereClause,
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-        type: true,
-        balance: true,
-        color: true,
-        icon: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: {
-            transactions: true,
-          },
-        },
-      },
-    });
-
-    // Converter balance de centavos para formato legível
-    const formattedAccounts = accounts.map((acc) => ({
-      ...acc,
-      balanceFormatted: acc.balance / 100,
-    }));
-
-    return NextResponse.json(formattedAccounts, { status: 200 });
+    const contas = await contaService.listar(user.id, includeArchived);
+    return sucesso(contas);
   } catch (error) {
-    console.error("Erro ao buscar contas:", error);
-    return NextResponse.json(
-      { error: "Erro interno ao buscar contas" },
-      { status: 500 },
-    );
+    return tratarErro(error);
   }
 }
 
 // ============================================
-// POST: Criar nova conta
+// POST - Criar nova conta
 // ============================================
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticação
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    // Buscar usuário
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 },
-      );
-    }
-
-    // Parse do body da requisição
+    const user = await obterUsuarioAutenticado();
     const body = await request.json();
-    const { name, type, balance, color, icon } = body;
+    const dados = schemaCriarConta.parse(body);
 
-    // Validações básicas
-    if (!name || !type) {
-      return NextResponse.json(
-        { error: "Nome e tipo da conta são obrigatórios" },
-        { status: 400 },
-      );
-    }
-
-    // Converter balance para centavos (se enviado como decimal)
-    const balanceInCents = balance ? Math.round(parseFloat(balance) * 100) : 0;
-
-    // Criar conta no banco
-    const newAccount = await prisma.account.create({
-      data: {
-        userId: user.id,
-        name,
-        type,
-        balance: balanceInCents,
-        color: color || "#047857", // Default: Verde Floresta
-        icon: icon || null,
-        isActive: true,
-      },
-    });
-
-    return NextResponse.json(
-      {
-        message: "Conta criada com sucesso",
-        account: {
-          ...newAccount,
-          balanceFormatted: newAccount.balance / 100,
-        },
-      },
-      { status: 201 },
-    );
+    const account = await contaService.criar(user.id, dados);
+    return criadoComSucesso({ message: "Conta criada com sucesso", account });
   } catch (error) {
-    console.error("Erro ao criar conta:", error);
-    return NextResponse.json(
-      { error: "Erro interno ao criar conta" },
-      { status: 500 },
-    );
+    return tratarErro(error);
   }
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
 import { ShoppingCart, Plus, Trash2, Check, X, RefreshCw } from "lucide-react";
 
 interface ListaItem {
@@ -348,11 +349,15 @@ export default function ListasComprasPage() {
         )}
 
         {showNewModal && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-slate-900 rounded-xl p-6 w-full max-w-md border border-slate-800">
-              <h3 className="text-lg font-bold text-white mb-4">
-                Nova Lista de Compras
-              </h3>
+          <AnimatedModal
+            isOpen={showNewModal}
+            onClose={() => setShowNewModal(false)}
+            title="Nova Lista de Compras"
+            icon={<ShoppingCart className="w-6 h-6 text-white" />}
+            theme="emerald"
+            maxWidth="md"
+          >
+              <div className="p-6">
               <input
                 value={newNome}
                 onChange={(e) => setNewNome(e.target.value)}
@@ -373,8 +378,8 @@ export default function ListasComprasPage() {
                   Criar
                 </button>
               </div>
-            </div>
-          </div>
+              </div>
+          </AnimatedModal>
         )}
       </main>
     </div>

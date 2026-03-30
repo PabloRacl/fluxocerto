@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { api } from "@/biblioteca/http-client";
 
 interface Badge {
   id: string;
@@ -51,13 +52,8 @@ export function GamificacaoPanel({ userId }: { userId: string }) {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch("/api/painel/gamificacao", {
-        credentials: "include",
-      });
-      if (res.ok) {
-        const d = await res.json();
-        setData(d);
-      }
+      const d = await api.get<GamificacaoData>("/api/painel/gamificacao");
+      setData(d);
     } catch (err) {
       console.error("Erro ao carregar gamificação:", err);
     } finally {

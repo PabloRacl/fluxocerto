@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
+import { MascotAssistant } from "@/app/painel/_componentes/MascotAssistant";
 import {
   ShoppingBag,
   Store,
@@ -23,7 +25,12 @@ import {
   ShoppingCart,
   Eye,
   List,
+  FileText,
+  Maximize2,
+  Zap,
 } from "lucide-react";
+import { ScannerQRCode } from "@/app/painel/_componentes/ScannerQRCode";
+import { motion, AnimatePresence } from "framer-motion";
 
 function formatCurrency(v: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -66,13 +73,14 @@ export default function ComprasPage() {
     <div className="min-h-screen bg-slate-950">
       <PageHeader
         title="Compras"
-        subtitle="Mercado, feira e lista de compras"
-        onRefresh={() => {}}
-      />
+        description="Mercado, feira e lista de compras"
+        breadcrumbs={[ { label: "Compras" } ]}
+      >
+      </PageHeader>
 
       {/* Abas */}
       <div className="max-w-5xl mx-auto px-4 pt-4">
-        <div className="flex gap-1 bg-slate-900/50 rounded-xl p-1 border border-slate-800">
+        <div className="flex gap-1 bg-slate-950/60 backdrop-blur-2xl rounded-2xl p-1.5 border border-white/5">
           {[
             { id: "compras" as Tab, label: "Compras", icon: ShoppingBag },
             { id: "listas" as Tab, label: "Listas", icon: List },
@@ -81,7 +89,7 @@ export default function ComprasPage() {
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${tab === id ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-white hover:bg-slate-800"}`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-300 ${tab === id ? "bg-emerald-600/90 text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/5"}`}
             >
               <Icon className="w-4 h-4" /> {label}
             </button>
@@ -94,6 +102,9 @@ export default function ComprasPage() {
         {tab === "listas" && <ListasTab />}
         {tab === "estoque" && <EstoqueTab />}
       </div>
+
+      {/* Assistente Neural — Mestre Sábio */}
+      <MascotAssistant />
     </div>
   );
 }
@@ -107,6 +118,7 @@ function ComprasTab() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showDeleted, setShowDeleted] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const fetchCompras = useCallback(async () => {
     setLoading(true);
@@ -154,28 +166,40 @@ function ComprasTab() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex bg-slate-800 rounded-lg p-1">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex bg-slate-900/40 backdrop-blur-md rounded-xl p-1 border border-white/5">
           <button
             onClick={() => setShowDeleted(false)}
-            className={`px-3 py-1 text-xs rounded-md ${!showDeleted ? "bg-emerald-600 text-white" : "text-slate-400"}`}
+            className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${!showDeleted ? "bg-emerald-600 text-white shadow-lg shadow-emerald-500/20" : "text-slate-400 hover:text-white"}`}
           >
-            Ativas
+            ATIVAS
           </button>
           <button
             onClick={() => setShowDeleted(true)}
-            className={`px-3 py-1 text-xs rounded-md ${showDeleted ? "bg-red-600 text-white" : "text-slate-400"}`}
+            className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${showDeleted ? "bg-red-600 text-white shadow-lg shadow-red-500/20" : "text-slate-400 hover:text-white"}`}
           >
-            Lixeira
+            LIXEIRA
           </button>
         </div>
         {!showDeleted && (
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium"
-          >
-            <Plus className="w-4 h-4" /> Nova Compra
-          </button>
+          <div className="flex gap-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/10 transition-all border border-white/10"
+            >
+              <Plus className="w-5 h-5" /> Nova Compra
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-slate-900/60 backdrop-blur-md hover:bg-slate-800/80 text-blue-400 rounded-xl text-sm font-bold shadow-lg transition-all border border-blue-500/30"
+            >
+              <Maximize2 className="w-4 h-4" /> Scan Neural
+            </motion.button>
+          </div>
         )}
       </div>
 
@@ -304,6 +328,37 @@ function ComprasTab() {
           }}
         />
       )}
+
+      {showImportModal && (
+        <ImportarNFModal
+          onClose={() => setShowImportModal(false)}
+          onSuccess={async (compraData) => {
+            setShowImportModal(false);
+            // Criar a compra diretamente
+            try {
+              const res = await fetch("/api/compras", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                  ...compraData,
+                  paymentMethod: "PIX", // padrão
+                  gerarTransacao: true,
+                }),
+              });
+              if (res.ok) {
+                alert("Compra importada com sucesso!");
+                fetchCompras();
+              } else {
+                const error = await res.json();
+                alert(`Erro: ${error.error}`);
+              }
+            } catch (error) {
+              alert("Erro ao criar compra");
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -320,6 +375,7 @@ function ListasTab() {
   const [addingToList, setAddingToList] = useState<string | null>(null);
   const [newItemNome, setNewItemNome] = useState("");
   const [newItemQtd, setNewItemQtd] = useState("1");
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const fetchListas = useCallback(async () => {
     setLoading(true);
@@ -414,13 +470,22 @@ function ListasTab() {
 
   return (
     <div>
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={() => setShowNewModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium"
-        >
-          <Plus className="w-4 h-4" /> Nova Lista
-        </button>
+      <div className="flex justify-between items-center mb-4">
+        <div></div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowNewModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium"
+          >
+            <Plus className="w-4 h-4" /> Nova Lista
+          </button>
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium"
+          >
+            <FileText className="w-4 h-4" /> Importar NF
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -599,6 +664,48 @@ function ListasTab() {
             </div>
           </div>
         </div>
+      )}
+
+      {showImportModal && (
+        <ImportarNFModal
+          onClose={() => setShowImportModal(false)}
+          onSuccess={async (compraData) => {
+            setShowImportModal(false);
+            // Para listas, talvez criar uma nova lista com os itens
+            try {
+              // Criar lista com nome baseado na NF
+              const listaNome = `Lista NF - ${compraData.storeName || 'Importada'}`;
+              const listaRes = await fetch("/api/listas", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ nome: listaNome }),
+              });
+
+              if (listaRes.ok) {
+                const listaData = await listaRes.json();
+                // Adicionar itens à lista
+                for (const item of compraData.items || []) {
+                  await fetch(`/api/listas/${listaData.id}/itens`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({
+                      nome: item.name,
+                      quantidade: item.quantity,
+                    }),
+                  });
+                }
+                alert("Lista criada com sucesso!");
+                fetchListas();
+              } else {
+                alert("Erro ao criar lista");
+              }
+            } catch (error) {
+              alert("Erro ao importar NF para lista");
+            }
+          }}
+        />
       )}
     </div>
   );
@@ -1080,6 +1187,11 @@ function NovaCompraModal({
     installmentValue: "",
   });
 
+  const [showOtherCategory, setShowOtherCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
+  const [showOtherAccount, setShowOtherAccount] = useState(false);
+  const [customAccount, setCustomAccount] = useState("");
+
   useEffect(() => {
     fetch("/api/contas", { credentials: "include" })
       .then((r) => r.json())
@@ -1088,6 +1200,26 @@ function NovaCompraModal({
       .then((r) => r.json())
       .then((d) => setCategories(Array.isArray(d) ? d : []));
   }, []);
+
+  const handleCategoryChange = (val: string) => {
+    if (val === "OTHER") {
+      setShowOtherCategory(true);
+      setForm({ ...form, categoryId: "" });
+    } else {
+      setShowOtherCategory(false);
+      setForm({ ...form, categoryId: val });
+    }
+  };
+
+  const handleAccountChange = (val: string) => {
+    if (val === "OTHER") {
+      setShowOtherAccount(true);
+      setForm({ ...form, accountId: "" });
+    } else {
+      setShowOtherAccount(false);
+      setForm({ ...form, accountId: val });
+    }
+  };
 
   const addItem = () =>
     setItems([...items, { name: "", quantity: "1", unitPrice: "", unit: "" }]);
@@ -1108,6 +1240,47 @@ function NovaCompraModal({
     e.preventDefault();
     setLoading(true);
     try {
+      let finalCategoryId = form.categoryId;
+      let finalAccountId = form.accountId;
+
+      // Criar Categoria on-the-fly
+      if (showOtherCategory && customCategory.trim()) {
+        const catRes = await fetch("/api/categorias", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: customCategory,
+            type: "EXPENSE",
+            color: "#10B981", // Default Emerald
+          }),
+        });
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          finalCategoryId = catData.id;
+        }
+      }
+
+      // Criar Conta on-the-fly
+      if (showOtherAccount && customAccount.trim()) {
+         const accRes = await fetch("/api/contas", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+               name: customAccount,
+               balance: 0,
+               type: "CHECKING",
+               color: "#3B82F6", // Default Blue
+               icon: "🏦"
+            })
+         });
+         if (accRes.ok) {
+            const accData = await accRes.json();
+            finalAccountId = accData.id;
+         }
+      }
+
       const totalAmount =
         items.length > 0
           ? Math.round(totalItens * 100)
@@ -1118,6 +1291,8 @@ function NovaCompraModal({
         credentials: "include",
         body: JSON.stringify({
           ...form,
+          categoryId: finalCategoryId || null,
+          accountId: finalAccountId || null,
           totalAmount,
           installmentTotal: form.isInstallment
             ? parseInt(form.installmentTotal)
@@ -1151,15 +1326,16 @@ function NovaCompraModal({
     "w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-slate-700">
-          <h2 className="text-xl font-bold text-white">Nova Compra</h2>
-          <p className="text-sm text-slate-400">
-            Registre uma compra com ou sem itens detalhados
-          </p>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+    <AnimatedModal
+      isOpen={true}
+      onClose={onClose}
+      title="Nova Compra"
+      subtitle="Registre uma compra com ou sem itens detalhados"
+      icon={<ShoppingBag className="w-6 h-6 text-white" />}
+      theme="emerald"
+      maxWidth="2xl"
+    >
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-slate-400 mb-1">
@@ -1245,10 +1421,8 @@ function NovaCompraModal({
               <label className="block text-sm text-slate-400 mb-1">Conta</label>
               <select
                 className={inputClass}
-                value={form.accountId}
-                onChange={(e) =>
-                  setForm({ ...form, accountId: e.target.value })
-                }
+                value={showOtherAccount ? "OTHER" : form.accountId}
+                onChange={(e) => handleAccountChange(e.target.value)}
               >
                 <option value="">Selecione</option>
                 {accounts.map((a) => (
@@ -1256,7 +1430,17 @@ function NovaCompraModal({
                     {a.name}
                   </option>
                 ))}
+                <option value="OTHER">➕ Outra...</option>
               </select>
+              {showOtherAccount && (
+                <input
+                  className={`${inputClass} mt-2 border-blue-500/50`}
+                  placeholder="Nome da Nova Conta"
+                  autoFocus
+                  value={customAccount}
+                  onChange={(e) => setCustomAccount(e.target.value)}
+                />
+              )}
             </div>
             <div>
               <label className="block text-sm text-slate-400 mb-1">
@@ -1264,10 +1448,8 @@ function NovaCompraModal({
               </label>
               <select
                 className={inputClass}
-                value={form.categoryId}
-                onChange={(e) =>
-                  setForm({ ...form, categoryId: e.target.value })
-                }
+                value={showOtherCategory ? "OTHER" : form.categoryId}
+                onChange={(e) => handleCategoryChange(e.target.value)}
               >
                 <option value="">Selecione</option>
                 {categories.map((c) => (
@@ -1275,7 +1457,17 @@ function NovaCompraModal({
                     {c.name}
                   </option>
                 ))}
+                <option value="OTHER">➕ Outra...</option>
               </select>
+              {showOtherCategory && (
+                <input
+                  className={`${inputClass} mt-2 border-emerald-500/50`}
+                  placeholder="Nome da Nova Categoria"
+                  autoFocus
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                />
+              )}
             </div>
           </div>
           <div className="border border-slate-700 rounded-xl p-4">
@@ -1360,7 +1552,457 @@ function NovaCompraModal({
             </button>
           </div>
         </form>
+    </AnimatedModal>
+  );
+}
+
+// ============================================
+// MODAL IMPORTAR NF
+// ============================================
+function ImportarNFModal({
+  onClose,
+  onSuccess,
+}: {
+  onClose: () => void;
+  onSuccess: (data: any) => void;
+}) {
+  const [modo, setModo] = useState<"pdf" | "numero" | "qr">("pdf");
+  const [numeroNF, setNumeroNF] = useState("");
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [parsedData, setParsedData] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/categorias?type=EXPENSE", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => setCategories(Array.isArray(d) ? d : []));
+
+    fetch("/api/contas", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => setAccounts(Array.isArray(d) ? d : d.accounts || []));
+  }, []);
+
+  const updateParsedItem = (index: number, field: "categoryId" | "accountId", value: string) => {
+    setParsedData((prev: any) => {
+      if (!prev) return prev;
+      const nextItems = [...prev.items];
+      nextItems[index] = {
+        ...nextItems[index],
+        [field]: value || null,
+      };
+      // automatic label fill for category name
+      if (field === "categoryId") {
+        const category = categories.find((c) => c.id === value);
+        nextItems[index].category = category ? category.name : nextItems[index].category;
+      }
+      return { ...prev, items: nextItems };
+    });
+  };
+
+  const handleExtract = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      let dadosExtraidos: any = {};
+
+      if (modo === "numero") {
+        const chaveTrim = String(numeroNF).replace(/\D/g, "");
+        if (chaveTrim.length !== 44) {
+          setError("Chave NFC-e inválida. Informe os 44 números da chave.");
+          setParsedData(null);
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch(`/api/compras/importar-nfce?chave=${encodeURIComponent(chaveTrim)}`, {
+          credentials: "include",
+        });
+
+        if (res.ok) {
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const json = await res.json();
+            if (json.error) {
+              throw new Error(json.error + (json.details ? `: ${json.details}` : ""));
+            }
+            dadosExtraidos = json;
+          } else {
+            throw new Error("Resposta inesperada do servidor (não JSON)");
+          }
+        } else {
+          const body = await res.json().catch(() => ({}));
+          const errorMessage =
+            (body.error ? body.error : "Erro ao buscar NFC-e por chave") +
+            (body.details ? `: ${body.details}` : "");
+          throw new Error(`HTTP ${res.status}: ${errorMessage}`);
+        }
+      } else if (modo === "pdf" && pdfFile) {
+        const formData = new FormData();
+        formData.append("pdf", pdfFile);
+
+        const res = await fetch("/api/compras/importar-pdf", {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+
+        if (res.ok) {
+          dadosExtraidos = await res.json();
+        } else {
+          setError("Erro ao processar PDF");
+          setLoading(false);
+          return;
+        }
+      }
+
+      if (!dadosExtraidos || !dadosExtraidos.items) {
+        setError("Não foi possível extrair itens da NF. Verifique o formato do PDF.");
+        setParsedData(null);
+      } else {
+        setParsedData({
+          ...dadosExtraidos,
+          items: dadosExtraidos.items.map((item: any) => ({
+            ...item,
+            categoryId: item.mappedCategoryId || "",
+            accountId: item.mappedAccountId || "",
+            category: item.category || "",
+          })),
+        });
+      }
+    } catch (err: unknown) {
+      const detail = err instanceof Error ? err.message : String(err);
+      setError(`Erro ao importar NF-e: ${detail}`);
+      setParsedData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveMapping = async () => {
+    if (!parsedData?.items?.length) return;
+    const mappings = parsedData.items
+      .filter((item: any) => item.categoryId || item.accountId)
+      .map((item: any) => ({
+        name: item.name,
+        categoryId: item.categoryId || null,
+        accountId: item.accountId || null,
+      }));
+
+    if (mappings.length === 0) {
+      alert("Nenhum mapeamento fornecido para salvar.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/compras/mappings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ mappings }),
+      });
+      if (res.ok) {
+        alert("Mapeamento salvo com sucesso.");
+      } else {
+        const err = await res.json();
+        alert(err.error || "Erro ao salvar mapeamento.");
+      }
+    } catch {
+      alert("Erro ao salvar mapeamento.");
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!parsedData) {
+      setError("Faça a extração antes de confirmar a importação.");
+      return;
+    }
+
+    const categoryIdCandidates = parsedData.items
+      .map((item: any) => item.categoryId)
+      .filter(Boolean);
+    const accountIdCandidates = parsedData.items
+      .map((item: any) => item.accountId)
+      .filter(Boolean);
+
+    const mostCommon = (arr: string[]) =>
+      arr
+        .reduce((acc: any, value) => {
+          acc[value] = (acc[value] || 0) + 1;
+          return acc;
+        }, {})
+        ;
+
+    const findTop = (arr: string[]) => {
+      const freq = mostCommon(arr);
+      const sorted = (Object.entries(freq) as [string, number][]).sort((a, b) => b[1] - a[1]);
+      return sorted.length > 0 ? sorted[0][0] : null;
+    };
+
+    const inferredCategoryId = findTop(categoryIdCandidates);
+    const inferredAccountId = findTop(accountIdCandidates);
+
+    const itemMappings = parsedData.items.map((item: any) => ({
+      name: item.name,
+      categoryId: item.categoryId || null,
+      accountId: item.accountId || null,
+    }));
+
+    const payload = {
+      description: parsedData.description,
+      storeName: parsedData.storeName,
+      purchaseDate: parsedData.purchaseDate,
+      totalAmount: parsedData.totalAmount,
+      items: parsedData.items.map((item: any) => {
+        const categoryName =
+          item.categoryId && categories.find((c) => c.id === item.categoryId)
+            ? categories.find((c) => c.id === item.categoryId)?.name
+            : item.category || null;
+        return {
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.unit,
+          unitPrice: item.unitPrice,
+          barcode: item.barcode,
+          category: categoryName || null,
+          categoryId: item.categoryId || null,
+          accountId: item.accountId || null,
+        };
+      }),
+      categoryId: inferredCategoryId || null,
+      accountId: inferredAccountId || null,
+      itemMappings,
+    };
+
+    onSuccess(payload);
+  };
+
+  return (
+    <AnimatedModal
+      isOpen={true}
+      onClose={onClose}
+      title="Importar Nota Fiscal"
+      subtitle="Selecione o método de importação"
+      icon={<FileText className="w-6 h-6 text-white" />}
+      theme="blue"
+      maxWidth="md"
+    >
+      <div className="p-6 space-y-4">
+        <div className="flex gap-2 bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-[1.25rem] p-1.5 shadow-inner">
+          <button
+            onClick={() => setModo("pdf")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 ${modo === "pdf" ? "bg-blue-600/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/5"}`}
+          >
+            <FileText className="w-4 h-4" /> UPLOAD PDF
+          </button>
+          <button
+            onClick={() => setModo("numero")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 ${modo === "numero" ? "bg-blue-600/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/5"}`}
+          >
+            <Zap className="w-4 h-4" /> CHAVE NF
+          </button>
+          <button
+            onClick={() => {
+              setModo("qr");
+              setIsScannerOpen(true);
+            }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 ${modo === "qr" ? "bg-emerald-600/90 text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/5"}`}
+          >
+            <Maximize2 className="w-4 h-4" /> SCANNER
+          </button>
+        </div>
+
+        {modo === "pdf" && (
+          <div>
+            <label className="block text-sm text-slate-400 mb-2">
+              Selecione o arquivo PDF da Nota Fiscal
+            </label>
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-500"
+            />
+          </div>
+        )}
+
+        {modo === "numero" && (
+          <div className="space-y-2">
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">
+              Chave de Acesso (44 dígitos)
+            </label>
+            <div className="relative group">
+              <input
+                type="text"
+                value={numeroNF}
+                onChange={(e) => setNumeroNF(e.target.value)}
+                placeholder="0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000"
+                className="w-full px-5 py-4 bg-slate-900/50 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono text-sm tracking-widest group-hover:bg-slate-900/80"
+              />
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </div>
+        )}
+
+        {modo === "qr" && (
+          <div className="flex flex-col items-center justify-center p-8 bg-slate-900/30 rounded-[2rem] border border-white/5 border-dashed gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+              <Maximize2 className="w-8 h-8 text-emerald-400" />
+            </div>
+            <div className="text-center">
+              <h4 className="text-white font-bold">Scanner Biométrico</h4>
+              <p className="text-sm text-slate-400">Capture o QR Code da nota fiscal com sua câmera</p>
+            </div>
+            <button
+              onClick={() => setIsScannerOpen(true)}
+              className="mt-2 px-6 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-500/5"
+            >
+              ATIVAR CÂMERA
+            </button>
+          </div>
+        )}
+
+        <ScannerQRCode
+          isOpen={isScannerOpen}
+          onClose={() => setIsScannerOpen(false)}
+          onScanSuccess={(text) => {
+            const match = text.match(/[0-9]{44}/);
+            if (match) {
+              setNumeroNF(match[0]);
+              setModo("numero");
+              setIsScannerOpen(false);
+              // Auto extrair após scan
+              setTimeout(() => {
+                const btn = document.getElementById("btn-extrair-nf");
+                if (btn) btn.click();
+              }, 100);
+            } else {
+              setError("QR Code não contém uma chave de acesso válida.");
+              setIsScannerOpen(false);
+            }
+          }}
+          onScanError={(err) => console.error("Scan error:", err)}
+        />
+
+        {error && (
+          <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 p-2 rounded">
+            {error}
+          </p>
+        )}
+
+        {parsedData && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative border border-white/5 rounded-[2rem] p-5 bg-slate-900/40 backdrop-blur-3xl overflow-hidden group shadow-2xl"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <Package className="w-4 h-4 text-emerald-400" />
+                </div>
+                <h4 className="text-sm font-bold text-white uppercase tracking-widest bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+                  Inteligência de Dados ({parsedData.items.length})
+                </h4>
+              </div>
+              <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
+                AI ACTIVE
+              </div>
+            </div>
+
+            {parsedData.items.length === 0 ? (
+              <p className="text-xs text-slate-500 italic py-8 text-center">Nenhum dado neural detectado.</p>
+            ) : (
+              <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar pb-2">
+                {parsedData.items.map((item: any, idx: number) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white/5 hover:bg-white/10 p-4 rounded-2xl border border-white/5 transition-all group/item"
+                  >
+                    <div>
+                      <div className="text-slate-200 text-sm font-bold truncate group-hover/item:text-white transition-colors">
+                        {item.name}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-medium text-slate-500">
+                          {item.quantity} {item.unit || 'un'}
+                        </span>
+                        <div className="w-1 h-1 rounded-full bg-slate-700" />
+                        <span className="text-[10px] font-bold text-emerald-400/80">
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unitPrice)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <select
+                        value={item.categoryId || ""}
+                        onChange={(e) => updateParsedItem(idx, "categoryId", e.target.value)}
+                        className="flex-1 bg-slate-950/50 border border-white/5 rounded-xl px-3 py-2 text-xs text-slate-300 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all group-hover/item:border-blue-500/30"
+                      >
+                        <option value="">Categoria</option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={item.accountId || ""}
+                        onChange={(e) => updateParsedItem(idx, "accountId", e.target.value)}
+                        className="flex-1 bg-slate-950/50 border border-white/5 rounded-xl px-3 py-2 text-xs text-slate-300 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all group-hover/item:border-blue-500/30"
+                      >
+                        <option value="">Conta</option>
+                        {accounts.map((acc) => (
+                          <option key={acc.id} value={acc.id}>{acc.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={saveMapping}
+                className="flex items-center gap-2 px-4 py-2 text-[10px] font-bold text-blue-400 hover:text-blue-300 bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 rounded-xl transition-all uppercase tracking-widest"
+              >
+                <RefreshCw className="w-3 h-3" /> Fixar Mapeamentos
+              </button>
+              <div className="flex items-baseline gap-2">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">Total Neural:</span>
+                <span className="text-lg font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((parsedData.totalAmount || 0) / 100)}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+          <button
+            onClick={onClose}
+            className="px-6 py-2.5 text-sm text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg"
+          >
+            Cancelar
+          </button>
+          <button
+            id="btn-extrair-nf"
+            onClick={parsedData ? handleConfirm : handleExtract}
+            disabled={loading || (modo === "pdf" && !pdfFile) || (modo === "numero" && !numeroNF) || (modo === "qr" && !numeroNF)}
+            className="px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-2xl disabled:opacity-50 shadow-lg shadow-blue-500/20 transition-all border border-white/10"
+          >
+            {loading ? (parsedData ? "PROCESSANDO..." : "EXTRAINDO...") : parsedData ? "CONFIRMAR IMPORTAÇÃO" : "EXTRAIR ITENS"}
+          </button>
+        </div>
       </div>
-    </div>
+    </AnimatedModal>
   );
 }

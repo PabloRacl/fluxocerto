@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import {
   TrendingUp,
@@ -14,6 +15,7 @@ import {
   Coins,
   CreditCard,
   AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 
 interface ContaInfo {
@@ -100,21 +102,24 @@ export default function PatrimonioPage() {
   }, [status, router, fetchData]);
 
   if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500" />
-      </div>
-    );
+    return <NeuralLoading message="Mapeando Estrutura Patrimonial..." variant="full" />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <PageHeader
-        title="Patrimônio"
-        subtitle="Ativos - Passivos = Patrimônio Líquido"
-        onRefresh={fetchData}
-        showDashboardLink
-      />
+        title="Gestão de Patrimônio"
+        description="Acompanhe a evolução de seus ativos e passivos em tempo real"
+        breadcrumbs={[{ label: "Patrimônio" }]}
+      >
+        <button
+          onClick={fetchData}
+          className="p-2 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:block"
+          title="Atualizar"
+        >
+          <RefreshCw className="w-5 h-5" />
+        </button>
+      </PageHeader>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {loading && (

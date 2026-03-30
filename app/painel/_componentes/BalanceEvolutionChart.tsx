@@ -20,6 +20,8 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
 } from "lucide-react";
+import { api } from "@/biblioteca/http-client";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
 
 // ============================================
 // TIPOS
@@ -75,15 +77,9 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
         sixMonthsAgo.setDate(1); // Primeiro dia do mês
 
         // Buscar transações do período
-        const response = await fetch(
+        const result = await api.get<{ data: ChartData[] }>(
           `/api/painel/balance-evolution?startDate=${sixMonthsAgo.toISOString()}&endDate=${today.toISOString()}`,
         );
-
-        if (!response.ok) {
-          throw new Error("Erro ao buscar dados do saldo");
-        }
-
-        const result = await response.json();
         setData(result.data || []);
         setError(null);
       } catch (err) {
@@ -174,24 +170,7 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
   // RENDER: LOADING
   // ============================================
   if (loading) {
-    return (
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-1">
-              Evolução do Saldo
-            </h3>
-            <p className="text-sm text-slate-400">Últimos 6 meses</p>
-          </div>
-        </div>
-        <div className="h-[300px] flex items-center justify-center">
-          <div className="animate-pulse flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-slate-400">Carregando gráfico...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <NeuralLoading message="Processando Evolução Temporal..." variant="card" />;
   }
 
   // ============================================
@@ -199,16 +178,16 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
   // ============================================
   if (error && data.length === 0) {
     return (
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-6">
+      <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-4">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-1">
+            <h3 className="text-base font-semibold text-white mb-1">
               Evolução do Saldo
             </h3>
             <p className="text-sm text-slate-400">Últimos 6 meses</p>
           </div>
         </div>
-        <div className="h-[300px] flex items-center justify-center">
+        <div className="h-[180px] flex items-center justify-center">
           <div className="text-center">
             <p className="text-red-400 mb-2">{error}</p>
             <button
@@ -230,8 +209,11 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
     if (active && payload && payload.length) {
       const data = payload[0].payload as ChartData;
       return (
-        <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 shadow-xl min-w-[200px]">
-          <p className="text-sm font-medium text-white mb-3 border-b border-slate-700 pb-2">
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-2xl p-4 shadow-2xl min-w-[200px] relative overflow-hidden">
+          {/* Brilho interno do Tooltip */}
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
+          
+          <p className="text-sm font-black text-white mb-3 border-b border-white/5 pb-2 uppercase tracking-widest relative z-10">
             {formatMonth(data.month)}
           </p>
           <div className="space-y-2">
@@ -276,21 +258,25 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
   // RENDER: PRINCIPAL
   // ============================================
   return (
-    <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-6">
+    <div className="relative bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-slate-800/50 p-6 shadow-2xl h-full flex flex-col group overflow-hidden">
+      {/* Background glow orb */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none transition-opacity duration-700 opacity-50 group-hover:opacity-100" />
+      
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 relative z-10">
         <div>
-          <h3 className="text-lg font-semibold text-white mb-1">
+          <h3 className="text-lg font-black text-white mb-1 uppercase tracking-tighter flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
             Evolução do Saldo
           </h3>
-          <p className="text-sm text-slate-400">Últimos 6 meses</p>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500">Fluxo temporal &bull; Últimos 6 meses</p>
         </div>
 
         {/* Toggle Tipo de Gráfico */}
-        <div className="flex items-center gap-2 bg-slate-800 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-md rounded-xl p-1.5 border border-white/5">
           <button
             onClick={() => setChartType("area")}
-            className={`px-3 py-1 text-xs rounded-md transition-colors ${
+            className={`px-4 py-1.5 text-[10px] font-black tracking-widest uppercase rounded-lg transition-all ${
               chartType === "area"
                 ? "bg-emerald-600 text-white"
                 : "text-slate-400 hover:text-white"
@@ -311,20 +297,19 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
         </div>
       </div>
 
-      {/* Variação Total e Totais do Período */}
-      <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+  {/* Variação Total e Totais do Período */}
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
         {/* Variação */}
-        <div className="flex items-center gap-2 p-3 bg-slate-800/50 rounded-lg">
-          {isPositive ? (
-            <TrendingUp className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-          ) : (
-            <TrendingDown className="w-5 h-5 text-red-400 flex-shrink-0" />
-          )}
+        <div className="flex items-center gap-3 p-4 bg-slate-900/40 rounded-2xl border border-white/5 transition-all hover:bg-slate-900/60 group/card">
+          <div className={`p-2 rounded-xl ${isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'} border border-transparent group-hover/card:border-white/10 transition-colors`}>
+            {isPositive ? <TrendingUp className="w-5 h-5 flex-shrink-0" /> : <TrendingDown className="w-5 h-5 flex-shrink-0" />}
+          </div>
           <div className="min-w-0">
             <span
-              className={`text-sm font-bold block truncate ${
+              className={`text-sm font-black tracking-tight block truncate ${
                 isPositive ? "text-emerald-400" : "text-red-400"
               }`}
+              style={isPositive ? { textShadow: "0 0 10px rgba(52,211,153,0.3)" } : { textShadow: "0 0 10px rgba(248,113,113,0.3)" }}
             >
               {isPositive ? "+" : ""}
               {formatCurrency(variation.value)}
@@ -338,22 +323,26 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
         </div>
 
         {/* Total Receitas */}
-        <div className="flex items-center gap-2 p-3 bg-slate-800/50 rounded-lg">
-          <ArrowUpCircle className="w-5 h-5 text-blue-400 flex-shrink-0" />
+        <div className="flex items-center gap-3 p-4 bg-slate-900/40 rounded-2xl border border-white/5 transition-all hover:bg-slate-900/60 group/card">
+          <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-transparent group-hover/card:border-white/10 transition-colors">
+            <ArrowUpCircle className="w-5 h-5 flex-shrink-0" />
+          </div>
           <div className="min-w-0">
-            <span className="text-xs text-slate-400 block">Receitas</span>
-            <span className="text-sm font-bold text-blue-400 block truncate">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Receitas</span>
+            <span className="text-sm font-black text-blue-400 block truncate" style={{ textShadow: "0 0 10px rgba(96,165,250,0.3)" }}>
               {formatCurrency(totals.totalIncome)}
             </span>
           </div>
         </div>
 
         {/* Total Despesas */}
-        <div className="flex items-center gap-2 p-3 bg-slate-800/50 rounded-lg">
-          <ArrowDownCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+        <div className="flex items-center gap-3 p-4 bg-slate-900/40 rounded-2xl border border-white/5 transition-all hover:bg-slate-900/60 group/card">
+          <div className="p-2 rounded-xl bg-red-500/10 text-red-400 border border-transparent group-hover/card:border-white/10 transition-colors">
+            <ArrowDownCircle className="w-5 h-5 flex-shrink-0" />
+          </div>
           <div className="min-w-0">
-            <span className="text-xs text-slate-400 block">Despesas</span>
-            <span className="text-sm font-bold text-red-400 block truncate">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Despesas</span>
+            <span className="text-sm font-black text-red-400 block truncate" style={{ textShadow: "0 0 10px rgba(248,113,113,0.3)" }}>
               {formatCurrency(totals.totalExpense)}
             </span>
           </div>
@@ -361,7 +350,7 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
       </div>
 
       {/* Gráfico */}
-      <div className="h-[300px] w-full">
+      <div className="h-[200px] w-full relative z-10 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === "area" ? (
             <AreaChart
@@ -369,6 +358,11 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
               <defs>
+                {/* SVG Filters for Neon Glow Effect */}
+                <filter id="neonGlowLine" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
                 {/* Gradiente para Saldo */}
                 <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
@@ -413,7 +407,11 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
                 axisLine={false}
                 dx={-10}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip 
+                content={<CustomTooltip />} 
+                cursor={{ stroke: '#ffffff', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.5 }}
+                isAnimationActive={false}
+              />
               <Legend
                 verticalAlign="top"
                 height={36}
@@ -427,13 +425,14 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
                 dataKey="balance"
                 name="Saldo"
                 stroke="#10B981"
-                strokeWidth={2}
+                strokeWidth={3}
                 fillOpacity={1}
                 fill="url(#colorBalance)"
+                style={{ filter: "url(#neonGlowLine)" }}
                 activeDot={{
                   r: 6,
                   stroke: "#10B981",
-                  strokeWidth: 2,
+                  strokeWidth: 3,
                   fill: "#fff",
                 }}
               />
@@ -446,8 +445,9 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
                 strokeDasharray="5 5"
                 fillOpacity={1}
                 fill="url(#colorIncome)"
+                style={{ filter: "url(#neonGlowLine)" }}
                 activeDot={{
-                  r: 6,
+                  r: 5,
                   stroke: "#3B82F6",
                   strokeWidth: 2,
                   fill: "#fff",
@@ -462,8 +462,9 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
                 strokeDasharray="5 5"
                 fillOpacity={1}
                 fill="url(#colorExpense)"
+                style={{ filter: "url(#neonGlowLine)" }}
                 activeDot={{
-                  r: 6,
+                  r: 5,
                   stroke: "#EF4444",
                   strokeWidth: 2,
                   fill: "#fff",
@@ -475,6 +476,12 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
               data={data}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
+              <defs>
+                <filter id="neonGlowLine" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="#1e293b"
@@ -503,7 +510,11 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
                 axisLine={false}
                 dx={-10}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip 
+                content={<CustomTooltip />} 
+                cursor={{ stroke: '#ffffff', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.5 }}
+                isAnimationActive={false}
+              />
               <Legend
                 verticalAlign="top"
                 height={36}
@@ -517,12 +528,13 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
                 dataKey="balance"
                 name="Saldo"
                 stroke="#10B981"
-                strokeWidth={2}
-                dot={{ fill: "#10B981", r: 3 }}
+                strokeWidth={3}
+                style={{ filter: "url(#neonGlowLine)" }}
+                dot={{ fill: "#10B981", r: 4 }}
                 activeDot={{
-                  r: 6,
+                  r: 7,
                   stroke: "#10B981",
-                  strokeWidth: 2,
+                  strokeWidth: 3,
                   fill: "#fff",
                 }}
               />
@@ -533,6 +545,7 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
                 stroke="#3B82F6"
                 strokeWidth={2}
                 strokeDasharray="5 5"
+                style={{ filter: "url(#neonGlowLine)" }}
                 dot={{ fill: "#3B82F6", r: 3 }}
                 activeDot={{
                   r: 6,
@@ -548,6 +561,7 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
                 stroke="#EF4444"
                 strokeWidth={2}
                 strokeDasharray="5 5"
+                style={{ filter: "url(#neonGlowLine)" }}
                 dot={{ fill: "#EF4444", r: 3 }}
                 activeDot={{
                   r: 6,

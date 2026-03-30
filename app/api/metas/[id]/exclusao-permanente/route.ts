@@ -25,7 +25,7 @@ export async function DELETE(
     }
 
     const meta = await prisma.meta.findFirst({
-      where: { id: params.id, usuarioId: user.id, excluida: true },
+      where: { id: params.id, usuarioId: user.id, isArchived: true },
     });
 
     if (!meta) {

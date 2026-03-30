@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +24,7 @@ import {
   Zap,
   AlertCircle,
   Archive,
+  RefreshCw,
 } from "lucide-react";
 
 interface AssinaturaType {
@@ -46,6 +49,7 @@ interface AssinaturaType {
 
 interface ResumoType {
   totalAtivas: number;
+  totalExcluidas: number;
   valorMensal: number;
   valorAnual: number;
   proximasRenovacoes: number;
@@ -153,42 +157,60 @@ export default function AssinaturasPage() {
   };
 
   if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500" />
-      </div>
-    );
+    return <NeuralLoading message="Validando Ciclos de Assinaturas..." variant="full" />;
   }
 
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <PageHeader
-          title="Assinaturas"
-          subtitle="Gerencie suas assinaturas recorrentes"
-          onRefresh={fetchAssinaturas}
-          onNew={() => setShowNewModal(true)}
-          newButtonText="Nova Assinatura"
-          showFilters
-          filters={
+          title="Assinaturas de Serviços"
+          description="Controle seus gastos recorrentes e evite cobranças indesejadas"
+          breadcrumbs={[{ label: "Assinaturas" }]}
+        >
+          <div className="flex items-center gap-2 mr-2">
             <div className="flex bg-slate-800 rounded-lg p-1">
               <button
                 onClick={() => setShowDeleted(false)}
-                className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-md transition-all ${!showDeleted ? "bg-emerald-600 text-white" : "text-slate-400"}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${!showDeleted ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-white"}`}
               >
-                <CreditCard className="w-3 h-3" />
+                <Zap className="w-3 h-3" />
                 Ativas
+                {resumo && resumo.totalAtivas > 0 && (
+                  <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${!showDeleted ? "bg-emerald-500 text-white" : "bg-slate-700 text-slate-300"}`}>
+                    {resumo.totalAtivas}
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => setShowDeleted(true)}
-                className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-md transition-all ${showDeleted ? "bg-red-600 text-white" : "text-slate-400"}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${showDeleted ? "bg-amber-600 text-white" : "text-slate-400 hover:text-white"}`}
               >
                 <Archive className="w-3 h-3" />
                 Lixeira
+                {resumo && resumo.totalExcluidas > 0 && (
+                  <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${showDeleted ? "bg-amber-500 text-white" : "bg-slate-700 text-slate-300"}`}>
+                    {resumo.totalExcluidas}
+                  </span>
+                )}
               </button>
             </div>
-          }
-        />
+          </div>
+          <button
+            onClick={fetchAssinaturas}
+            className="p-2 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:block"
+            title="Atualizar"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setShowNewModal(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:block">Nova Assinatura</span>
+          </button>
+        </PageHeader>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           {/* Resumo */}
@@ -257,14 +279,7 @@ export default function AssinaturasPage() {
           )}
 
           {loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="animate-pulse bg-slate-800 rounded-xl h-48"
-                />
-              ))}
-            </div>
+            <NeuralLoading message="Sincronizando Assinaturas..." variant="card" />
           )}
 
           {!loading && !error && assinaturas.length === 0 && (
@@ -457,6 +472,31 @@ function NovaAssinaturaModal({
     contaId: "",
   });
 
+  const [showOtherCategory, setShowOtherCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
+  const [showOtherAccount, setShowOtherAccount] = useState(false);
+  const [customAccount, setCustomAccount] = useState("");
+
+  const handleCategoryChange = (val: string) => {
+    if (val === "OTHER") {
+      setShowOtherCategory(true);
+      setForm({ ...form, categoriaId: "" });
+    } else {
+      setShowOtherCategory(false);
+      setForm({ ...form, categoriaId: val });
+    }
+  };
+
+  const handleAccountChange = (val: string) => {
+    if (val === "OTHER") {
+      setShowOtherAccount(true);
+      setForm({ ...form, contaId: "" });
+    } else {
+      setShowOtherAccount(false);
+      setForm({ ...form, contaId: val });
+    }
+  };
+
   useEffect(() => {
     Promise.all([
       fetch("/api/categorias", { credentials: "include" }).then((r) =>
@@ -475,6 +515,47 @@ function NovaAssinaturaModal({
     e.preventDefault();
     setLoading(true);
     try {
+      let finalCategoryId = form.categoriaId;
+      let finalAccountId = form.contaId;
+
+      // Criar Categoria on-the-fly
+      if (showOtherCategory && customCategory.trim()) {
+        const catRes = await fetch("/api/categorias", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: customCategory,
+            type: "EXPENSE",
+            color: "#10B981", 
+          }),
+        });
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          finalCategoryId = catData.id;
+        }
+      }
+
+      // Criar Conta on-the-fly
+      if (showOtherAccount && customAccount.trim()) {
+         const accRes = await fetch("/api/contas", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+               name: customAccount,
+               balance: 0,
+               type: "CHECKING",
+               color: "#3B82F6",
+               icon: "💳"
+            })
+         });
+         if (accRes.ok) {
+            const accData = await accRes.json();
+            finalAccountId = accData.id;
+         }
+      }
+
       const res = await fetch("/api/assinaturas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -482,8 +563,8 @@ function NovaAssinaturaModal({
         body: JSON.stringify({
           ...form,
           valor: parseFloat(form.valor),
-          categoriaId: form.categoriaId || null,
-          contaId: form.contaId || null,
+          categoriaId: finalCategoryId || null,
+          contaId: finalAccountId || null,
         }),
       });
       if (res.ok) onSuccess();
@@ -511,16 +592,16 @@ function NovaAssinaturaModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-700 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-slate-700">
-          <h2 className="text-xl font-bold text-white">Nova Assinatura</h2>
-          <p className="text-sm text-slate-400">
-            Cadastre uma assinatura recorrente
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+    <AnimatedModal
+      isOpen={true}
+      onClose={onClose}
+      title="Nova Assinatura"
+      subtitle="Cadastre uma assinatura recorrente"
+      icon={<CreditCard className="w-6 h-6 text-white" />}
+      theme="emerald"
+      maxWidth="lg"
+    >
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
           <div>
             <label className="block text-sm text-slate-400 mb-1">Nome *</label>
             <input
@@ -580,7 +661,7 @@ function NovaAssinaturaModal({
             </label>
             <input
               type="date"
-              className={inputClass}
+              className={`${inputClass} appearance-none cursor-pointer hover:border-emerald-500/50 transition-colors`}
               required
               value={form.proximaRenovacao}
               onChange={(e) =>
@@ -595,10 +676,8 @@ function NovaAssinaturaModal({
               </label>
               <select
                 className={inputClass}
-                value={form.categoriaId}
-                onChange={(e) =>
-                  setForm({ ...form, categoriaId: e.target.value })
-                }
+                value={showOtherCategory ? "OTHER" : form.categoriaId}
+                onChange={(e) => handleCategoryChange(e.target.value)}
               >
                 <option value="">Selecione...</option>
                 {categorias
@@ -608,14 +687,24 @@ function NovaAssinaturaModal({
                       {c.name}
                     </option>
                   ))}
+                <option value="OTHER">➕ Outra...</option>
               </select>
+              {showOtherCategory && (
+                <input
+                  className={`${inputClass} mt-2 border-emerald-500/50`}
+                  placeholder="Nova Categoria"
+                  autoFocus
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                />
+              )}
             </div>
             <div>
               <label className="block text-sm text-slate-400 mb-1">Conta</label>
               <select
                 className={inputClass}
-                value={form.contaId}
-                onChange={(e) => setForm({ ...form, contaId: e.target.value })}
+                value={showOtherAccount ? "OTHER" : form.contaId}
+                onChange={(e) => handleAccountChange(e.target.value)}
               >
                 <option value="">Selecione...</option>
                 {contas.map((c: any) => (
@@ -623,7 +712,17 @@ function NovaAssinaturaModal({
                     {c.icon} {c.name}
                   </option>
                 ))}
+                <option value="OTHER">➕ Outra...</option>
               </select>
+              {showOtherAccount && (
+                <input
+                  className={`${inputClass} mt-2 border-blue-500/50`}
+                  placeholder="Nova Conta"
+                  autoFocus
+                  value={customAccount}
+                  onChange={(e) => setCustomAccount(e.target.value)}
+                />
+              )}
             </div>
           </div>
 
@@ -644,7 +743,6 @@ function NovaAssinaturaModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AnimatedModal>
   );
 }

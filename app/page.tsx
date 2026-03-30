@@ -2,6 +2,89 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { Wallet, TrendingDown, ShoppingCart, CalendarClock, Leaf } from "lucide-react";
+import { BrandLogo } from "@/app/_componentes/BrandLogo";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Componente para Folhas Flutuantes (Orgânico)
+const LeavesBackground = () => {
+  // Aumentamos para 20 folhas para melhor preenchimento
+  const leaves = Array.from({ length: 20 });
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {leaves.map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ 
+            x: `${Math.random() * 100}%`, // Espalha por toda a largura
+            y: -100, 
+            rotate: Math.random() * 360,
+            opacity: 0 
+          }}
+          animate={{ 
+            y: "110vh", 
+            rotate: 720,
+            x: `${(Math.random() * 100)}%`, // Drift horizontal lento
+            opacity: [0, 0.5, 0.5, 0] 
+          }}
+          transition={{ 
+            duration: Math.random() * 30 + 30, // Queda bem lenta (30-60 seg)
+            repeat: Infinity, 
+            delay: Math.random() * 30,
+            ease: "linear"
+          }}
+          className="absolute text-emerald-500/20"
+        >
+          {/* Tamanhos variados para profundidade */}
+          <Leaf size={Math.random() * 30 + 10} />
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
+// Componente para Pingo d'água e Ondulação (Ripple)
+const WaterRippleEffect = () => {
+  return (
+    <div className="absolute bottom-1/4 left-1/4 pointer-events-none">
+      {/* Pingo caindo */}
+      <motion.div
+        initial={{ y: -400, opacity: 0, scale: 0.5 }}
+        animate={{ 
+          y: 0, 
+          opacity: [0, 1, 0],
+          scale: [0.5, 1, 0.8]
+        }}
+        transition={{ 
+          duration: 3, 
+          repeat: Infinity, 
+          times: [0, 0.2, 0.3],
+          repeatDelay: 2 
+        }}
+        className="w-2 h-4 bg-emerald-400/60 rounded-full blur-[1px]"
+      />
+      
+      {/* Ondas na poça */}
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ 
+            scale: [0, 4], 
+            opacity: [0, 0.5, 0] 
+          }}
+          transition={{ 
+            duration: 3, 
+            repeat: Infinity, 
+            delay: 0.8 + (i * 0.4),
+            repeatDelay: 2
+          }}
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-10 border-2 border-emerald-400/30 rounded-[100%] blur-sm"
+        />
+      ))}
+    </div>
+  );
+};
 
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -25,35 +108,33 @@ export default function Home() {
       ref={containerRef}
       className="h-screen bg-slate-950 overflow-hidden relative flex flex-col"
     >
-      {/* Background */}
+      {/* Background Camadas */}
       <div className="absolute inset-0 overflow-hidden">
+        {/* Orb Neural */}
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-50 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-40 rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle, rgba(16, 185, 129, 0.35), transparent 70%)",
+              "radial-gradient(circle, rgba(16, 185, 129, 0.3), transparent 70%)",
             transform: `translate(calc(-50% + ${mousePosition.x}px), calc(-50% + ${mousePosition.y}px))`,
             transition: "transform 0.5s ease-out",
           }}
         />
-        <div
-          className="absolute top-0 left-1/4 w-[400px] h-[400px] opacity-20 rounded-full blur-3xl animate-pulse"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(20, 184, 166, 0.4), transparent 70%)",
-          }}
-        />
+        
+        {/* Elementos Orgânicos */}
+        <LeavesBackground />
+        <WaterRippleEffect />
       </div>
 
-      {/* Dollar signs */}
+      {/* Sifrões Pulsantes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className="absolute top-16 left-[5%]"
           style={{ animation: "fadeInOut 4s ease-in-out infinite" }}
         >
           <div className="relative">
-            <div className="absolute inset-0 bg-amber-400 rounded-full blur-xl opacity-50 animate-pulse" />
-            <span className="relative text-5xl font-bold text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.7)]">
+            <div className="absolute inset-0 bg-amber-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <span className="relative text-5xl font-bold text-amber-400/80 drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]">
               $
             </span>
           </div>
@@ -66,22 +147,8 @@ export default function Home() {
           }}
         >
           <div className="relative">
-            <div className="absolute inset-0 bg-yellow-400 rounded-full blur-lg opacity-40 animate-pulse" />
-            <span className="relative text-4xl font-bold text-yellow-400 drop-shadow-[0_0_12px_rgba(250,204,21,0.7)]">
-              $
-            </span>
-          </div>
-        </div>
-        <div
-          className="absolute bottom-32 right-[5%]"
-          style={{
-            animation: "fadeInOut 5.5s ease-in-out infinite",
-            animationDelay: "0.5s",
-          }}
-        >
-          <div className="relative">
-            <div className="absolute inset-0 bg-amber-400 rounded-full blur-xl opacity-40 animate-pulse" />
-            <span className="relative text-5xl font-bold text-amber-400 drop-shadow-[0_0_16px_rgba(251,191,36,0.7)]">
+            <div className="absolute inset-0 bg-yellow-400 rounded-full blur-lg opacity-30 animate-pulse" />
+            <span className="relative text-4xl font-bold text-yellow-400/80 drop-shadow-[0_0_12px_rgba(250,204,21,0.5)]">
               $
             </span>
           </div>
@@ -89,30 +156,8 @@ export default function Home() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 w-full px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-3 group cursor-pointer">
-          <div className="relative">
-            <div className="absolute inset-0 bg-emerald-500 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity animate-pulse" />
-            <div className="relative w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-          </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-            FluxoCerto
-          </span>
-        </div>
+      <header className="relative z-10 w-full px-6 py-4 flex justify-between items-center bg-slate-950/20 backdrop-blur-sm">
+        <BrandLogo size="md" />
         <div className="flex gap-3">
           <Link
             href="/entrar"
@@ -132,27 +177,9 @@ export default function Home() {
       {/* Main */}
       <main className="relative z-10 flex-1 flex items-center justify-center px-6 -mt-8">
         <div className="max-w-4xl w-full text-center space-y-6">
-          {/* Logo */}
+          {/* Logo Central Pulsante */}
           <div className="inline-flex items-center justify-center relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl blur-2xl opacity-30 animate-pulse" />
-            <div
-              className="relative w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl shadow-2xl flex items-center justify-center animate-bounce"
-              style={{ animationDuration: "2.5s" }}
-            >
-              <svg
-                className="w-11 h-11 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
+             <BrandLogo size="xl" showText={false} />
           </div>
 
           {/* Title */}
@@ -212,69 +239,43 @@ export default function Home() {
           </div>
 
           {/* Features */}
-          <div className="grid grid-cols-3 gap-4 pt-6 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-6 max-w-4xl mx-auto w-full">
             <div className="group p-4 bg-gradient-to-br from-emerald-950/40 to-slate-900/40 backdrop-blur-md rounded-2xl border border-emerald-500/20 hover:border-emerald-500/50 transition-all hover:-translate-y-1">
               <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center mb-3 mx-auto">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 7h6m0 10v-3.667M9 17V14m-6 3h.01M12 21a9 9 0 100-18 9 9 0 000 18z"
-                  />
-                </svg>
+                 <Wallet className="w-5 h-5 text-white" />
               </div>
               <h3 className="font-bold text-sm text-white mb-1">
                 Controle Total
               </h3>
               <p className="text-xs text-slate-400">
-                Receitas, despesas e cartões
+                Receitas e despesas
               </p>
             </div>
+            
+            <div className="group p-4 bg-gradient-to-br from-red-950/40 to-slate-900/40 backdrop-blur-md rounded-2xl border border-red-500/20 hover:border-red-500/50 transition-all hover:-translate-y-1">
+               <div className="w-10 h-10 bg-gradient-to-br from-red-400 to-rose-600 rounded-xl flex items-center justify-center mb-3 mx-auto">
+                 <TrendingDown className="w-5 h-5 text-white" />
+               </div>
+               <h3 className="font-bold text-sm text-white mb-1">Dívidas</h3>
+               <p className="text-xs text-slate-400">Planos e amortizações</p>
+            </div>
+
             <div className="group p-4 bg-gradient-to-br from-teal-950/40 to-slate-900/40 backdrop-blur-md rounded-2xl border border-teal-500/20 hover:border-teal-500/50 transition-all hover:-translate-y-1">
               <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-xl flex items-center justify-center mb-3 mx-auto">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                  />
-                </svg>
+                <ShoppingCart className="w-5 h-5 text-white" />
               </div>
               <h3 className="font-bold text-sm text-white mb-1">Compras</h3>
               <p className="text-xs text-slate-400">
-                Itens e histórico de preços
+                Histórico e carrinho
               </p>
             </div>
-            <div className="group p-4 bg-gradient-to-br from-green-950/40 to-slate-900/40 backdrop-blur-md rounded-2xl border border-green-500/20 hover:border-green-500/50 transition-all hover:-translate-y-1">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-teal-600 rounded-xl flex items-center justify-center mb-3 mx-auto">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
+
+            <div className="group p-4 bg-gradient-to-br from-blue-950/40 to-slate-900/40 backdrop-blur-md rounded-2xl border border-blue-500/20 hover:border-blue-500/50 transition-all hover:-translate-y-1">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mb-3 mx-auto">
+                <CalendarClock className="w-5 h-5 text-white" />
               </div>
-              <h3 className="font-bold text-sm text-white mb-1">Dashboard</h3>
-              <p className="text-xs text-slate-400">Gráficos e alertas</p>
+              <h3 className="font-bold text-sm text-white mb-1">Assinaturas</h3>
+              <p className="text-xs text-slate-400">Gerencie recorrentes</p>
             </div>
           </div>
         </div>

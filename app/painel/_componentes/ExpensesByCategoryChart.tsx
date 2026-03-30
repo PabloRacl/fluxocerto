@@ -14,7 +14,12 @@ import {
   TrendingDown,
   ArrowUpRight,
   ArrowDownRight,
+  List
 } from "lucide-react";
+import { api } from "@/biblioteca/http-client";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ============================================
 // TIPOS
@@ -24,6 +29,15 @@ interface ChartData {
   value: number;
   color: string;
   percentage: number;
+  categoryName?: string;
+  categoryColor?: string;
+  totalAmount?: number;
+  transactions?: Array<{
+    id: string;
+    description: string;
+    amount: number;
+    date: Date | string;
+  }>;
 }
 
 interface ExpensesByCategoryChartProps {
@@ -45,40 +59,16 @@ const formatPercentage = (value: number) => {
 };
 
 // ============================================
-// ✅ CORES OTIMIZADAS - PALETA HARMÔNICA
+// CORES
 // ============================================
 const CHART_COLORS = [
-  // Verde (Finanças)
-  "#10B981", // emerald-500
-  "#34D399", // emerald-400
-  "#059669", // emerald-600
-  "#6EE7B7", // emerald-300
-
-  // Azul (Tecnologia/Serviços)
-  "#3B82F6", // blue-500
-  "#60A5FA", // blue-400
-  "#2563EB", // blue-600
-  "#93C5FD", // blue-300
-
-  // Roxo (Lazer/Educação)
-  "#8B5CF6", // violet-500
-  "#A78BFA", // violet-400
-  "#7C3AED", // violet-600
-
-  // Laranja/Âmbar (Alimentação)
-  "#F59E0B", // amber-500
-  "#FBBF24", // amber-400
-  "#D97706", // amber-600
-
-  // Rosa/Vermelho (Saúde/Urgências)
-  "#EC4899", // pink-500
-  "#F43F5E", // rose-500
-  "#EF4444", // red-500
+  "#10B981", "#34D399", "#059669", "#6EE7B7",
+  "#3B82F6", "#60A5FA", "#2563EB", "#93C5FD",
+  "#8B5CF6", "#A78BFA", "#7C3AED",
+  "#F59E0B", "#FBBF24", "#D97706",
+  "#EC4899", "#F43F5E", "#EF4444",
 ];
 
-// ============================================
-// ✅ ANIMAÇÃO CUSTOMIZADA
-// ============================================
 const animateChart = (delay: number = 0) => {
   return {
     animationDuration: 800,
@@ -87,9 +77,6 @@ const animateChart = (delay: number = 0) => {
   };
 };
 
-// ============================================
-// COMPONENTE PRINCIPAL
-// ============================================
 export function ExpensesByCategoryChart({
   userId,
 }: ExpensesByCategoryChartProps) {
@@ -99,10 +86,10 @@ export function ExpensesByCategoryChart({
   const [chartType, setChartType] = useState<"pie" | "donut">("donut");
   const [period, setPeriod] = useState<"month" | "year">("month");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [showAll, setShowAll] = useState(false);
+  const [showAllModal, setShowAllModal] = useState(false);
 
   // ============================================
-  // BUSCAR DADOS DAS CATEGORIAS
+  // BUSCAR DADOS
   // ============================================
   useEffect(() => {
     const fetchExpensesData = async () => {
@@ -111,32 +98,31 @@ export function ExpensesByCategoryChart({
 
         const today = new Date();
         let startDate: Date;
+        let endDate: Date;
 
         if (period === "month") {
-          startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+          // Início do mês em UTC (00:00:00Z) para bater com o resumo rápido (SummaryCards)
+          startDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), 1));
+          // Fim do mês em UTC (23:59:59Z)
+          endDate = new Date(Date.UTC(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59));
         } else {
-          startDate = new Date(today.getFullYear(), 0, 1);
+          startDate = new Date(Date.UTC(today.getFullYear(), 0, 1));
+          endDate = new Date(Date.UTC(today.getFullYear(), 11, 31, 23, 59, 59));
         }
 
-        const response = await fetch(
-          `/api/painel/expenses-by-category?startDate=${startDate.toISOString()}&endDate=${today.toISOString()}`,
+        const result = await api.get<{ data: any[] }>(
+          `/api/painel/expenses-by-category?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`,
         );
 
-        if (!response.ok) {
-          throw new Error("Erro ao buscar dados das despesas");
-        }
-
-        const result = await response.json();
-
-        const transformedData = result.data.map((item: any, index: number) => ({
+        const transformedData = (result.data || []).map((item: any, index: number) => ({
           name: item.categoryName,
           value: item.totalAmount,
           color:
             item.categoryColor || CHART_COLORS[index % CHART_COLORS.length],
           percentage: item.percentage,
+          transactions: item.transactions || [], // ✅ Atribuir os itens individuais
         }));
 
-        // ✅ ORDENAR POR VALOR (maior para menor)
         const sortedData = transformedData.sort(
           (a: { value: number }, b: { value: number }) => b.value - a.value,
         );
@@ -146,28 +132,12 @@ export function ExpensesByCategoryChart({
       } catch (err) {
         console.error("Erro ao buscar despesas por categoria:", err);
         setError("Não foi possível carregar o gráfico");
-
-        // Dados mockados ordenados
+        
         setData(
           [
-            {
-              name: "Alimentação",
-              value: 150000,
-              color: "#F59E0B",
-              percentage: 30,
-            },
-            {
-              name: "Moradia",
-              value: 120000,
-              color: "#3B82F6",
-              percentage: 24,
-            },
-            {
-              name: "Transporte",
-              value: 80000,
-              color: "#10B981",
-              percentage: 16,
-            },
+            { name: "Alimentação", value: 150000, color: "#F59E0B", percentage: 30 },
+            { name: "Moradia", value: 120000, color: "#3B82F6", percentage: 24 },
+            { name: "Transporte", value: 80000, color: "#10B981", percentage: 16 },
             { name: "Lazer", value: 50000, color: "#8B5CF6", percentage: 10 },
             { name: "Saúde", value: 40000, color: "#EF4444", percentage: 8 },
             { name: "Outros", value: 60000, color: "#EC4899", percentage: 12 },
@@ -183,46 +153,44 @@ export function ExpensesByCategoryChart({
     }
   }, [userId, period]);
 
-  // ============================================
-  // CALCULAR TOTAL GERAL
-  // ============================================
   const totalExpenses = data.reduce((sum, item) => sum + item.value, 0);
-  const displayData = showAll ? data : data.slice(0, 5);
+  const displayData = data.slice(0, 5);
   const hasMore = data.length > 5;
 
   // ============================================
-  // ✅ TOOLTIP MELHORADO
+  // TOOLTIP
   // ============================================
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const pData = payload[0].payload;
       return (
-        <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl p-4 shadow-2xl min-w-[220px] transform transition-all">
-          <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-700">
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-2xl p-4 shadow-2xl min-w-[220px] transform transition-all z-50 relative overflow-hidden pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-800/20 via-transparent to-transparent pointer-events-none" />
+          <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/5 relative z-10">
             <div
               className="w-4 h-4 rounded-full shadow-lg"
-              style={{ backgroundColor: data.color }}
+              style={{ backgroundColor: pData.color }}
             />
-            <p className="text-sm font-semibold text-white">{data.name}</p>
+            <p className="text-sm font-semibold text-white">{pData.name}</p>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-4">
               <span className="text-xs text-slate-400">Valor:</span>
               <span className="text-sm font-bold text-emerald-400">
-                {formatCurrency(data.value)}
+                {formatCurrency(pData.value)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-4">
               <span className="text-xs text-slate-400">Percentual:</span>
               <span className="text-sm font-bold text-blue-400">
-                {formatPercentage(data.percentage)}
+                {formatPercentage(pData.percentage)}
               </span>
             </div>
             {totalExpenses > 0 && (
-              <div className="pt-2 mt-2 border-t border-slate-700">
+              <div className="pt-2 mt-2 border-t border-white/5 relative z-10">
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-xs text-slate-400">Do total:</span>
-                  <span className="text-xs font-medium text-slate-300">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Do total:</span>
+                  <span className="text-xs font-black text-slate-300">
                     {formatCurrency(totalExpenses)}
                   </span>
                 </div>
@@ -236,13 +204,12 @@ export function ExpensesByCategoryChart({
   };
 
   // ============================================
-  // ✅ LEGENDA CUSTOMIZADA COM PORCENTAGEM
+  // LEGENDA
   // ============================================
   const CustomLegend = ({ payload }: any) => {
-    const displayPayload = showAll ? payload : payload.slice(0, 5);
     return (
       <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
-        {displayPayload.map((entry: any, index: number) => (
+        {displayData.map((entry: any, index: number) => (
           <button
             key={`legend-${index}`}
             onClick={() =>
@@ -259,27 +226,19 @@ export function ExpensesByCategoryChart({
               style={{ backgroundColor: entry.color }}
             />
             <span className="text-sm text-slate-300 font-medium">
-              {entry.value}
+              {formatCurrency(entry.value)}
             </span>
             <span className="text-xs text-slate-400">
               ({formatPercentage(data[index]?.percentage || 0)})
             </span>
           </button>
         ))}
-        {hasMore && !showAll && (
+        {hasMore && (
           <button
-            onClick={() => setShowAll(true)}
-            className="px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-all"
+            onClick={() => setShowAllModal(true)}
+            className="px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-all border border-emerald-500/20"
           >
             +{data.length - 5} mais
-          </button>
-        )}
-        {showAll && hasMore && (
-          <button
-            onClick={() => setShowAll(false)}
-            className="px-3 py-1.5 text-xs text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-lg transition-all"
-          >
-            Ver menos
           </button>
         )}
       </div>
@@ -287,51 +246,32 @@ export function ExpensesByCategoryChart({
   };
 
   // ============================================
-  // RENDER: LOADING COM SKELETON
+  // LOADING
   // ============================================
   if (loading) {
-    return (
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <div className="h-5 w-48 bg-slate-800 rounded animate-pulse mb-2" />
-            <div className="h-4 w-24 bg-slate-800 rounded animate-pulse" />
-          </div>
-          <div className="flex gap-2">
-            <div className="h-8 w-16 bg-slate-800 rounded-lg animate-pulse" />
-            <div className="h-8 w-16 bg-slate-800 rounded-lg animate-pulse" />
-          </div>
-        </div>
-        <div className="h-[300px] flex items-center justify-center">
-          <div className="w-48 h-48 rounded-full border-8 border-slate-800 animate-pulse" />
-        </div>
-      </div>
-    );
+    return <NeuralLoading message="Categorizando Fluxo de Gastos..." variant="card" />;
   }
 
   // ============================================
-  // RENDER: ERROR
+  // ERROR E EMPTY STATE
   // ============================================
   if (error && data.length === 0) {
     return (
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-6">
+      <div className="relative bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-slate-800/50 p-6 shadow-2xl h-full flex flex-col group overflow-hidden">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-1">
-              Despesas por Categoria
+            <h3 className="text-lg font-black text-white mb-1 uppercase tracking-tighter">
+              Distribuição de Gastos e Dívidas
             </h3>
-            <p className="text-sm text-slate-400">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500">
               {period === "month" ? "Este mês" : "Este ano"}
             </p>
           </div>
         </div>
-        <div className="h-[300px] flex items-center justify-center">
+        <div className="h-[240px] flex items-center justify-center">
           <div className="text-center">
             <p className="text-red-400 mb-2">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="text-sm text-emerald-400 hover:text-emerald-300 underline"
-            >
+            <button onClick={() => window.location.reload()} className="text-sm text-emerald-400 hover:text-emerald-300 underline">
               Tentar novamente
             </button>
           </div>
@@ -340,32 +280,26 @@ export function ExpensesByCategoryChart({
     );
   }
 
-  // ============================================
-  // RENDER: EMPTY STATE MELHORADO
-  // ============================================
   if (data.length === 0) {
     return (
-      <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-6">
+      <div className="relative bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-slate-800/50 p-6 shadow-2xl h-full flex flex-col group overflow-hidden">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-1">
-              Despesas por Categoria
+            <h3 className="text-lg font-black text-white mb-1 uppercase tracking-tighter">
+              Distribuição de Gastos e Dívidas
             </h3>
-            <p className="text-sm text-slate-400">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500">
               {period === "month" ? "Este mês" : "Este ano"}
             </p>
           </div>
         </div>
-        <div className="h-[300px] flex items-center justify-center">
+        <div className="h-[240px] flex items-center justify-center">
           <div className="text-center">
             <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
               <PieChartIcon className="w-8 h-8 text-slate-600" />
             </div>
             <p className="text-slate-300 font-medium mb-1">
               Nenhuma despesa registrada
-            </p>
-            <p className="text-sm text-slate-500">
-              Comece adicionando transações para ver o gráfico
             </p>
           </div>
         </div>
@@ -374,23 +308,32 @@ export function ExpensesByCategoryChart({
   }
 
   // ============================================
-  // RENDER: PRINCIPAL
+  // RENDER PRINCIPAL
   // ============================================
   return (
-    <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="relative bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-slate-800/50 p-6 shadow-2xl h-full flex flex-col group overflow-hidden">
+      {/* Background glow orb */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none transition-opacity duration-700 opacity-50 group-hover:opacity-100" />
+      
+      <div className="flex items-center justify-between mb-6 relative z-10">
         <div>
-          <h3 className="text-lg font-semibold text-white mb-1">
-            Despesas por Categoria
+          <h3 className="text-lg font-black text-white mb-1 uppercase tracking-tighter flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse shadow-[0_0_10px_rgba(96,165,250,0.8)]" />
+            Distribuição de Gastos e Dívidas
           </h3>
-          <p className="text-sm text-slate-400">
-            {period === "month" ? "Este mês" : "Este ano"}
+          <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500">
+            {period === "month" ? "Ciclo Mensal Atual" : "Visão Panorâmica Anual"}
           </p>
         </div>
 
-        {/* Controles */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 transition-all">
+          <button
+            onClick={() => setShowAllModal(true)}
+            className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg border border-slate-800 hover:border-emerald-500/30 transition-all"
+            title="Ver Detalhamento"
+          >
+            <List className="w-5 h-5" />
+          </button>
           {/* Toggle Período */}
           <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1 mr-2">
             <button
@@ -415,14 +358,11 @@ export function ExpensesByCategoryChart({
             </button>
           </div>
 
-          {/* Toggle Tipo de Gráfico */}
-          <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1 hidden sm:flex">
             <button
               onClick={() => setChartType("donut")}
               className={`px-3 py-1 text-xs rounded-md transition-all ${
-                chartType === "donut"
-                  ? "bg-emerald-600 text-white shadow-lg"
-                  : "text-slate-400 hover:text-white hover:bg-slate-700"
+                chartType === "donut" ? "bg-emerald-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
               }`}
             >
               Rosca
@@ -430,9 +370,7 @@ export function ExpensesByCategoryChart({
             <button
               onClick={() => setChartType("pie")}
               className={`px-3 py-1 text-xs rounded-md transition-all ${
-                chartType === "pie"
-                  ? "bg-emerald-600 text-white shadow-lg"
-                  : "text-slate-400 hover:text-white hover:bg-slate-700"
+                chartType === "pie" ? "bg-emerald-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
               }`}
             >
               Pizza
@@ -441,86 +379,229 @@ export function ExpensesByCategoryChart({
         </div>
       </div>
 
-      {/* Total de Despesas */}
-      <div className="mb-6 flex items-center gap-4">
-        <div className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-lg">
-          <TrendingDown className="w-5 h-5 text-red-400" />
-          <span className="text-lg font-bold text-red-400">
-            {formatCurrency(totalExpenses)}
-          </span>
-        </div>
-        <div className="text-sm text-slate-400">
-          Total em{" "}
-          <span className="text-white font-semibold">{data.length}</span>{" "}
-          categorias
-        </div>
-      </div>
-
-      {/* Gráfico */}
-      <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={displayData}
-              cx="50%"
-              cy="50%"
-              innerRadius={chartType === "donut" ? 80 : 0}
-              outerRadius={120}
-              paddingAngle={chartType === "donut" ? 3 : 2}
-              dataKey="value"
-              stroke="none"
-              {...animateChart(200)}
-              onMouseEnter={(_, index) => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-            >
-              {displayData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.color}
-                  opacity={
-                    hoveredIndex === null || hoveredIndex === index ? 1 : 0.5
-                  }
-                  style={{
-                    transition: "opacity 0.3s ease",
-                    cursor: "pointer",
-                  }}
-                />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend content={<CustomLegend />} />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Lista de Categorias (Mobile) */}
-      <div className="mt-6 space-y-2 lg:hidden">
-        <p className="text-sm font-medium text-slate-300 mb-3">Detalhamento:</p>
-        {data.map((item, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between p-3 bg-slate-800/50 hover:bg-slate-800 rounded-xl transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="w-4 h-4 rounded-full shadow-sm"
-                style={{ backgroundColor: item.color }}
-              />
-              <span className="text-sm font-medium text-slate-300">
-                {item.name}
-              </span>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-bold text-white">
-                {formatCurrency(item.value)}
-              </p>
-              <p className="text-xs text-slate-400">
-                {formatPercentage(item.percentage)}
-              </p>
-            </div>
+      <div className="mb-6 flex items-center justify-between relative z-10">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-900/60 border border-white/5 rounded-xl shadow-lg">
+            <TrendingDown className="w-5 h-5 text-red-500" />
+            <span className="text-lg font-black text-red-400" style={{ textShadow: "0 0 10px rgba(248,113,113,0.3)" }}>
+              {formatCurrency(totalExpenses)}
+            </span>
           </div>
-        ))}
+          <div className="text-[10px] uppercase font-bold text-slate-500 hidden sm:block">
+            Impactando <span className="text-white font-black">{data.length}</span> ramificações
+          </div>
+        </div>
+        
+        {/* Abrir Modal Direto Mobile */}
+        <div className="sm:hidden">
+            <button onClick={() => setShowAllModal(true)} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
+                <List className="w-5 h-5" />
+            </button>
+        </div>
       </div>
+
+      {/* Layout Side-by-Side (Neuro HUD) */}
+      <div 
+        className="flex-1 flex flex-col sm:flex-row items-center gap-6 min-h-0"
+        onMouseLeave={() => setHoveredIndex(null)}
+      >
+        {/* Lado Esquerdo: Neuro Core e Gráfico */}
+        <div className="relative w-[220px] h-[220px] flex-shrink-0 flex items-center justify-center">
+            {/* Camada Central: Neuro Core (Holograma) */}
+            {!loading && data.length > 0 && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <AnimatePresence mode="wait">
+                    <motion.div 
+                        key={hoveredIndex ?? 'idle'}
+                        initial={{ scale: 0.8, opacity: 0, filter: "blur(10px)" }}
+                        animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+                        exit={{ scale: 0.8, opacity: 0, filter: "blur(10px)" }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className="relative flex items-center justify-center"
+                    >
+                        {/* Brilho de Fundo do Núcleo */}
+                        <motion.div 
+                            animate={{ 
+                                scale: [1, 1.15, 1],
+                                opacity: [0.3, 0.6, 0.3]
+                            }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            className="absolute w-16 h-16 rounded-full blur-2xl"
+                            style={{ 
+                                backgroundColor: hoveredIndex !== null ? data[hoveredIndex].color : '#10B981' 
+                            }}
+                        />
+                        
+                        {/* Círculo de Vidro Central */}
+                        <div className="w-16 h-16 rounded-full bg-slate-900/60 backdrop-blur-xl border border-white/10 flex flex-col items-center justify-center shadow-2xl overflow-hidden">
+                            {hoveredIndex !== null ? (
+                            <div className="flex flex-col items-center">
+                                <span className="text-lg mb-0.5">
+                                    {data[hoveredIndex].name === "Alimentação" ? "🍕" : 
+                                    data[hoveredIndex].name === "Moradia" ? "🏠" : 
+                                    data[hoveredIndex].name === "Transporte" ? "🚗" : "💰"}
+                                </span>
+                                <span className="text-[8px] font-black text-white/50 uppercase tracking-widest text-center px-1 line-clamp-1">
+                                    {data[hoveredIndex].name}
+                                </span>
+                            </div>
+                            ) : (
+                            <div className="flex flex-col items-center">
+                                <PieChartIcon className="w-4 h-4 text-emerald-500/50 mb-1 animate-pulse" />
+                                <span className="text-[7px] font-bold text-slate-500 uppercase tracking-tighter">Fluxo Total</span>
+                            </div>
+                            )}
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+            )}
+
+            <ResponsiveContainer width="100%" height="100%">
+                    <PieChart onMouseLeave={() => setHoveredIndex(null)}>
+                    <defs>
+                        <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <Pie
+                        data={chartType === "donut" ? data : displayData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={chartType === "donut" ? 54 : 0}
+                        outerRadius={74}
+                        cornerRadius={6}
+                        paddingAngle={chartType === "donut" ? 4 : 2}
+                        dataKey="value"
+                        stroke="none"
+                        {...animateChart(200)}
+                        onMouseEnter={(_, index) => setHoveredIndex(index)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                    >
+                        {(chartType === "donut" ? data : displayData).map((entry, index) => (
+                            <Cell
+                                key={`cell-${index}`}
+                                fill={entry.color}
+                                opacity={hoveredIndex === null || hoveredIndex === index ? 1 : 0.2}
+                                style={{ 
+                                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)", 
+                                    cursor: "pointer",
+                                    filter: hoveredIndex === index ? "url(#neonGlow)" : "none"
+                                }}
+                            />
+                        ))}
+                    </Pie>
+                    <Tooltip 
+                        content={<CustomTooltip />} 
+                        isAnimationActive={false}
+                    />
+                </PieChart>
+            </ResponsiveContainer>
+        </div>
+
+        {/* Lado Direito: Legenda Lateral */}
+        <div className="flex-1 w-full max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="grid grid-cols-1 gap-2">
+                {(chartType === "donut" ? data : displayData).map((entry, index) => (
+                    <button
+                        key={`legend-side-${index}`}
+                        onMouseEnter={() => setHoveredIndex(index)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                        className={`group flex items-center justify-between p-2 rounded-xl transition-all border ${
+                            hoveredIndex === index 
+                            ? "bg-slate-800/80 border-slate-600 scale-[1.02]" 
+                            : "bg-slate-800/20 border-transparent opacity-70 hover:opacity-100"
+                        }`}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: entry.color, color: entry.color }} />
+                            <div className="text-left">
+                                <p className="text-[11px] font-bold text-white mb-0.5 line-clamp-1">{entry.name}</p>
+                                <p className="text-[10px] text-slate-500">{formatPercentage(entry.percentage)}</p>
+                            </div>
+                        </div>
+                        <span className="text-xs font-black text-slate-400 group-hover:text-emerald-400 transition-colors">
+                            {formatCurrency(entry.value)}
+                        </span>
+                    </button>
+                ))}
+            </div>
+        </div>
+      </div>
+
+      {/* Modal Ver Mais Categorias (usando AnimatedModal existente) */}
+      <AnimatedModal
+        isOpen={showAllModal}
+        onClose={() => setShowAllModal(false)}
+        title="Totais por Categoria"
+        subtitle={`Detalhamento para o período (${period === 'month' ? 'Mensal' : 'Anual'})`}
+        icon={<PieChartIcon className="w-6 h-6 text-white" />}
+        theme="blue"
+        maxWidth="md"
+      >
+        <div className="p-6">
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            {data.map((item, index) => (
+              <div
+                key={index}
+                className="p-4 bg-slate-800/30 rounded-2xl border border-slate-700/50 space-y-3"
+              >
+                <div className="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: item.categoryColor || item.color }}
+                    />
+                    <span className="text-base font-bold text-white uppercase tracking-tight">
+                      {item.categoryName || item.name}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-black text-white">
+                      {formatCurrency(item.totalAmount || item.value)}
+                    </p>
+                    <p className="text-[10px] font-bold text-emerald-400 uppercase">
+                      {formatPercentage(item.percentage)} do total
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {item.transactions?.map((t: any) => (
+                    <div
+                      key={t.id}
+                      className="flex items-center justify-between py-2 px-3 bg-slate-900/40 rounded-lg hover:bg-slate-900/60 transition-colors"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-xs font-semibold text-slate-200">
+                          {t.description}
+                        </span>
+                        <span className="text-[9px] text-slate-500 uppercase font-bold">
+                          {new Date(t.date).toLocaleDateString("pt-BR")}
+                        </span>
+                      </div>
+                      <span className="text-sm font-bold text-slate-300">
+                        {formatCurrency(t.amount)}
+                      </span>
+                    </div>
+                  ))}
+                  {(!item.transactions || item.transactions.length === 0) && (
+                    <p className="text-[10px] text-slate-600 italic text-center py-1">
+                      Sem detalhes individuais para esta categoria
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+            </div>
+            
+            <div className="mt-6 pt-4 border-t border-slate-700 flex justify-between items-center">
+                <span className="text-slate-400 font-medium">Total Geral</span>
+                <span className="text-xl font-bold text-red-400">{formatCurrency(totalExpenses)}</span>
+            </div>
+        </div>
+      </AnimatedModal>
     </div>
   );
 }

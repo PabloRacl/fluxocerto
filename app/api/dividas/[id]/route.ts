@@ -136,6 +136,55 @@ export async function PUT(
 }
 
 // ============================================
+// PATCH - Atualizar Parcialmente a Dívida (Frontend Edit)
+// ============================================
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    const debt = await prisma.debt.findUnique({
+      where: { id: params.id },
+      include: { user: { select: { email: true } } },
+    });
+
+    if (!debt || debt.user.email !== session.user.email) {
+      return NextResponse.json({ error: "Dívida não encontrada" }, { status: 404 });
+    }
+
+    const body = await request.json();
+
+    const updated = await prisma.debt.update({
+      where: { id: params.id },
+      data: {
+        name: body.name ?? undefined,
+        totalAmount: body.totalAmount ?? undefined,
+        installmentValue: body.installmentValue ?? undefined,
+        installmentTotal: body.installmentTotal ?? undefined,
+        installmentPaid: body.installmentPaid !== undefined ? body.installmentPaid : undefined,
+        interestRate: body.interestRate !== undefined ? body.interestRate : undefined,
+        amortizationType: body.amortizationType !== undefined ? body.amortizationType : undefined,
+        nextDueDate: body.nextDueDate ? new Date(body.nextDueDate) : undefined,
+        creditor: body.creditor !== undefined ? body.creditor : undefined,
+        allowsPrepayment: body.allowsPrepayment !== undefined ? body.allowsPrepayment : undefined,
+        accountId: body.accountId ?? undefined,
+        categoryId: body.categoryId ?? undefined,
+      },
+    });
+
+    return NextResponse.json({ message: "Dívida atualizada", divida: updated });
+  } catch (error) {
+    console.error("Erro ao atualizar via PATCH:", error);
+    return NextResponse.json({ error: "Erro interno ao atualizar" }, { status: 500 });
+  }
+}
+
+// ============================================
 // DELETE - Soft Delete da Dívida
 // ============================================
 export async function DELETE(

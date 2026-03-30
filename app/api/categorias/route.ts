@@ -1,153 +1,46 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/biblioteca/autenticacao";
-import { prisma } from "@/biblioteca/prisma";
+import { NextRequest } from "next/server";
+import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
+import { tratarErro } from "@/biblioteca/tratar-erro";
+import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
+import { schemaCriarCategoria } from "@/validacoes/categoria.schema";
+import { categoriaService } from "@/servicos/CategoriaService";
 
+// ============================================
+// GET - Listar Categorias do Usuário
+// ============================================
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await obterUsuarioAutenticado();
+    const params = request.nextUrl.searchParams;
 
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+    const categorias = await categoriaService.listar(user.id, {
+      type: params.get("type"),
+      includeInactive: params.get("includeInactive") === "true",
+      showArchived: params.get("showArchived") === "true",
     });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 },
-      );
-    }
-
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type") as "INCOME" | "EXPENSE" | null;
-    const includeInactive = searchParams.get("includeInactive") === "true";
-    const showArchived = searchParams.get("showArchived") === "true";
-
-    const where: any = {
-      userId: user.id,
-      isArchived: showArchived, // ✅ FIX: Filtra ativas vs lixeira
-    };
-
-    // Só filtra isActive quando NÃO estiver olhando a lixeira
-    if (!showArchived && !includeInactive) {
-      where.isActive = true;
-    }
-
-    if (type && ["INCOME", "EXPENSE"].includes(type)) {
-      where.type = type;
-    }
-
-    const categories = await prisma.category.findMany({
-      where,
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        type: true,
-        color: true,
-        icon: true,
-        parentId: true,
-        isActive: true,
-        isArchived: true,
-        archivedAt: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: { select: { transactions: true } },
-      },
-    });
-
-    return NextResponse.json(categories, { status: 200 });
-  } catch (error: any) {
-    console.error("Erro GET categories:", error.message || error);
-    return NextResponse.json(
-      { error: "Erro interno: " + (error.message || error) },
-      { status: 500 },
-    );
+    return sucesso(categorias);
+  } catch (error) {
+    return tratarErro(error);
   }
 }
 
+// ============================================
+// POST - Criar Nova Categoria
+// ============================================
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 },
-      );
-    }
-
+    const user = await obterUsuarioAutenticado();
     const body = await request.json();
-    const { name, type, color, icon, parentId } = body;
+    const dados = schemaCriarCategoria.parse(body);
 
-    if (!name || !type) {
-      return NextResponse.json(
-        { error: "Nome e tipo são obrigatórios" },
-        { status: 400 },
-      );
-    }
+    const category = await categoriaService.criar(user.id, dados);
 
-    if (!["INCOME", "EXPENSE"].includes(type)) {
-      return NextResponse.json(
-        { error: "Tipo deve ser INCOME ou EXPENSE" },
-        { status: 400 },
-      );
-    }
-
-    if (parentId) {
-      const parentCategory = await prisma.category.findFirst({
-        where: {
-          id: parentId,
-          userId: user.id,
-          parentId: null,
-        },
-      });
-
-      if (!parentCategory) {
-        return NextResponse.json(
-          { error: "Categoria pai inválida" },
-          { status: 400 },
-        );
-      }
-    }
-
-    // ⚠️ ATENÇÃO: A LINHA ABAIXO DEVE TER EXATAMENTE:  data:  {
-    const newCategory = await prisma.category.create({
-      data: {
-        userId: user.id,
-        name: name,
-        type: type,
-        color: color || "#047857",
-        icon: icon || null,
-        parentId: parentId || null,
-        isActive: true,
-      },
+    return criadoComSucesso({
+      message: "Categoria criada com sucesso",
+      category,
     });
-
-    return NextResponse.json(
-      {
-        message: "Categoria criada com sucesso",
-        category: newCategory,
-      },
-      { status: 201 },
-    );
-  } catch (error: any) {
-    console.error("Erro POST categories:", error.message || error);
-    return NextResponse.json(
-      { error: "Erro interno: " + (error.message || error) },
-      { status: 500 },
-    );
+  } catch (error) {
+    return tratarErro(error);
   }
 }

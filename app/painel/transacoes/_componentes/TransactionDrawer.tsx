@@ -12,7 +12,6 @@ import {
 } from "@/componentes/ui/dialog";
 import { Button } from "@/componentes/ui/button";
 import { Input } from "@/componentes/ui/input";
-import { Label } from "@/componentes/ui/label";
 import {
   Select,
   SelectContent,
@@ -20,7 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/componentes/ui/select";
+import { Label } from "@/componentes/ui/label";
+import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
 import {
+  TrendingUp,
+  TrendingDown,
+  Check,
   X,
   Wallet,
   Tag,
@@ -134,6 +139,11 @@ export function TransactionDrawer({
   const [fetchingData, setFetchingData] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasLoadedData, setHasLoadedData] = useState(false);
+
+  const [showOtherAccount, setShowOtherAccount] = useState(false);
+  const [customAccount, setCustomAccount] = useState("");
+  const [showOtherCategory, setShowOtherCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
 
   // ============================================
   // BUSCAR CONTAS E CATEGORIAS
@@ -321,10 +331,32 @@ export function TransactionDrawer({
     }
   };
 
+  const handleAccountChange = (value: string) => {
+    if (value === "OTHER_ACCOUNT") {
+      setShowOtherAccount(true);
+      setFormData((prev) => ({ ...prev, accountId: "" }));
+    } else {
+      setShowOtherAccount(false);
+      setFormData((prev) => ({ ...prev, accountId: value }));
+      setCustomAccount("");
+    }
+  };
+
+  const handleCategoryChange = (value: string) => {
+    if (value === "OTHER_CATEGORY") {
+      setShowOtherCategory(true);
+      setFormData((prev) => ({ ...prev, categoryId: "" }));
+    } else {
+      setShowOtherCategory(false);
+      setFormData((prev) => ({ ...prev, categoryId: value }));
+      setCustomCategory("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!validateForm() && !showOtherAccount && !showOtherCategory) {
       toast.error("Por favor, corrija os erros no formulário");
       return;
     }
@@ -332,6 +364,48 @@ export function TransactionDrawer({
     setLoading(true);
 
     try {
+      let finalAccountId = formData.accountId;
+      let finalCategoryId = formData.categoryId;
+
+      // Criar nova conta se necessário
+      if (showOtherAccount && customAccount.trim()) {
+        const accRes = await fetch("/api/contas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: customAccount.trim(),
+            type: "CHECKING_ACCOUNT",
+            color: "#6366F1",
+            balance: 0,
+          }),
+        });
+
+        if (!accRes.ok) throw new Error("Erro ao criar a nova conta");
+        const accData = await accRes.json();
+        finalAccountId = accData.id;
+      }
+
+      // Criar nova categoria se necessário
+      if (showOtherCategory && customCategory.trim()) {
+        const catRes = await fetch("/api/categorias", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: customCategory.trim(),
+            type: formData.type,
+            color: formData.type === "INCOME" ? "#10B981" : "#EF4444",
+            icon: formData.type === "INCOME" ? "TrendingUp" : "TrendingDown",
+          }),
+        });
+
+        if (!catRes.ok) throw new Error("Erro ao criar a nova categoria");
+        const catData = await catRes.json();
+        finalCategoryId = catData.category?.id || catData.id;
+      }
+
+      if (!finalAccountId) throw new Error("Selecione ou crie uma conta");
+      if (!finalCategoryId) throw new Error("Selecione ou crie uma categoria");
+
       const url =
         mode === "create"
           ? "/api/transacoes"
@@ -344,8 +418,8 @@ export function TransactionDrawer({
         amount: formData.amountInCents,
         type: formData.type,
         status: formData.status,
-        accountId: formData.accountId,
-        categoryId: formData.categoryId,
+        accountId: finalAccountId,
+        categoryId: finalCategoryId,
         occurrenceDate: formData.occurrenceDate,
         dueDate: formData.dueDate || null,
         notes: formData.notes.trim() || null,
@@ -383,6 +457,7 @@ export function TransactionDrawer({
 
       onOpenChange(false);
       onSuccess();
+      router.refresh();
     } catch (err) {
       console.error("Erro ao salvar transação:", err);
       toast.error(
@@ -408,48 +483,23 @@ export function TransactionDrawer({
   // RENDER
   // ============================================
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent
-        className="
-          sm:max-w-2xl md:max-w-3xl
-          bg-slate-900 border border-slate-800 
-          shadow-2xl z-[100] 
-          max-h-[90vh] overflow-y-auto
-          animate-in fade-in zoom-in-95 duration-200
-          p-0 rounded-xl
-        "
-        style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "min(90vw, 1000px)",
-          margin: 0,
-        }}
-      >
-        {/* HEADER */}
-        <div className="sticky top-0 bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between z-[110] rounded-t-xl">
-          <div>
-            <DialogTitle className="text-xl font-bold text-white">
-              {mode === "create" ? "Nova Transação" : "Editar Transação"}
-            </DialogTitle>
-            <DialogDescription className="text-sm text-slate-400 mt-1">
-              {mode === "create"
-                ? "Preencha os dados da transação"
-                : "Atualize os dados da transação"}
-            </DialogDescription>
-          </div>
-          <button
-            onClick={handleClose}
-            type="button"
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
+    <AnimatedModal
+      isOpen={open}
+      onClose={handleClose}
+      title={mode === "create" ? "Nova Transação" : "Editar Transação"}
+      subtitle={mode === "create" ? "Preencha os dados da transação" : "Atualize os dados da transação"}
+      icon={
+        formData.type === "INCOME" ? (
+          <TrendingUp className="w-6 h-6 text-white" />
+        ) : (
+          <TrendingDown className="w-6 h-6 text-white" />
+        )
+      }
+      theme={formData.type === "INCOME" ? "emerald" : "red"}
+      maxWidth="3xl"
+    >
         {/* FORMULÁRIO */}
-        <form onSubmit={handleSubmit} className="px-6 py-4 space-y-6 pb-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
           {/* TIPO E STATUS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -577,10 +627,8 @@ export function TransactionDrawer({
                 Conta *
               </Label>
               <Select
-                value={formData.accountId}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, accountId: value }))
-                }
+                value={showOtherAccount ? "OTHER_ACCOUNT" : formData.accountId}
+                onValueChange={handleAccountChange}
               >
                 <SelectTrigger
                   className={`bg-slate-800 border-slate-700 text-white ${
@@ -600,24 +648,41 @@ export function TransactionDrawer({
                       Carregando...
                     </SelectItem>
                   ) : (
-                    accounts.map((account) => (
-                      <SelectItem
-                        key={account.id}
-                        value={account.id}
-                        className="text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: account.color }}
-                          />
-                          {account.name}
-                        </div>
+                    <>
+                      {accounts.map((account) => (
+                        <SelectItem
+                          key={account.id}
+                          value={account.id}
+                          className="text-white"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: account.color }}
+                            />
+                            {account.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="OTHER_ACCOUNT" className="text-emerald-400 font-bold italic">
+                        ➕ Outra Conta...
                       </SelectItem>
-                    ))
+                    </>
                   )}
                 </SelectContent>
               </Select>
+
+              {showOtherAccount && (
+                <div className="mt-2 p-2 bg-emerald-500/5 border border-emerald-500/10 rounded-xl animate-in fade-in slide-in-from-top-1">
+                  <Input 
+                    placeholder="Nome da nova conta"
+                    value={customAccount}
+                    onChange={(e) => setCustomAccount(e.target.value)}
+                    className="h-9 text-xs bg-slate-900 border-slate-700 focus:border-emerald-500"
+                    autoFocus
+                  />
+                </div>
+              )}
               {errors.accountId && (
                 <p className="text-xs text-red-400 mt-1">{errors.accountId}</p>
               )}
@@ -629,10 +694,8 @@ export function TransactionDrawer({
                 Categoria *
               </Label>
               <Select
-                value={formData.categoryId}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, categoryId: value }))
-                }
+                value={showOtherCategory ? "OTHER_CATEGORY" : formData.categoryId}
+                onValueChange={handleCategoryChange}
               >
                 <SelectTrigger
                   className={`bg-slate-800 border-slate-700 text-white ${
@@ -652,24 +715,43 @@ export function TransactionDrawer({
                       Carregando...
                     </SelectItem>
                   ) : (
-                    filteredCategories.map((category) => (
-                      <SelectItem
-                        key={category.id}
-                        value={category.id}
-                        className="text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: category.color }}
-                          />
-                          {category.name}
-                        </div>
+                    <>
+                      {categories
+                        .filter((c) => c.type === formData.type)
+                        .map((category) => (
+                          <SelectItem
+                            key={category.id}
+                            value={category.id}
+                            className="text-white"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: category.color }}
+                              />
+                              {category.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      <SelectItem value="OTHER_CATEGORY" className="text-emerald-400 font-bold italic">
+                        ➕ Outra Categoria...
                       </SelectItem>
-                    ))
+                    </>
                   )}
                 </SelectContent>
               </Select>
+
+              {showOtherCategory && (
+                <div className="mt-2 p-2 bg-emerald-500/5 border border-emerald-500/10 rounded-xl animate-in fade-in slide-in-from-top-1">
+                  <Input 
+                    placeholder="Nome da nova categoria"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    className="h-9 text-xs bg-slate-900 border-slate-700 focus:border-emerald-500"
+                    autoFocus
+                  />
+                </div>
+              )}
               {errors.categoryId && (
                 <p className="text-xs text-red-400 mt-1">{errors.categoryId}</p>
               )}
@@ -904,54 +986,35 @@ export function TransactionDrawer({
           </div>
 
           {/* BOTÕES DE AÇÃO */}
-          <DialogFooter className="border-t border-slate-800 pt-4 flex flex-row gap-3">
-            <Button
+          {/* BOTÕES DE AÇÃO */}
+          <div className="flex gap-4 pt-4 sticky bottom-0 bg-slate-900/80 backdrop-blur-sm -mx-2 px-2 pb-2">
+            <button
               type="button"
-              variant="outline"
               onClick={handleClose}
-              className="flex-1 bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white"
-              disabled={loading}
+              className="flex-1 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-2xl transition-all border border-slate-800 hover:border-slate-700"
             >
               Cancelar
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-medium shadow-lg shadow-emerald-500/20"
+              className={`flex-1 px-6 py-3 bg-gradient-to-r font-semibold rounded-2xl shadow-lg transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 ${
+                formData.type === "INCOME" 
+                  ? "from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/20" 
+                  : "from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-red-500/20"
+              }`}
             >
               {loading ? (
-                <span className="flex items-center gap-2">
-                  <svg
-                    className="animate-spin h-4 w-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Salvando...
-                </span>
-              ) : mode === "create" ? (
-                "Criar Transação"
+                <NeuralLoading message="Sincronizando..." variant="inline" />
               ) : (
-                "Salvar Alterações"
+                <>
+                  <Check className="w-5 h-5" />
+                  {mode === "create" ? "Criar Transação" : "Salvar Alterações"}
+                </>
               )}
-            </Button>
-          </DialogFooter>
+            </button>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </AnimatedModal>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { BrandLogo } from "@/app/_componentes/BrandLogo";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -88,25 +89,8 @@ export default function RegisterPage() {
       {/* Card de Registro */}
       <div className="relative w-full max-w-md bg-slate-900/80 backdrop-blur-md rounded-3xl border border-emerald-500/30 shadow-2xl p-8 space-y-6">
         {/* Logo */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-xl">
-            <svg
-              className="w-10 h-10 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-            FluxoCerto
-          </h1>
+        <div className="text-center mb-4">
+          <BrandLogo size="lg" className="justify-center mb-4" />
           <p className="text-slate-400">Crie sua conta gratuita</p>
         </div>
 

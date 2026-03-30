@@ -4,7 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
+import { MascotAssistant } from "@/app/painel/_componentes/MascotAssistant";
+import EditDebtModal from "./_componentes/EditDebtModal";
 import {
   Tooltip,
   TooltipContent,
@@ -25,6 +30,7 @@ import {
   Plus,
   Wallet,
   Eye,
+  RefreshCw,
 } from "lucide-react";
 
 // ============================================
@@ -62,6 +68,7 @@ interface Resumo {
   parcelasMensal: number;
   proximoVencimento: string | null;
   totalAtivas: number;
+  totalExcluidas: number;
   totalQuitadas: number;
 }
 
@@ -109,6 +116,8 @@ export default function DividasPage() {
     "ALL" | "ACTIVE" | "PAID" | "CANCELLED"
   >("ALL");
   const [showNewModal, setShowNewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
 
   // ============================================
   // FETCH
@@ -217,128 +226,121 @@ export default function DividasPage() {
     }
   };
 
+  const handleEdit = (debt: Debt) => {
+    setSelectedDebt(debt);
+    setShowEditModal(true);
+  };
+
   // ============================================
   // RENDER
   // ============================================
   if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500" />
-      </div>
-    );
+    return <NeuralLoading message="Analisando Fluxo de Débitos..." variant="full" />;
   }
 
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <PageHeader
-          title="Dívidas Parceladas"
-          subtitle="Gerencie suas dívidas e financiamentos"
-          onRefresh={fetchDividas}
-          onNew={() => setShowNewModal(true)}
-          newButtonText="Nova Dívida"
-          showFilters
-          filters={
-            <div className="flex items-center gap-2">
-              {/* Toggle Ativas/Lixeira */}
-              <div className="flex bg-slate-800 rounded-lg p-1">
-                <button
-                  onClick={() => {
-                    setShowDeleted(false);
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-md transition-all ${!showDeleted ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-white"}`}
-                >
-                  <CreditCard className="w-3 h-3" />
-                  Ativas
-                </button>
-                <button
-                  onClick={() => {
-                    setShowDeleted(true);
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-md transition-all ${showDeleted ? "bg-red-600 text-white" : "text-slate-400 hover:text-white"}`}
-                >
-                  <Archive className="w-3 h-3" />
-                  Lixeira
-                </button>
-              </div>
-
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as any)}
-                className="px-3 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          title="Dívidas e Financiamentos"
+          description="Gerencie seus débitos com barra de progresso e amortização SAC/PRICE"
+          breadcrumbs={[{ label: "Dívidas Parceladas" }]}
+        >
+          <div className="flex items-center gap-2 mr-2">
+            <div className="flex bg-slate-800 rounded-lg p-1">
+              <button
+                onClick={() => setShowDeleted(false)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${!showDeleted ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-white"}`}
               >
-                <option value="ALL">Todos</option>
-                <option value="ACTIVE">🔴 Ativas</option>
-                <option value="PAID">✅ Quitadas</option>
-                <option value="CANCELLED">❌ Canceladas</option>
-              </select>
+                <CreditCard className="w-3 h-3" />
+                Ativas
+                {resumo && resumo.totalAtivas > 0 && (
+                  <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${!showDeleted ? "bg-emerald-500 text-white" : "bg-slate-700 text-slate-300"}`}>
+                    {resumo.totalAtivas}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setShowDeleted(true)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${showDeleted ? "bg-amber-600 text-white" : "text-slate-400 hover:text-white"}`}
+              >
+                <Archive className="w-3 h-3" />
+                Lixeira
+                {resumo && resumo.totalExcluidas > 0 && (
+                  <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${showDeleted ? "bg-amber-500 text-white" : "bg-slate-700 text-slate-300"}`}>
+                    {resumo.totalExcluidas}
+                  </span>
+                )}
+              </button>
             </div>
-          }
-        />
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as any)}
+              className="px-3 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 h-9 hidden sm:block"
+            >
+              <option value="ALL">Todos</option>
+              <option value="ACTIVE">🔴 Ativas</option>
+              <option value="PAID">✅ Quitadas</option>
+              <option value="CANCELLED">❌ Canceladas</option>
+            </select>
+          </div>
+          <button
+            onClick={fetchDividas}
+            className="p-2 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:block"
+            title="Atualizar"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setShowNewModal(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:block">Nova Dívida</span>
+          </button>
+        </PageHeader>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-          {/* Cards de Resumo */}
+          {/* Cards de Resumo — Neuro HUD */}
           {resumo && !showDeleted && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-5 bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-md rounded-xl border border-red-500/20">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
-                    <TrendingDown className="w-5 h-5 text-red-400" />
-                  </div>
-                  <span className="text-sm text-slate-400">
-                    Total em Dívidas
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-red-400">
-                  {formatCurrency(resumo.totalEmDividas)}
-                </p>
-              </div>
+              {[
+                { label: "Total em Dívidas", value: formatCurrency(resumo.totalEmDividas), color: "red", Icon: TrendingDown },
+                { label: "Parcelas/Mês", value: formatCurrency(resumo.parcelasMensal), color: "amber", Icon: CreditCard },
+                { label: "Próximo Vencimento", value: resumo.proximoVencimento ? formatDate(resumo.proximoVencimento) : "—", color: "blue", Icon: Calendar },
+                { label: "Ativas / Quitadas", value: null, color: "emerald", Icon: CheckCircle2 },
+              ].map((card, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.08 }}
+                  className={`group/card relative p-5 bg-slate-950/60 backdrop-blur-2xl rounded-2xl border border-${card.color}-500/20 hover:border-${card.color}-500/50 transition-all duration-500 overflow-hidden`}
+                >
+                  {/* Shimmer Holográfico */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent -translate-x-full group-hover/card:translate-x-full transition-transform duration-1000" style={{ transform: 'skewX(-20deg)' }} />
+                  {/* Glow corner */}
+                  <div className={`absolute -top-8 -right-8 w-24 h-24 bg-${card.color}-500/10 blur-3xl pointer-events-none opacity-0 group-hover/card:opacity-100 transition-opacity`} />
 
-              <div className="p-5 bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-md rounded-xl border border-amber-500/20">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                    <CreditCard className="w-5 h-5 text-amber-400" />
+                  <div className="flex items-center gap-3 mb-3 relative z-10">
+                    <div className={`w-10 h-10 rounded-xl bg-${card.color}-500/10 border border-${card.color}-500/20 flex items-center justify-center`}>
+                      <card.Icon className={`w-5 h-5 text-${card.color}-400`} />
+                    </div>
+                    <span className="text-sm text-slate-400 font-medium">{card.label}</span>
                   </div>
-                  <span className="text-sm text-slate-400">Parcelas/Mês</span>
-                </div>
-                <p className="text-2xl font-bold text-amber-400">
-                  {formatCurrency(resumo.parcelasMensal)}
-                </p>
-              </div>
-
-              <div className="p-5 bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-md rounded-xl border border-blue-500/20">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-blue-400" />
+                  <div className="relative z-10">
+                    {card.value !== null ? (
+                      <p className={`text-2xl font-black text-${card.color}-400`}>{card.value}</p>
+                    ) : (
+                      <p className="text-2xl font-black text-white">
+                        <span className="text-red-400">{resumo.totalAtivas}</span>
+                        {" / "}
+                        <span className="text-emerald-400">{resumo.totalQuitadas}</span>
+                      </p>
+                    )}
                   </div>
-                  <span className="text-sm text-slate-400">
-                    Próximo Vencimento
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-blue-400">
-                  {resumo.proximoVencimento
-                    ? formatDate(resumo.proximoVencimento)
-                    : "—"}
-                </p>
-              </div>
-
-              <div className="p-5 bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-md rounded-xl border border-emerald-500/20">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                  </div>
-                  <span className="text-sm text-slate-400">
-                    Dívidas Ativas / Quitadas
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-white">
-                  <span className="text-red-400">{resumo.totalAtivas}</span>
-                  {" / "}
-                  <span className="text-emerald-400">
-                    {resumo.totalQuitadas}
-                  </span>
-                </p>
-              </div>
+                </motion.div>
+              ))}
             </div>
           )}
 
@@ -407,18 +409,23 @@ export default function DividasPage() {
                 const vencido = diasAteVencimento < 0;
 
                 return (
-                  <div
+                  <motion.div
                     key={divida.id}
-                    className={`p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-md rounded-xl border transition-all hover:shadow-lg ${
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ y: -2 }}
+                    className={`group/debt relative p-6 bg-slate-950/50 backdrop-blur-2xl rounded-2xl border transition-all duration-500 overflow-hidden ${
                       divida.isPaidOff
                         ? "border-emerald-500/30 hover:border-emerald-500/60"
                         : vencido
                           ? "border-red-500/40 hover:border-red-500/60"
                           : vencimentoProximo
                             ? "border-amber-500/30 hover:border-amber-500/60"
-                            : "border-slate-800 hover:border-slate-700"
+                            : "border-white/5 hover:border-white/15"
                     }`}
                   >
+                    {/* HUD Shimmer */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent -translate-x-full group-hover/debt:translate-x-full transition-transform duration-1000" style={{ transform: 'skewX(-20deg)' }} />
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       {/* Info Principal */}
                       <div className="flex-1 space-y-3">
@@ -569,6 +576,21 @@ export default function DividasPage() {
                                 </TooltipContent>
                               </Tooltip>
                             )}
+                            {/* Editar */}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => handleEdit(divida)}
+                                  className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
+                                >
+                                  <Edit2 className="w-5 h-5" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Editar Dívida</p>
+                              </TooltipContent>
+                            </Tooltip>
+
                             {/* Ver Detalhes */}
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -601,14 +623,15 @@ export default function DividasPage() {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
           )}
+          {/* Assistente Neural — Mestre Sábio */}
+          <MascotAssistant />
         </main>
 
-        {/* Modal Nova Dívida */}
         {showNewModal && (
           <NovaDividaModal
             onClose={() => setShowNewModal(false)}
@@ -618,6 +641,17 @@ export default function DividasPage() {
             }}
           />
         )}
+
+        {/* Modal Editar Dívida */}
+        <EditDebtModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedDebt(null);
+            fetchDividas();
+          }}
+          debt={selectedDebt}
+        />
       </div>
     </TooltipProvider>
   );
@@ -653,6 +687,12 @@ function NovaDividaModal({
     allowsPrepayment: true,
   });
 
+  const [showOtherCategory, setShowOtherCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
+
+  const [showOtherAccount, setShowOtherAccount] = useState(false);
+  const [customAccount, setCustomAccount] = useState("");
+
   useEffect(() => {
     fetch("/api/contas", { credentials: "include" })
       .then((r) => r.json())
@@ -662,17 +702,80 @@ function NovaDividaModal({
       .then((d) => setCategories(Array.isArray(d) ? d : []));
   }, []);
 
+  const handleCategoryChange = (value: string) => {
+    if (value === "OTHER") {
+      setShowOtherCategory(true);
+      setForm((prev) => ({ ...prev, categoryId: "" }));
+    } else {
+      setShowOtherCategory(false);
+      setForm((prev) => ({ ...prev, categoryId: value }));
+      setCustomCategory("");
+    }
+  };
+
+  const handleAccountChange = (value: string) => {
+    if (value === "OTHER_ACCOUNT") {
+      setShowOtherAccount(true);
+      setForm((prev) => ({ ...prev, accountId: "" }));
+    } else {
+      setShowOtherAccount(false);
+      setForm((prev) => ({ ...prev, accountId: value }));
+      setCustomAccount("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      let finalCategoryId = form.categoryId;
+      let finalAccountId = form.accountId;
+
+      // Criar nova conta se necessário
+      if (showOtherAccount && customAccount.trim()) {
+        const accRes = await fetch("/api/contas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: customAccount.trim(),
+            type: "CHECKING_ACCOUNT",
+            color: "#6366F1",
+            balance: 0,
+          }),
+        });
+
+        if (!accRes.ok) throw new Error("Erro ao criar a nova conta");
+        const accData = await accRes.json();
+        finalAccountId = accData.id;
+      }
+
+      // Se a categoria personalizada foi selecionada, devemos criá-la antes
+      if (showOtherCategory && customCategory.trim()) {
+        const catRes = await fetch("/api/categorias", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: customCategory.trim(),
+            type: "EXPENSE",
+            color: "#EF4444",
+            icon: "TrendingDown",
+          }),
+        });
+
+        if (!catRes.ok) throw new Error("Erro ao criar a nova categoria");
+        const catData = await catRes.json();
+        finalCategoryId = catData.category?.id || catData.id;
+      }
+
       const res = await fetch("/api/dividas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           ...form,
+          categoryId: finalCategoryId,
+          accountId: finalAccountId,
           totalAmount: Math.round(parseFloat(form.totalAmount) * 100),
           installmentValue: Math.round(parseFloat(form.installmentValue) * 100),
           installmentTotal: parseInt(form.installmentTotal),
@@ -690,8 +793,8 @@ function NovaDividaModal({
         const data = await res.json();
         alert(data.error || "Erro ao criar dívida");
       }
-    } catch {
-      alert("Erro ao criar dívida");
+    } catch (err: any) {
+      alert(err.message || "Erro ao criar dívida");
     } finally {
       setLoading(false);
     }
@@ -701,16 +804,16 @@ function NovaDividaModal({
     "w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-slate-700">
-          <h2 className="text-xl font-bold text-white">Nova Dívida</h2>
-          <p className="text-sm text-slate-400">
-            Registre um financiamento, empréstimo ou parcelamento
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+    <AnimatedModal
+      isOpen={true}
+      onClose={onClose}
+      title="Nova Dívida"
+      subtitle="Registre um financiamento, empréstimo ou parcelamento"
+      icon={<DollarSign className="w-6 h-6 text-white" />}
+      theme="emerald"
+      maxWidth="2xl"
+    >
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Nome + Credor */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -879,10 +982,8 @@ function NovaDividaModal({
               <select
                 className={inputClass}
                 required
-                value={form.accountId}
-                onChange={(e) =>
-                  setForm({ ...form, accountId: e.target.value })
-                }
+                value={showOtherAccount ? "OTHER_ACCOUNT" : form.accountId}
+                onChange={(e) => handleAccountChange(e.target.value)}
               >
                 <option value="">Selecione uma conta</option>
                 {accounts.map((a) => (
@@ -890,7 +991,23 @@ function NovaDividaModal({
                     {a.name}
                   </option>
                 ))}
+                <option value="OTHER_ACCOUNT">➕ Outra Conta...</option>
               </select>
+
+              {/* Campo personalizado para "Outra Conta" */}
+              {showOtherAccount && (
+                <div className="mt-3 p-3 bg-slate-900 border border-slate-700 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
+                  <input
+                    type="text"
+                    value={customAccount}
+                    onChange={(e) => setCustomAccount(e.target.value)}
+                    placeholder="Nome da nova conta"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                    autoFocus
+                    required
+                  />
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm text-slate-400 mb-1">
@@ -899,10 +1016,8 @@ function NovaDividaModal({
               <select
                 className={inputClass}
                 required
-                value={form.categoryId}
-                onChange={(e) =>
-                  setForm({ ...form, categoryId: e.target.value })
-                }
+                value={showOtherCategory ? "OTHER" : form.categoryId}
+                onChange={(e) => handleCategoryChange(e.target.value)}
               >
                 <option value="">Selecione uma categoria</option>
                 {categories.map((c) => (
@@ -910,7 +1025,23 @@ function NovaDividaModal({
                     {c.name}
                   </option>
                 ))}
+                <option value="OTHER">➕ Outra...</option>
               </select>
+
+              {/* Campo personalizado para "Outro" */}
+              {showOtherCategory && (
+                <div className="mt-3 p-3 bg-slate-900 border border-slate-700 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
+                  <input
+                    type="text"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    placeholder="Nome da nova categoria"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                    autoFocus
+                    required
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -947,7 +1078,6 @@ function NovaDividaModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AnimatedModal>
   );
 }

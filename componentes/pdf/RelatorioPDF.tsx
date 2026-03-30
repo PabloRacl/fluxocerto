@@ -108,10 +108,12 @@ interface RelatorioPDFProps {
     conta?: string;
     categoria?: string;
   };
+  saude?: any;
+  patrimonio?: any;
 }
 
 // Componente PDF
-export function RelatorioPDF({ dados, periodo, filtros }: RelatorioPDFProps) {
+export function RelatorioPDF({ dados, periodo, filtros, saude, patrimonio }: RelatorioPDFProps) {
   const totalReceitas = dados
     .filter((t) => t.type === "INCOME")
     .reduce((sum, t) => sum + t.amount, 0);
@@ -121,6 +123,8 @@ export function RelatorioPDF({ dados, periodo, filtros }: RelatorioPDFProps) {
     .reduce((sum, t) => sum + t.amount, 0);
 
   const saldo = totalReceitas - totalDespesas;
+
+  const scoreColor = saude?.score >= 80 ? "#059669" : saude?.score >= 50 ? "#d97706" : "#dc2626";
 
   return (
     <Document>
@@ -146,6 +150,23 @@ export function RelatorioPDF({ dados, periodo, filtros }: RelatorioPDFProps) {
             </Text>
           </View>
         )}
+
+        {/* --- P8 DIAGNÓSTICO FINANCEIRO --- */}
+        <View style={{ marginBottom: 20, flexDirection: 'row', gap: 10 }}>
+          {/* Coluna Saúde */}
+          <View style={{ flex: 1, padding: 10, backgroundColor: "#f8fafc", borderRadius: 8, borderLeftWidth: 4, borderLeftColor: scoreColor }}>
+            <Text style={{ fontSize: 8, color: "#64748b", marginBottom: 2 }}>SAÚDE FINANCEIRA</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: scoreColor }}>{saude?.score || 0}/100</Text>
+            <Text style={{ fontSize: 9, color: "#64748b", marginTop: 2 }}>Status: {saude?.status || 'N/A'}</Text>
+          </View>
+
+          {/* Coluna Patrimônio */}
+          <View style={{ flex: 1, padding: 10, backgroundColor: "#f8fafc", borderRadius: 8, borderLeftWidth: 4, borderLeftColor: "#047857" }}>
+            <Text style={{ fontSize: 8, color: "#64748b", marginBottom: 2 }}>PATRIMÔNIO LÍQUIDO</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: "#1e293b" }}>{formatarMoeda(patrimonio?.patrimonioLiquido || 0)}</Text>
+            <Text style={{ fontSize: 9, color: "#64748b", marginTop: 2 }}>{patrimonio?.ativos?.length || 0} Ativos Ativos</Text>
+          </View>
+        </View>
 
         {/* Tabela de transações */}
         <View style={styles.table}>

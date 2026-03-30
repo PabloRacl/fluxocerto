@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { X, Wallet, Check } from "lucide-react";
+import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
 
 // Cores disponíveis
 const AVAILABLE_COLORS = [
@@ -58,8 +59,6 @@ export default function NewAccountModal({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isVisible, setIsVisible] = useState(false);
-
   const [formData, setFormData] = useState({
     name: "",
     type: "CHECKING",
@@ -71,18 +70,6 @@ export default function NewAccountModal({
   const [showOtherType, setShowOtherType] = useState(false);
   const [customType, setCustomType] = useState("");
 
-  // Animação de entrada/saída
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-      document.body.style.overflow = "hidden";
-    } else {
-      const timer = setTimeout(() => setIsVisible(false), 300);
-      document.body.style.overflow = "";
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
-
   // Fechar com ESC
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -93,8 +80,6 @@ export default function NewAccountModal({
       return () => window.removeEventListener("keydown", handleEsc);
     }
   }, [isOpen, onClose]);
-
-  if (!isVisible) return null;
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -250,53 +235,15 @@ export default function NewAccountModal({
   };
 
   return (
-    <>
-      {/* Backdrop com blur e animação */}
-      <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0"
-        }`}
-        style={{
-          background: "rgba(2, 6, 23, 0.8)",
-          backdropFilter: "blur(8px)",
-        }}
-        onClick={onClose}
-      >
-        {/* Modal com animação de escala */}
-        <div
-          className={`relative w-full max-w-2xl transform transition-all duration-300 ${
-            isOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Gradiente de fundo sutil */}
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-slate-900/10 rounded-3xl blur-xl" />
-
-          {/* Conteúdo do Modal */}
-          <div className="relative bg-slate-900/95 backdrop-blur-xl rounded-3xl border border-emerald-500/20 shadow-2xl overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                  <Wallet className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                    Nova Conta
-                  </h2>
-                  <p className="text-sm text-slate-400">
-                    Cadastre uma nova conta bancária
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
+    <AnimatedModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Nova Conta"
+      subtitle="Cadastre uma nova conta bancária"
+      icon={<Wallet className="w-6 h-6 text-white" />}
+      theme="emerald"
+      maxWidth="2xl"
+    >
             {/* Formulário */}
             <form
               onSubmit={handleSubmit}
@@ -318,7 +265,7 @@ export default function NewAccountModal({
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  className="w-full px-4 py-3 bg-slate-800/80 border border-slate-600 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all relative z-10"
                   placeholder="Ex: Conta Corrente Banco X"
                   required
                 />
@@ -457,9 +404,6 @@ export default function NewAccountModal({
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      </div>
-    </>
+    </AnimatedModal>
   );
 }

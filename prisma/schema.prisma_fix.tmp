@@ -1,0 +1,82 @@
+model Purchase {
+  id               String         @id @default(uuid())
+  userId           String
+  description      String         @db.VarChar(200)
+  totalAmount      Int
+  purchaseDate     DateTime
+  storeName        String?        @db.VarChar(100)
+  storeLocation    String?
+  paymentMethod    PaymentMethod
+  accountId        String?
+  categoryId       String?
+  isInstallment    Boolean        @default(false)
+  installmentTotal Int?
+  installmentValue Int?
+  receiptUrl       String?
+  receiptXml       String?
+  isCompleted      Boolean        @default(true)
+  transactionId    String?
+  isArchived       Boolean        @default(false)
+  archivedAt       DateTime?
+  isDeleted        Boolean        @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  account          Account?       @relation(fields: [accountId], references: [id])
+  category         Category?      @relation(fields: [categoryId], references: [id])
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items            PurchaseItem[]
+  transaction      Transaction?
+
+  @@index([userId])
+  @@index([purchaseDate])
+}
+
+model PurchaseItem {
+  id               String    @id @default(uuid())
+  purchaseId       String
+  name             String    @db.VarChar(200)
+  quantity         Decimal   @db.Decimal(10, 2)
+  unit             String?
+  unitPrice        Int
+  totalPrice       Int
+  category         String?
+  barcode          String?
+  lastPrice        Int?
+  lastPurchaseDate DateTime?
+  createdAt        DateTime  @default(now())
+  purchase         Purchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseId])
+  @@index([name])
+}
+
+model NotificationPref {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  emailEnabled      Boolean  @default(true)
+  pushEnabled       Boolean  @default(true)
+  budgetAlert       Boolean  @default(true)
+  dueDateAlert      Boolean  @default(true)
+  dueDateDaysBefore Int      @default(3)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String
+  action     String   @db.VarChar(100)
+  entityType String   @db.VarChar(50)
+  entityId   String?
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}

@@ -1,0 +1,4 @@
+scripts/manual-sync.ts(1,24): error TS2307: Cannot find module './biblioteca/prisma' or its corresponding type declarations.
+scripts/manual-sync.ts(2,31): error TS2307: Cannot find module './servicos/PainelService' or its corresponding type declarations.
+servicos/InsightService.ts(198,9): error TS2304: Cannot find name 'notificacaoService'.
+servicos/InsightService.ts(213,9): error TS2304: Cannot find name 'notificacaoService'.

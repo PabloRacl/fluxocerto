@@ -25,7 +25,7 @@ export async function POST(
     }
 
     const meta = await prisma.meta.findFirst({
-      where: { id: params.id, usuarioId: user.id, excluida: true },
+      where: { id: params.id, usuarioId: user.id, isArchived: true },
     });
 
     if (!meta) {
@@ -37,7 +37,7 @@ export async function POST(
 
     await prisma.meta.update({
       where: { id: params.id },
-      data: { excluida: false, excluidaEm: null },
+      data: { isArchived: false, archivedAt: null },
     });
 
     return NextResponse.json({ message: "Meta restaurada com sucesso" });

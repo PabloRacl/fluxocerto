@@ -11,6 +11,8 @@ import {
   Tag,
   Wallet,
 } from "lucide-react";
+import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
 
 // Tipos de transação
 const TRANSACTION_TYPES = [
@@ -38,17 +40,19 @@ const STATUS_OPTIONS = [
 interface NewTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void; // ✅ OPCIONAL: callback após sucesso
+  onSuccess?: () => void;
   accounts?: any[];
   categories?: any[];
+  initialType?: "INCOME" | "EXPENSE"; // ✅ NOVO: Tipo inicial
 }
 
 export default function NewTransactionModal({
   isOpen,
   onClose,
-  onSuccess, // ✅ Recebe a prop
+  onSuccess,
   accounts = [],
   categories = [],
+  initialType, // ✅ Recebe a prop
 }: NewTransactionModalProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -70,17 +74,25 @@ export default function NewTransactionModal({
   const [showOtherCategory, setShowOtherCategory] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
 
-  // Animação de entrada/saída
+  const [showOtherAccount, setShowOtherAccount] = useState(false);
+  const [customAccount, setCustomAccount] = useState("");
+
+  // Animação de entrada/saída e configuração inicial
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
       document.body.style.overflow = "hidden";
+      
+      // ✅ Se vier um tipo inicial (do Dashboard), aplica
+      if (initialType) {
+        setFormData(prev => ({ ...prev, type: initialType }));
+      }
     } else {
       const timer = setTimeout(() => setIsVisible(false), 300);
       document.body.style.overflow = "";
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, initialType]);
 
   // Fechar com ESC
   useEffect(() => {
@@ -98,6 +110,17 @@ export default function NewTransactionModal({
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setError("");
+  };
+
+  const handleAccountChange = (value: string) => {
+    if (value === "OTHER_ACCOUNT") {
+      setShowOtherAccount(true);
+      setFormData((prev) => ({ ...prev, accountId: "" }));
+    } else {
+      setShowOtherAccount(false);
+      setFormData((prev) => ({ ...prev, accountId: value }));
+      setCustomAccount("");
+    }
   };
 
   const handleCategoryChange = (value: string) => {
@@ -118,10 +141,46 @@ export default function NewTransactionModal({
     setError("");
 
     try {
-      const finalCategoryId =
-        showOtherCategory && customCategory.trim()
-          ? customCategory.trim()
-          : formData.categoryId;
+      let finalCategoryId = formData.categoryId;
+      let finalAccountId = formData.accountId;
+
+      // Criar nova conta se necessário
+      if (showOtherAccount && customAccount.trim()) {
+        const accRes = await fetch("/api/contas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: customAccount.trim(),
+            type: "CHECKING_ACCOUNT",
+            color: "#6366F1",
+            balance: 0,
+          }),
+        });
+
+        if (!accRes.ok) throw new Error("Erro ao criar a nova conta");
+        const accData = await accRes.json();
+        finalAccountId = accData.id;
+      }
+
+      // Se a categoria personalizada foi selecionada, devemos criá-la antes
+      if (showOtherCategory && customCategory.trim()) {
+        const catRes = await fetch("/api/categorias", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: customCategory.trim(),
+            type: formData.type,
+            color: formData.type === "INCOME" ? "#10B981" : "#EF4444",
+            icon: formData.type === "INCOME" ? "TrendingUp" : "TrendingDown",
+          }),
+        });
+
+        if (!catRes.ok) throw new Error("Erro ao criar a nova categoria");
+        
+        const catData = await catRes.json();
+        // Fallback robusto garantindo extração certa do ID da categoria nova
+        finalCategoryId = catData.category?.id || catData.id;
+      }
 
       if (
         !formData.description ||
@@ -140,6 +199,7 @@ export default function NewTransactionModal({
         body: JSON.stringify({
           ...formData,
           categoryId: finalCategoryId,
+          accountId: finalAccountId,
           amount: amountInCents,
         }),
       });
@@ -172,63 +232,21 @@ export default function NewTransactionModal({
   );
 
   return (
-    <>
-      {/* Backdrop com blur e animação */}
-      <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0"
-        }`}
-        style={{
-          background: "rgba(2, 6, 23, 0.8)",
-          backdropFilter: "blur(8px)",
-        }}
-        onClick={onClose}
-      >
-        {/* Modal com animação de escala */}
-        <div
-          className={`relative w-full max-w-2xl transform transition-all duration-300 ${
-            isOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Gradiente de fundo sutil */}
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-slate-900/10 rounded-3xl blur-xl" />
-
-          {/* Conteúdo do Modal */}
-          <div className="relative bg-slate-900/95 backdrop-blur-xl rounded-3xl border border-emerald-500/20 shadow-2xl overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
-                    formData.type === "INCOME"
-                      ? "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/30"
-                      : "bg-gradient-to-br from-red-500 to-rose-600 shadow-red-500/30"
-                  }`}
-                >
-                  {formData.type === "INCOME" ? (
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  ) : (
-                    <TrendingDown className="w-6 h-6 text-white" />
-                  )}
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                    Nova Transação
-                  </h2>
-                  <p className="text-sm text-slate-400">
-                    Registre uma receita ou despesa
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
+    <AnimatedModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Nova Transação"
+      subtitle="Registre uma receita ou despesa"
+      icon={
+        formData.type === "INCOME" ? (
+          <TrendingUp className="w-6 h-6 text-white" />
+        ) : (
+          <TrendingDown className="w-6 h-6 text-white" />
+        )
+      }
+      theme={formData.type === "INCOME" ? "emerald" : "red"}
+      maxWidth="2xl"
+    >
             {/* Formulário */}
             <form
               onSubmit={handleSubmit}
@@ -314,8 +332,8 @@ export default function NewTransactionModal({
                     Conta *
                   </label>
                   <select
-                    value={formData.accountId}
-                    onChange={(e) => handleChange("accountId", e.target.value)}
+                    value={showOtherAccount ? "OTHER_ACCOUNT" : formData.accountId}
+                    onChange={(e) => handleAccountChange(e.target.value)}
                     className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-2xl text-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                     required
                   >
@@ -327,7 +345,23 @@ export default function NewTransactionModal({
                           {acc.name} ({formatCurrency(acc.balance)})
                         </option>
                       ))}
+                    <option value="OTHER_ACCOUNT">➕ Outra Conta...</option>
                   </select>
+
+                  {/* Campo personalizado para "Outra Conta" */}
+                  {showOtherAccount && (
+                    <div className="mt-3 p-3 bg-slate-800/30 border border-slate-700 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
+                      <input
+                        type="text"
+                        value={customAccount}
+                        onChange={(e) => setCustomAccount(e.target.value)}
+                        placeholder="Nome da nova conta"
+                        className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                        autoFocus
+                        required
+                      />
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -458,10 +492,7 @@ export default function NewTransactionModal({
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-500/30 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 >
                   {loading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Criando...
-                    </>
+                    <NeuralLoading message="Processando..." variant="inline" />
                   ) : (
                     <>
                       <Check className="w-5 h-5" />
@@ -471,10 +502,7 @@ export default function NewTransactionModal({
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      </div>
-    </>
+    </AnimatedModal>
   );
 }
 

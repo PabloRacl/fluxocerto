@@ -103,9 +103,17 @@ export default function OrcamentosPage() {
     <div className="min-h-screen bg-slate-950">
       <PageHeader
         title="Orçamentos"
-        subtitle="Defina limites mensais de gastos"
-        onRefresh={fetchBudget}
-      />
+        description="Defina limites mensais de gastos"
+        breadcrumbs={[{ label: "Orçamentos" }]}
+      >
+        <button
+          onClick={fetchBudget}
+          className="p-2 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:block"
+          title="Atualizar"
+        >
+          <RefreshCw className="w-5 h-5" />
+        </button>
+      </PageHeader>
       <main className="max-w-3xl mx-auto px-4 py-8">
         {/* Filtros */}
         <div className="flex gap-4 mb-8">

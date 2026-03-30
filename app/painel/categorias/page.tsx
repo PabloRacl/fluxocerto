@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { Archive, RefreshCw, Trash2, PieChart } from "lucide-react";
+import { Archive, RefreshCw, Trash2, PieChart, Plus } from "lucide-react";
 // ✅ IMPORT DO NOVO MODAL FUTURISTA
 import NewCategoryModal from "./_componentes/NewCategoryModal";
 import {
@@ -372,15 +372,10 @@ export default function CategoriesPage() {
         {/* ✅ HEADER PADRONIZADO */}
         <PageHeader
           title="Categorias"
-          subtitle="Organize suas receitas e despesas"
-          onBack={() => router.push("/painel")}
-          onRefresh={fetchCategories}
-          onNew={handleOpenModal}
-          newButtonText="Nova Categoria"
-          showDashboardLink={true}
-          // ✅ Toggle Ativas/Lixeira
-          extraActions={
-            <div className="flex items-center bg-slate-800 rounded-lg p-1 mr-2">
+          description="Organize suas receitas e despesas"
+          breadcrumbs={[{ label: "Categorias" }]}
+        >
+            <div className="flex bg-slate-800 rounded-lg p-1 mr-2">
               <button
                 onClick={() => setShowArchived(false)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
@@ -409,8 +404,21 @@ export default function CategoriesPage() {
                 )}
               </button>
             </div>
-          }
-        />
+          <button
+            onClick={fetchCategories}
+            className="p-2 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:block"
+            title="Atualizar"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleOpenModal}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:block">Nova Categoria</span>
+          </button>
+        </PageHeader>
 
         {/* Conteúdo Principal */}
         <main className="relative z-10 p-8">

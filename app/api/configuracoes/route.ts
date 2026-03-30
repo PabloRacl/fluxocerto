@@ -1,81 +1,40 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { prisma } from "@/biblioteca/prisma";
-import { authOptions } from "@/biblioteca/autenticacao";
+import { NextRequest } from "next/server";
+import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
+import { tratarErro } from "@/biblioteca/tratar-erro";
+import { sucesso } from "@/biblioteca/resposta-api";
+import { schemaAtualizarConfiguracao } from "@/validacoes/configuracao.schema";
+import { configuracaoService } from "@/servicos/ConfiguracaoService";
 
+// ============================================
+// GET - Obter configurações do usuário
+// ============================================
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email)
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-    if (!user)
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 },
-      );
+    const user = await obterUsuarioAutenticado();
+    const configuracoes = await configuracaoService.obter(user.id);
 
-    return NextResponse.json({
-      usuario: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        image: user.image,
-        sessionDuration: user.sessionDuration,
-        autoLogoutMinutes: user.autoLogoutMinutes,
-        darkMode: user.darkMode,
-        currency: user.currency,
-        timezone: user.timezone,
-      },
-    });
+    return sucesso({ usuario: configuracoes });
   } catch (error) {
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return tratarErro(error);
   }
 }
 
+// ============================================
+// PUT - Atualizar Configurações Parciais
+// ============================================
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email)
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-    if (!user)
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 },
-      );
-
+    const user = await obterUsuarioAutenticado();
     const body = await request.json();
-    const updated = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        name: body.name !== undefined ? body.name : user.name,
-        sessionDuration: body.sessionDuration ?? user.sessionDuration,
-        autoLogoutMinutes: body.autoLogoutMinutes ?? user.autoLogoutMinutes,
-        darkMode: body.darkMode ?? user.darkMode,
-        currency: body.currency ?? user.currency,
-        timezone: body.timezone ?? user.timezone,
-      },
-    });
+    const dados = schemaAtualizarConfiguracao.parse(body);
 
-    return NextResponse.json({
+    const usuarioAtualizado = await configuracaoService.atualizar(user.id, dados);
+
+    return sucesso({
       message: "Configurações atualizadas",
-      usuario: {
-        id: updated.id,
-        name: updated.name,
-        email: updated.email,
-        sessionDuration: updated.sessionDuration,
-        autoLogoutMinutes: updated.autoLogoutMinutes,
-        darkMode: updated.darkMode,
-        currency: updated.currency,
-        timezone: updated.timezone,
-      },
+      usuario: usuarioAtualizado,
     });
   } catch (error) {
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return tratarErro(error);
   }
 }

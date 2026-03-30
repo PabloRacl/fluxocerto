@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { api } from "@/biblioteca/http-client";
 import {
   Bell,
   BellOff,
@@ -94,11 +96,9 @@ export default function NotificacoesPage() {
       const params = new URLSearchParams();
       if (filtro === "NAO_LIDAS") params.set("apenasNaoLidas", "true");
 
-      const res = await fetch(`/api/notificacoes?${params}`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
+      const data = await api.get<{ notificacoes: Notificacao[]; naoLidas: number }>(
+        `/api/notificacoes?${params.toString()}`,
+      );
       setNotificacoes(data.notificacoes || []);
       setNaoLidas(data.naoLidas || 0);
     } catch {
@@ -118,34 +118,20 @@ export default function NotificacoesPage() {
 
   const marcarLida = async (id: string) => {
     try {
-      await fetch("/api/notificacoes", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ ids: [id] }),
-      });
+      await api.patch("/api/notificacoes", { ids: [id] });
       fetchNotificacoes();
     } catch {}
   };
 
   const marcarTodasLidas = async () => {
     try {
-      await fetch("/api/notificacoes", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ marcarTodas: true }),
-      });
+      await api.patch("/api/notificacoes", { marcarTodas: true });
       fetchNotificacoes();
     } catch {}
   };
 
   if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500" />
-      </div>
-    );
+    return <NeuralLoading message="Escaneando Central de Alertas..." variant="full" />;
   }
 
   return (
@@ -187,14 +173,7 @@ export default function NotificacoesPage() {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading && (
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-20 animate-pulse bg-slate-800 rounded-xl"
-              />
-            ))}
-          </div>
+          <NeuralLoading message="Sincronizando Alertas..." variant="card" />
         )}
 
         {!loading && notificacoes.length === 0 && (

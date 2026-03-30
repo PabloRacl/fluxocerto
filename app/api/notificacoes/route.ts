@@ -1,115 +1,112 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/biblioteca/prisma";
-import { authOptions } from "@/biblioteca/autenticacao";
+import { notificacaoService } from "@/servicos/NotificacaoService";
+import { withAuthRoute } from "@/biblioteca/route-wrapper";
 
-// ============================================
-// GET - Listar Notificações
-// ============================================
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+const bodySchema = z
+  .object({
+    action: z.enum(["subscribe", "read"]),
+    id: z.string().optional(),
+    subscription: z.unknown().optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.action === "read" && !val.id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Campo `id` é obrigatório para action 'read'.",
+        path: ["id"],
+      });
     }
+    if (val.action === "subscribe" && !val.subscription) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Campo `subscription` é obrigatório para action 'subscribe'.",
+        path: ["subscription"],
+      });
+    }
+  });
 
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (!user) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+const patchSchema = z.object({
+  ids: z.array(z.string()).optional(),
+  marcarTodas: z.boolean().optional(),
+});
 
-    const params = request.nextUrl.searchParams;
-    const apenasNaoLidas = params.get("apenasNaoLidas") === "true";
+/**
+ * API de Notificações (P14) - Fix: UUID Integrity
+ */
+export const GET = withAuthRoute(async (_req, user) => {
+  // Compat com o front: suporta filtro via query param.
+  const req = _req; // alias apenas para clareza
+  const apenasNaoLidas = req.nextUrl.searchParams.get("apenasNaoLidas") === "true";
 
-    const where: any = { usuarioId: user.id };
-    if (apenasNaoLidas) where.lido = false;
+  const where = {
+    usuarioId: user.id,
+    ...(apenasNaoLidas ? { lido: false } : {}),
+  };
 
-    const lembretes = await prisma.lembrete.findMany({
+  const [notificacoes, naoLidas] = await Promise.all([
+    prisma.lembrete.findMany({
       where,
       orderBy: { criadoEm: "desc" },
-      take: 50,
-    });
+      take: 20,
+    }),
+    apenasNaoLidas
+      ? Promise.resolve(0)
+      : prisma.lembrete.count({ where: { usuarioId: user.id, lido: false } }),
+  ]);
 
-    const naoLidas = await prisma.lembrete.count({
-      where: { usuarioId: user.id, lido: false },
-    });
+  return NextResponse.json({ ok: true, data: { notificacoes, naoLidas } });
+});
 
-    return NextResponse.json({
-      notificacoes: lembretes,
-      naoLidas,
-    });
-  } catch (error) {
-    console.error("Erro ao listar notificações:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+export const POST = withAuthRoute(async (req, user) => {
+  const parsed = bodySchema.parse(await req.json());
+
+  if (parsed.action === "subscribe") {
+    await notificacaoService.salvarSubscricao(user.id, parsed.subscription);
+    return NextResponse.json({ success: true });
   }
-}
 
-// ============================================
-// POST - Criar Notificação Manual
-// ============================================
-export async function POST(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (!user) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
-
-    const body = await request.json();
-    const { titulo, mensagem, tipo, notificarEm, referenciaId, referenciaTipo } = body;
-
-    if (!titulo || !tipo) {
-      return NextResponse.json({ error: "Título e tipo são obrigatórios" }, { status: 400 });
-    }
-
-    const lembrete = await prisma.lembrete.create({
-      data: {
-        usuarioId: user.id,
-        titulo,
-        mensagem: mensagem || null,
-        tipo,
-        notificarEm: notificarEm ? new Date(notificarEm) : new Date(),
-        referenciaId: referenciaId || null,
-        referenciaTipo: referenciaTipo || null,
-      },
+  if (parsed.action === "read") {
+    const result = await prisma.lembrete.updateMany({
+      where: { id: parsed.id, usuarioId: user.id },
+      data: { lido: true, lidoEm: new Date() },
     });
 
-    return NextResponse.json({ message: "Notificação criada", notificacao: lembrete }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
-  }
-}
-
-// ============================================
-// PATCH - Marcar como lida (batch)
-// ============================================
-export async function PATCH(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    if (result.count === 0) {
+      return NextResponse.json(
+        { error: "Notificação não encontrada" },
+        { status: 404 },
+      );
     }
 
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (!user) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
-
-    const body = await request.json();
-    const { ids, marcarTodas } = body;
-
-    if (marcarTodas) {
-      await prisma.lembrete.updateMany({
-        where: { usuarioId: user.id, lido: false },
-        data: { lido: true, lidoEm: new Date() },
-      });
-    } else if (ids && Array.isArray(ids)) {
-      await prisma.lembrete.updateMany({
-        where: { id: { in: ids }, usuarioId: user.id },
-        data: { lido: true, lidoEm: new Date() },
-      });
-    }
-
-    return NextResponse.json({ message: "Notificações marcadas como lidas" });
-  } catch (error) {
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return NextResponse.json({ success: true });
   }
-}
+
+  return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+});
+
+export const PATCH = withAuthRoute(async (req, user) => {
+  const parsed = patchSchema.parse(await req.json());
+  const body = parsed as z.infer<typeof patchSchema>;
+
+  const now = new Date();
+
+  if (body.marcarTodas) {
+    await prisma.lembrete.updateMany({
+      where: { usuarioId: user.id },
+      data: { lido: true, lidoEm: now },
+    });
+    return NextResponse.json({ success: true });
+  }
+
+  if (body.ids && body.ids.length > 0) {
+    await prisma.lembrete.updateMany({
+      where: { usuarioId: user.id, id: { in: body.ids } },
+      data: { lido: true, lidoEm: now },
+    });
+    return NextResponse.json({ success: true });
+  }
+
+  return NextResponse.json({ error: "Body inválido" }, { status: 400 });
+});

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
 import { Bell, Plus, Trash2, Check, RefreshCw, Eye, X } from "lucide-react";
 
 const TIPO_LABELS: Record<string, string> = {
@@ -118,25 +119,34 @@ export default function LembretesPage() {
     <div className="min-h-screen bg-slate-950">
       <PageHeader
         title="Lembretes"
-        subtitle="Gerencie seus lembretes financeiros"
-        onRefresh={fetchLembretes}
-      />
-      <main className="max-w-3xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
+        description="Gerencie seus lembretes financeiros"
+        breadcrumbs={[{ label: "Lembretes" }]}
+      >
+        <div className="flex items-center gap-2 mr-2">
           <button
             onClick={() => setShowRead(!showRead)}
-            className="flex items-center gap-2 text-sm text-slate-400 hover:text-white"
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-slate-800 text-slate-400 hover:text-white"
           >
-            <Eye className="w-4 h-4" />{" "}
-            {showRead ? "Ocultar lidos" : "Mostrar lidos"}
-          </button>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium"
-          >
-            <Plus className="w-4 h-4" /> Novo Lembrete
+            <Eye className="w-4 h-4" />
+            <span className="hidden sm:inline">{showRead ? "Ocultar lidos" : "Mostrar lidos"}</span>
           </button>
         </div>
+        <button
+          onClick={fetchLembretes}
+          className="p-2 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:block"
+          title="Atualizar"
+        >
+          <RefreshCw className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
+        >
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:block">Novo Lembrete</span>
+        </button>
+      </PageHeader>
+      <main className="max-w-3xl mx-auto px-4 py-8">
 
         {loading ? (
           <div className="flex justify-center py-12">
@@ -196,15 +206,15 @@ export default function LembretesPage() {
         )}
 
         {showModal && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-900 rounded-xl p-6 w-full max-w-md border border-slate-800">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold text-white">Novo Lembrete</h3>
-                <button onClick={() => setShowModal(false)}>
-                  <X className="w-5 h-5 text-slate-400" />
-                </button>
-              </div>
-              <div className="space-y-3">
+          <AnimatedModal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            title="Novo Lembrete"
+            icon={<Bell className="w-6 h-6 text-white" />}
+            theme="emerald"
+            maxWidth="md"
+          >
+              <div className="p-6 space-y-3">
                 <input
                   value={form.titulo}
                   onChange={(e) => setForm({ ...form, titulo: e.target.value })}
@@ -259,8 +269,7 @@ export default function LembretesPage() {
                   Criar
                 </button>
               </div>
-            </div>
-          </div>
+          </AnimatedModal>
         )}
       </main>
     </div>

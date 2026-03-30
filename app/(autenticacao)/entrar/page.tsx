@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { Wallet, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { BrandLogo } from "@/app/_componentes/BrandLogo";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -55,12 +56,7 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-md z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-2xl mb-4">
-            <Wallet className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-            FluxoCerto
-          </h1>
+          <BrandLogo size="lg" className="justify-center mb-4" />
           <p className="text-slate-400 mt-2">
             Entre para controlar suas finanças
           </p>

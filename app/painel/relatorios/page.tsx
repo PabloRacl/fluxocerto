@@ -20,8 +20,14 @@ import {
   X,
   Building2,
   Tag,
+  Activity,
+  Lightbulb,
+  Zap,
 } from "lucide-react";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { NeuralMascot } from "@/app/painel/_componentes/NeuralMascot";
+import { neuralVoice } from "@/biblioteca/NeuralVoiceService";
 import {
   BarChart,
   Bar,
@@ -33,7 +39,9 @@ import {
   PieChart,
   Pie,
   Cell,
+  Legend,
 } from "recharts";
+import { HistoricoRelatorios } from "./_componentes/HistoricoRelatorios";
 
 // ============================================
 // TIPOS E INTERFACES
@@ -142,6 +150,19 @@ export default function RelatoriosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mostrarValores, setMostrarValores] = useState(true);
+  const [activeTab, setActiveTab] = useState<"gerencial" | "historico">(
+    "gerencial"
+  );
+
+  // Efeito para lidar com o parâmetro de query ?tab=historico
+  useEffect(() => {
+    const tab = searchParams?.get("tab");
+    if (tab === "historico") {
+      setActiveTab("historico");
+    } else if (tab === "gerencial") {
+      setActiveTab("gerencial");
+    }
+  }, [searchParams]);
 
   // Estados - Filtros Auxiliares
   const [contas, setContas] = useState<Conta[]>([]);
@@ -161,11 +182,6 @@ export default function RelatoriosPage() {
   const formatarPorcentagem = useCallback((valor: number) => {
     const sinal = valor >= 0 ? "+" : "";
     return `${sinal}${valor.toFixed(1)}%`;
-  }, []);
-
-  const formatarDataInput = useCallback((dataIso: string) => {
-    if (!dataIso) return "";
-    return dataIso.split("T")[0];
   }, []);
 
   // ============================================
@@ -238,7 +254,6 @@ export default function RelatoriosPage() {
         params.append("categoriaId", categoriaFiltro);
       }
 
-      // ✅ CORREÇÃO AQUI: Usar params.toString()
       const response = await fetch(
         `/api/relatorios/mensal?${params.toString()}`,
       );
@@ -249,6 +264,15 @@ export default function RelatoriosPage() {
 
       const data: RelatorioData = await response.json();
       setDados(data);
+
+      // --- INSIGHT DO MASCOTE PARA O RELATÓRIO (VOZ ANIME) ---
+      if (data && data.resumo) {
+        const saldo = data.resumo.saldo / 100;
+        let insightMsg = "";
+        
+        const audioId = saldo > 0 ? "report_positivo" : "report_alert";
+        neuralVoice.speak(insightMsg, audioId);
+      }
     } catch (err) {
       console.error("Erro ao buscar relatório:", err);
       setError(
@@ -334,7 +358,6 @@ export default function RelatoriosPage() {
   };
 
   const handleAplicarFiltros = () => {
-    // Atualiza URL com filtros para persistência
     const params = new URLSearchParams();
     params.append("mes", String(mesAtual));
     params.append("ano", String(anoAtual));
@@ -359,48 +382,6 @@ export default function RelatoriosPage() {
     buscarRelatorio();
   };
 
-  const handleExportarCSV = () => {
-    const params = new URLSearchParams();
-    params.append("mes", String(mesAtual));
-    params.append("ano", String(anoAtual));
-
-    if (periodoPreset !== "MES" && periodoPreset !== "CUSTOM") {
-      params.append("periodo", periodoPreset);
-    }
-    if (periodoPreset === "CUSTOM" && dataInicioCustom && dataFimCustom) {
-      params.append("dataInicio", dataInicioCustom);
-      params.append("dataFim", dataFimCustom);
-    }
-    if (tipoFiltro !== "ALL") params.append("tipo", tipoFiltro);
-    if (contaFiltro) params.append("contaId", contaFiltro);
-    if (categoriaFiltro) params.append("categoriaId", categoriaFiltro);
-
-    window.open(`/api/relatorios/exportar?${params.toString()}`, "_blank");
-  };
-
-  const handleExportarPDF = () => {
-    const params = new URLSearchParams();
-    params.append("mes", String(mesAtual));
-    params.append("ano", String(anoAtual));
-
-    if (periodoPreset !== "MES" && periodoPreset !== "CUSTOM") {
-      params.append("periodo", periodoPreset);
-    }
-    if (periodoPreset === "CUSTOM" && dataInicioCustom && dataFimCustom) {
-      params.append("dataInicio", dataInicioCustom);
-      params.append("dataFim", dataFimCustom);
-    }
-    if (tipoFiltro !== "ALL") params.append("tipo", tipoFiltro);
-    if (contaFiltro) params.append("contaId", contaFiltro);
-    if (categoriaFiltro) params.append("categoriaId", categoriaFiltro);
-
-    window.open(`/api/relatorios/exportar-pdf?${params.toString()}`, "_blank");
-  };
-
-  const handleExportar = () => {
-    handleExportarCSV();
-  };
-
   // Contar filtros ativos para badge
   const contarFiltrosAtivos = () => {
     let count = 0;
@@ -415,14 +396,7 @@ export default function RelatoriosPage() {
   // RENDERIZAÇÃO CONDICIONAL
   // ============================================
   if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-400">Carregando relatórios...</p>
-        </div>
-      </div>
-    );
+    return <NeuralLoading message="Gerando Matriz de Relatórios..." variant="full" />;
   }
 
   if (status === "unauthenticated") {
@@ -466,54 +440,49 @@ export default function RelatoriosPage() {
   // RENDERIZAÇÃO PRINCIPAL
   // ============================================
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8">
-      {/* ============================================
-          HEADER
-      ============================================ */}
-      <div className="mb-8">
-        <PageHeader
-          title="Relatórios Financeiros"
-          subtitle="Acompanhe a evolução das suas finanças"
-          onBack={() => router.push("/painel")}
-          showDashboardLink={false}
-          extraActions={
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleExportarPDF}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700"
-                title="Exportar em PDF"
-              >
-                <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline">PDF</span>
-              </button>
-              <button
-                onClick={handleExportar}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors"
-                title="Exportar em CSV"
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">CSV</span>
-              </button>
-              <button
-                onClick={buscarRelatorio}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700"
-                title="Atualizar dados"
-              >
-                <RefreshCcw
-                  className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
-                />
-                <span className="hidden sm:inline">Atualizar</span>
-              </button>
-            </div>
-          }
-        />
-      </div>
+    <div className="min-h-screen bg-slate-950">
+      <PageHeader
+        title="Relatórios e Análises"
+        description="Analise seu desempenho financeiro com dados detalhados"
+        breadcrumbs={[{ label: "Relatórios" }]}
+      >
+        <div className="flex items-center bg-slate-800 rounded-lg p-1">
+          <button
+            onClick={() => setActiveTab("gerencial")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              activeTab === "gerencial"
+                ? "bg-emerald-600 text-white"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            <TrendingUp className="w-3 h-3" />
+            Gerencial
+          </button>
+          <button
+            onClick={() => setActiveTab("historico")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              activeTab === "historico"
+                ? "bg-slate-700 text-white"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            <FileText className="w-3 h-3" />
+            Histórico
+          </button>
+        </div>
 
-      {/* ============================================
-          FILTRO DE PERÍODO E FILTROS AVANÇADOS
-      ============================================ */}
-      <div className="max-w-7xl mx-auto mb-8 space-y-4">
-        {/* Filtro de Período */}
+        <button
+          onClick={buscarRelatorio}
+          className="p-2 text-slate-400 hover:text-emerald-400 transition-colors"
+          title="Atualizar"
+        >
+          <RefreshCcw className="w-5 h-5" />
+        </button>
+      </PageHeader>
+
+      {activeTab === "gerencial" ? (
+        <>
+          <div className="max-w-7xl mx-auto mb-8 space-y-4">
         <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-4">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div className="flex items-center gap-2 flex-wrap">
@@ -548,7 +517,6 @@ export default function RelatoriosPage() {
               </button>
             </div>
 
-            {/* Presets de Período */}
             <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
               {[
                 { value: "MES", label: "Mês" },
@@ -574,7 +542,6 @@ export default function RelatoriosPage() {
             </div>
           </div>
 
-          {/* Período Customizado */}
           {periodoPreset === "CUSTOM" && (
             <div className="mt-4 pt-4 border-t border-slate-800 flex flex-wrap items-center gap-3">
               <label className="text-sm text-slate-400">De:</label>
@@ -595,7 +562,6 @@ export default function RelatoriosPage() {
           )}
         </div>
 
-        {/* Filtros Avançados */}
         <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-4">
           <div className="flex items-center gap-2 mb-4">
             <Filter className="w-4 h-4 text-emerald-400" />
@@ -608,7 +574,6 @@ export default function RelatoriosPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Filtro por Tipo */}
             <div>
               <label className="block text-xs text-slate-400 mb-1">Tipo</label>
               <select
@@ -622,7 +587,6 @@ export default function RelatoriosPage() {
               </select>
             </div>
 
-            {/* Filtro por Conta */}
             <div>
               <label className="block text-xs text-slate-400 mb-1 items-center gap-1">
                 <Building2 className="w-3 h-3" /> Conta
@@ -645,7 +609,6 @@ export default function RelatoriosPage() {
               )}
             </div>
 
-            {/* Filtro por Categoria */}
             <div>
               <label className="block text-xs text-slate-400 mb-1 items-center gap-1">
                 <Tag className="w-3 h-3" /> Categoria
@@ -668,7 +631,6 @@ export default function RelatoriosPage() {
               )}
             </div>
 
-            {/* Botões de Ação */}
             <div className="flex items-end gap-2">
               <button
                 onClick={handleAplicarFiltros}
@@ -686,7 +648,6 @@ export default function RelatoriosPage() {
             </div>
           </div>
 
-          {/* Barra de Filtros Ativos */}
           {contarFiltrosAtivos() > 0 && (
             <div className="mt-4 pt-4 border-t border-slate-800 flex flex-wrap items-center gap-2">
               <span className="text-xs text-slate-400">Filtros ativos:</span>
@@ -744,22 +705,15 @@ export default function RelatoriosPage() {
         </div>
       </div>
 
-      {/* ============================================
-          CARDS DE RESUMO
-      ============================================ */}
       <div className="max-w-7xl mx-auto mb-8">
-        {/* Resumo de Resultados */}
         {dados && !loading && (
           <div className="mb-4 text-sm text-slate-400">
             {dados.resumo.quantidadeTransacoes} transação(ões) encontrada(s) no
             período
-            {tipoFiltro !== "ALL" &&
-              ` • Filtrado por: ${tipoFiltro === "INCOME" ? "Receitas" : "Despesas"}`}
           </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card Receitas */}
           <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6 hover:border-emerald-500/30 transition-colors">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
@@ -785,7 +739,6 @@ export default function RelatoriosPage() {
             </p>
           </div>
 
-          {/* Card Despesas */}
           <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6 hover:border-red-500/30 transition-colors">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
@@ -811,7 +764,6 @@ export default function RelatoriosPage() {
             </p>
           </div>
 
-          {/* Card Saldo */}
           <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6 hover:border-blue-500/30 transition-colors">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
@@ -843,7 +795,6 @@ export default function RelatoriosPage() {
             </p>
           </div>
 
-          {/* Card Projeção (só aparece se for mês atual) */}
           {dados?.projecao && periodoPreset === "MES" && (
             <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-amber-500/30 p-6 hover:border-amber-500/50 transition-colors">
               <div className="flex items-center justify-between mb-4">
@@ -869,59 +820,137 @@ export default function RelatoriosPage() {
             </div>
           )}
         </div>
+
+        {dados && (
+            <div className="mt-8 p-6 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-transparent pointer-events-none" />
+                
+                <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+                    <div className="p-4 bg-slate-900/60 rounded-full border border-white/5 shadow-2xl group-hover:scale-105 transition-transform duration-500">
+                        <NeuralMascot size="lg" mood={dados.resumo.saldo >= 0 ? "HAPPY" : "WORRIED"} level={40} showScan={true} />
+                    </div>
+
+                    <div className="flex-1 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
+                                <Lightbulb className="w-5 h-5 text-emerald-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-white uppercase tracking-tighter">Conclusão do Guardião Neural</h3>
+                                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Análise de Fluxo Mensal</p>
+                            </div>
+                        </div>
+
+                        <div className="p-5 bg-slate-950/60 rounded-2xl border border-white/5 italic text-slate-300 font-medium leading-relaxed">
+                            "{dados.resumo.saldo >= 0 
+                                ? `Ótimo trabalho, Pablo! Seu fluxo de ${formatarMoeda(dados.resumo.saldo)} é combustível puro para seus objetivos. Sua eficiência de gastos está operando em parâmetros ideais.` 
+                                : `Pablo, detectamos uma anomalia produtiva. Você operou em déficit de ${formatarMoeda(Math.abs(dados.resumo.saldo))}. Meus algoritmos sugerem revisão imediata das categorias de maior peso.`
+                            }"
+                        </div>
+
+                        <div className="flex flex-wrap gap-4">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/40 rounded-xl border border-white/5">
+                                <Zap className="w-4 h-4 text-amber-400" />
+                                <span className="text-xs font-black text-white uppercase tracking-tight">Status: {dados.resumo.saldo >= 0 ? "OTIMIZADO" : "CRÍTICO"}</span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/40 rounded-xl border border-white/5">
+                                <Activity className="w-4 h-4 text-emerald-400" />
+                                <span className="text-xs font-black text-white uppercase tracking-tight">Saúde: {(dados as any).saude?.status || "Estável"}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
       </div>
 
-      {/* ============================================
-          GRÁFICOS
-      ============================================ */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Gráfico de Barras - Receitas vs Despesas por Dia */}
-          <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6">
-            <h3 className="text-lg font-semibold text-white mb-6">
-              Receitas vs Despesas por Dia
+          <div className="bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/10 p-6 relative overflow-hidden group">
+            <div className="absolute -right-12 -top-12 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full" />
+            
+            <h3 className="text-lg font-black text-white mb-6 uppercase tracking-tighter flex items-center gap-2 relative z-10">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Fluxo Diário: Receitas vs Despesas
             </h3>
+
             {loading ? (
               <div className="h-64 flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <NeuralLoading message="Sincronizando Séries Temporais..." variant="card" />
               </div>
             ) : dadosGraficoBarras.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dadosGraficoBarras}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <BarChart data={dadosGraficoBarras} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <filter id="neonGlowBar" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="3" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                   <XAxis
                     dataKey="nome"
-                    stroke="#64748b"
-                    tick={{ fontSize: 12 }}
+                    stroke="#475569"
+                    tick={{ fontSize: 10, fontWeight: 700 }}
+                    axisLine={false}
+                    tickLine={false}
+                    dy={10}
                   />
                   <YAxis
-                    stroke="#64748b"
-                    tick={{ fontSize: 12 }}
+                    stroke="#475569"
+                    tick={{ fontSize: 10, fontWeight: 700 }}
                     tickFormatter={(value) => `R$ ${value}`}
+                    axisLine={false}
+                    tickLine={false}
                   />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#0f172a",
-                      border: "1px solid #1e293b",
-                      borderRadius: "8px",
+                    cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 border-b border-white/5 pb-2">Dia {label}</p>
+                            <div className="space-y-1.5 relative z-10">
+                              <div className="flex justify-between gap-6">
+                                <span className="text-xs text-slate-400">Receitas:</span>
+                                <span className="text-xs font-bold text-emerald-400">
+                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(payload[0].value as number)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between gap-6">
+                                <span className="text-xs text-slate-400">Despesas:</span>
+                                <span className="text-xs font-bold text-red-400">
+                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(payload[1].value as number)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
                     }}
-                    labelStyle={{ color: "#94a3b8" }}
-                    formatter={(value: number) => [
-                      formatarMoeda(value * 100),
-                      "",
-                    ]}
                   />
-                  <Bar
-                    dataKey="receitas"
-                    fill="#10B981"
-                    radius={[4, 4, 0, 0]}
-                    name="Receitas"
+                  <Legend 
+                    verticalAlign="top" 
+                    align="right" 
+                    height={36} 
+                    iconType="circle"
+                    formatter={(value) => <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{value}</span>}
                   />
-                  <Bar
-                    dataKey="despesas"
-                    fill="#EF4444"
-                    radius={[4, 4, 0, 0]}
-                    name="Despesas"
+                  <Bar 
+                    dataKey="receitas" 
+                    fill="#10B981" 
+                    radius={[4, 4, 0, 0]} 
+                    name="Receitas" 
+                    style={{ filter: "url(#neonGlowBar)" }}
+                  />
+                  <Bar 
+                    dataKey="despesas" 
+                    fill="#EF4444" 
+                    radius={[4, 4, 0, 0]} 
+                    name="Despesas" 
+                    style={{ filter: "url(#neonGlowBar)" }}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -933,73 +962,90 @@ export default function RelatoriosPage() {
             )}
           </div>
 
-          {/* Gráfico de Pizza - Top Categorias */}
-          <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6">
-            <h3 className="text-lg font-semibold text-white mb-6">
-              Top 5 Categorias de Despesas
+          <div className="bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/10 p-6 relative overflow-hidden group">
+             <div className="absolute -left-12 -bottom-12 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full" />
+             
+            <h3 className="text-lg font-black text-white mb-6 uppercase tracking-tighter flex items-center gap-2 relative z-10">
+              <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+              Categorias Críticas: Volume de Gastos
             </h3>
+
             {loading ? (
               <div className="h-64 flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <NeuralLoading message="Processando Mix de Categorias..." variant="card" />
               </div>
             ) : dadosGraficoPizza.length > 0 ? (
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <ResponsiveContainer width="100%" height={250}>
+              <div className="flex flex-col md:flex-row items-center gap-6 relative z-10 w-full h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
+                    <defs>
+                      <filter id="neonGlowPie" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
                     <Pie
                       data={dadosGraficoPizza}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
+                      innerRadius={70}
                       outerRadius={100}
-                      paddingAngle={2}
+                      paddingAngle={5}
                       dataKey="valor"
+                      stroke="none"
                     >
                       {dadosGraficoPizza.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={
-                            entry.cor ||
-                            CORES_GRAFICO[index % CORES_GRAFICO.length]
-                          }
+                          fill={entry.cor || CORES_GRAFICO[index % CORES_GRAFICO.length]}
+                          style={{ filter: "url(#neonGlowPie)" }}
                         />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#0f172a",
-                        border: "1px solid #1e293b",
-                        borderRadius: "8px",
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const item = payload[0].payload;
+                          return (
+                            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl relative overflow-hidden">
+                              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent pointer-events-none" />
+                              <div className="flex items-center gap-2 mb-2 relative z-10">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.cor }} />
+                                <p className="text-xs font-black text-white uppercase tracking-widest">{item.name}</p>
+                              </div>
+                              <p className="text-sm font-black text-white relative z-10">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.value)}
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
                       }}
-                      formatter={(value: number) => [
-                        formatarMoeda(value * 100),
-                        "Total",
-                      ]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
 
-                {/* Legenda */}
-                <div className="flex-1 space-y-2 w-full">
+                <div className="flex-1 space-y-2 w-full max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
                   {dadosGraficoPizza.map((cat, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2 bg-slate-800/50 rounded-lg"
+                      className="flex items-center justify-between p-2.5 bg-slate-900/40 rounded-xl border border-white/5 hover:border-white/10 transition-colors"
                     >
                       <div className="flex items-center gap-2">
                         <div
-                          className="w-3 h-3 rounded-full"
+                          className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_currentColor]"
                           style={{
                             backgroundColor:
                               cat.cor ||
                               CORES_GRAFICO[index % CORES_GRAFICO.length],
+                            color: cat.cor || CORES_GRAFICO[index % CORES_GRAFICO.length]
                           }}
                         />
-                        <span className="text-sm text-slate-300">
+                        <span className="text-[11px] font-bold text-slate-300 uppercase tracking-tighter">
                           {cat.nome}
                         </span>
                       </div>
-                      <span className="text-sm font-medium text-white">
+                      <span className="text-[11px] font-black text-white tracking-widest leading-none">
                         {formatarMoeda(cat.valor * 100)}
                       </span>
                     </div>
@@ -1009,7 +1055,7 @@ export default function RelatoriosPage() {
             ) : (
               <div className="h-64 flex flex-col items-center justify-center text-slate-400">
                 <TrendingDown className="w-12 h-12 mb-2 opacity-50" />
-                <p>Sem despesas neste período</p>
+                <p className="text-sm font-medium italic">Sem despesas registradas nesta janela temporal</p>
               </div>
             )}
           </div>
@@ -1128,6 +1174,10 @@ export default function RelatoriosPage() {
             </div>
           </div>
         </div>
+      )}
+        </>
+      ) : (
+        <HistoricoRelatorios />
       )}
     </div>
   );

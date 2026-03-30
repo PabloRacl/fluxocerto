@@ -1,379 +1,244 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import {
-  Package,
-  Plus,
+import { useState, useEffect } from "react";
+import { 
+  Package, 
+  AlertTriangle, 
+  Calendar, 
+  Plus, 
+  Search, 
+  Filter,
+  ShoppingCart,
+  ArrowRight,
+  ChevronDown,
   Trash2,
-  Edit2,
-  AlertTriangle,
-  RefreshCw,
-  X,
+  CheckCircle2,
+  MoreVertical,
+  History
 } from "lucide-react";
+import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface EstoqueItem {
   id: string;
   nome: string;
-  categoria: string | null;
+  categoria?: string;
   quantidade: number;
   unidade: string;
   precoMedio: number;
-  precoUltimo: number;
-  validade: string | null;
+  validade?: string;
   estoqueMinimo: number;
   ativo: boolean;
 }
 
-function formatCurrency(v: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(v / 100);
-}
-
 export default function EstoquePage() {
-  const { status } = useSession();
-  const router = useRouter();
   const [estoque, setEstoque] = useState<EstoqueItem[]>([]);
   const [resumo, setResumo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editItem, setEditItem] = useState<EstoqueItem | null>(null);
-  const [form, setForm] = useState({
-    nome: "",
-    categoria: "",
-    quantidade: "0",
-    unidade: "un",
-    precoMedio: "",
-    precoUltimo: "",
-    validade: "",
-    estoqueMinimo: "1",
-  });
+  const [tipo, setTipo] = useState<'PESSOAL' | 'COMERCIAL'>('PESSOAL');
+  const [search, setSearch] = useState("");
+  const router = useRouter();
 
-  const fetchEstoque = useCallback(async () => {
-    if (status !== "authenticated") return;
-    setLoading(true);
+  useEffect(() => {
+    fetchEstoque();
+  }, [tipo]);
+
+  const fetchEstoque = async () => {
     try {
-      const res = await fetch("/api/estoque", { credentials: "include" });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setEstoque(data.estoque || []);
-      setResumo(data.resumo);
-    } catch {
-      console.error("Erro");
+      setLoading(true);
+      const res = await fetch(`/api/estoque?tipo=${tipo}`);
+      if (res.ok) {
+        const data = await res.json();
+        setEstoque(data.estoque || []);
+        setResumo(data.resumo);
+      }
+    } catch (err) {
+      console.error("Erro estoque:", err);
     } finally {
       setLoading(false);
     }
-  }, [status]);
-
-  useEffect(() => {
-    if (status === "authenticated") fetchEstoque();
-  }, [status, fetchEstoque]);
-  if (status === "loading")
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 animate-spin text-emerald-500" />
-      </div>
-    );
-  if (status === "unauthenticated") {
-    router.push("/entrar");
-    return null;
-  }
-
-  const openNew = () => {
-    setEditItem(null);
-    setForm({
-      nome: "",
-      categoria: "",
-      quantidade: "0",
-      unidade: "un",
-      precoMedio: "",
-      precoUltimo: "",
-      validade: "",
-      estoqueMinimo: "1",
-    });
-    setShowModal(true);
-  };
-  const openEdit = (item: EstoqueItem) => {
-    setEditItem(item);
-    setForm({
-      nome: item.nome,
-      categoria: item.categoria || "",
-      quantidade: String(item.quantidade),
-      unidade: item.unidade,
-      precoMedio: item.precoMedio ? String(item.precoMedio / 100) : "",
-      precoUltimo: item.precoUltimo ? String(item.precoUltimo / 100) : "",
-      validade: item.validade ? item.validade.split("T")[0] : "",
-      estoqueMinimo: String(item.estoqueMinimo),
-    });
-    setShowModal(true);
   };
 
-  const salvar = async () => {
-    if (!form.nome.trim()) return;
-    const body = {
-      nome: form.nome,
-      categoria: form.categoria || null,
-      quantidade: parseFloat(form.quantidade) || 0,
-      unidade: form.unidade,
-      precoMedio: parseFloat(form.precoMedio) || 0,
-      precoUltimo: parseFloat(form.precoUltimo) || 0,
-      validade: form.validade || null,
-      estoqueMinimo: parseFloat(form.estoqueMinimo) || 1,
-    };
+  const handleUpdateQuantity = async (id: string, newQty: number) => {
+    if (newQty < 0) return;
     try {
-      const url = editItem ? `/api/estoque/${editItem.id}` : "/api/estoque";
-      const method = editItem ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        credentials: "include",
+      const res = await fetch(`/api/estoque/${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ quantidade: newQty })
       });
-      if (res.ok) {
-        setShowModal(false);
-        fetchEstoque();
-      }
-    } catch {
-      console.error("Erro");
+      if (res.ok) fetchEstoque();
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const remover = async (id: string) => {
-    if (!confirm("Desativar este item?")) return;
-    try {
-      await fetch(`/api/estoque/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      fetchEstoque();
-    } catch {
-      console.error("Erro");
-    }
-  };
+  const filteredEstoque = estoque.filter(item => 
+    item.nome.toLowerCase().includes(search.toLowerCase()) ||
+    item.categoria?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <PageHeader
-        title="Controle de Estoque"
-        subtitle="Gerencie itens do seu estoque"
-        onRefresh={fetchEstoque}
+    <div className="min-h-screen bg-slate-950 p-4 md:p-8">
+      <PageHeader 
+        title="Despensa & Suprimentos"
+        subtitle="Controle inteligente de estoque para economia no Atacarejo"
+        onNew={() => {}} // Abriria o modal
       />
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        {resumo && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800">
-              <p className="text-xs text-slate-400">Itens</p>
-              <p className="text-xl font-bold text-white">
-                {resumo.totalItens}
-              </p>
-            </div>
-            <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800">
-              <p className="text-xs text-slate-400">Valor Total</p>
-              <p className="text-xl font-bold text-emerald-400">
-                {formatCurrency(resumo.valorTotal)}
-              </p>
-            </div>
-            <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800">
-              <p className="text-xs text-slate-400">Estoque Baixo</p>
-              <p className="text-xl font-bold text-amber-400">
-                {resumo.alertasEstoque}
-              </p>
-            </div>
-            <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800">
-              <p className="text-xs text-slate-400">Validade Próxima</p>
-              <p className="text-xl font-bold text-red-400">
-                {resumo.alertasValidade}
-              </p>
-            </div>
-          </div>
-        )}
-        <div className="flex justify-end mb-6">
-          <button
-            onClick={openNew}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium"
+
+      <div className="max-w-7xl mx-auto mt-8 space-y-8">
+        
+        {/* Tab Switcher P13 */}
+        <div className="flex p-1 bg-slate-900 border border-slate-800 rounded-2xl w-fit mb-8">
+          <button 
+            onClick={() => setTipo('PESSOAL')}
+            className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${tipo === 'PESSOAL' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40' : 'text-slate-500 hover:text-slate-300'}`}
           >
-            <Plus className="w-4 h-4" /> Novo Item
+            Pessoal (Despensa)
+          </button>
+          <button 
+            onClick={() => setTipo('COMERCIAL')}
+            className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${tipo === 'COMERCIAL' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            Comercial (Revenda)
           </button>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <RefreshCw className="w-8 h-8 animate-spin text-emerald-500" />
-          </div>
-        ) : estoque.length === 0 ? (
-          <div className="text-center py-16 bg-slate-900/50 rounded-xl border border-slate-800">
-            <Package className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400">Nenhum item no estoque</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {estoque.map((item) => {
-              const baixo =
-                Number(item.quantidade) <= Number(item.estoqueMinimo);
-              const validadeProxima =
-                item.validade &&
-                Math.ceil(
-                  (new Date(item.validade).getTime() - Date.now()) /
-                    (1000 * 60 * 60 * 24),
-                ) <= 7;
-              return (
-                <div
-                  key={item.id}
-                  className={`flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border ${baixo ? "border-amber-500/30" : "border-slate-800"}`}
-                >
-                  <div className="flex items-center gap-4">
-                    {baixo && (
-                      <AlertTriangle className="w-5 h-5 text-amber-400" />
-                    )}
-                    <div>
-                      <h3 className="font-medium text-white">{item.nome}</h3>
-                      <p className="text-xs text-slate-400">
-                        {item.categoria && `${item.categoria} • `}
-                        {item.quantidade} {item.unidade}
-                        {item.precoMedio > 0 &&
-                          ` • ${formatCurrency(item.precoMedio)}/un`}
-                        {validadeProxima && (
-                          <span className="text-red-400 ml-2">
-                            ⚠ Validade próxima
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => openEdit(item)}
-                      className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/20 rounded-lg"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => remover(item.id)}
-                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/20 rounded-lg"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+        {/* Stats Section */}
+        {resumo && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                   <Package className="w-6 h-6" />
                 </div>
-              );
-            })}
+                <div>
+                   <p className="text-xs text-slate-500">Total de Itens</p>
+                   <p className="text-xl font-bold text-white">{resumo.totalItens}</p>
+                </div>
+             </div>
+             
+             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+                   <ShoppingCart className="w-6 h-6" />
+                </div>
+                <div>
+                   <p className="text-xs text-slate-500">Reposição Necessária</p>
+                   <p className="text-xl font-bold text-white">{resumo.alertasEstoque}</p>
+                </div>
+             </div>
+
+             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
+                   <Calendar className="w-6 h-6" />
+                </div>
+                <div>
+                   <p className="text-xs text-slate-500">Vencendo Logo</p>
+                   <p className="text-xl font-bold text-white">{resumo.alertasValidade}</p>
+                </div>
+             </div>
+
+             <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 rounded-2xl flex items-center gap-4 shadow-lg shadow-emerald-500/10">
+                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white">
+                   <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                   <p className="text-xs text-white/70">Saúde da Despensa</p>
+                   <p className="text-xl font-bold text-white">Excelente</p>
+                </div>
+             </div>
           </div>
         )}
 
-        {showModal && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-900 rounded-xl p-6 w-full max-w-lg border border-slate-800 max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold text-white">
-                  {editItem ? "Editar Item" : "Novo Item"}
-                </h3>
-                <button onClick={() => setShowModal(false)}>
-                  <X className="w-5 h-5 text-slate-400" />
-                </button>
-              </div>
-              <div className="space-y-3">
-                <input
-                  value={form.nome}
-                  onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                  placeholder="Nome do item"
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-                />
-                <input
-                  value={form.categoria}
-                  onChange={(e) =>
-                    setForm({ ...form, categoria: e.target.value })
-                  }
-                  placeholder="Categoria (opcional)"
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="number"
-                    value={form.quantidade}
-                    onChange={(e) =>
-                      setForm({ ...form, quantidade: e.target.value })
-                    }
-                    placeholder="Quantidade"
-                    className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-                  />
-                  <input
-                    value={form.unidade}
-                    onChange={(e) =>
-                      setForm({ ...form, unidade: e.target.value })
-                    }
-                    placeholder="Unidade (kg, un...)"
-                    className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={form.precoMedio}
-                    onChange={(e) =>
-                      setForm({ ...form, precoMedio: e.target.value })
-                    }
-                    placeholder="Preço médio (R$)"
-                    className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-                  />
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={form.precoUltimo}
-                    onChange={(e) =>
-                      setForm({ ...form, precoUltimo: e.target.value })
-                    }
-                    placeholder="Último preço (R$)"
-                    className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-slate-400 mb-1 block">
-                      Validade
-                    </label>
-                    <input
-                      type="date"
-                      value={form.validade}
-                      onChange={(e) =>
-                        setForm({ ...form, validade: e.target.value })
-                      }
-                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-                    />
-                  </div>
-                  <input
-                    type="number"
-                    value={form.estoqueMinimo}
-                    onChange={(e) =>
-                      setForm({ ...form, estoqueMinimo: e.target.value })
-                    }
-                    placeholder="Estoque mínimo"
-                    className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-3 justify-end mt-6">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-slate-700 text-white rounded-lg"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={salvar}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg"
-                >
-                  Salvar
-                </button>
-              </div>
-            </div>
+        {/* Search & Filters */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+             <input 
+               type="text"
+               placeholder="Buscar item ou categoria..."
+               value={search}
+               onChange={(e) => setSearch(e.target.value)}
+               className="w-full pl-12 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-medium"
+             />
           </div>
-        )}
-      </main>
+          <button className="px-6 py-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white flex items-center gap-2 transition-all">
+             <Filter className="w-4 h-4" /> Filtros
+          </button>
+          <button className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-white font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/20">
+             <Plus className="w-5 h-5" /> Novo Item
+          </button>
+        </div>
+
+        {/* Stock List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           {loading ? (
+             [1,2,3,4,5,6].map(n => (
+               <div key={n} className="h-40 bg-slate-900 animate-pulse rounded-2xl border border-slate-800" />
+             ))
+           ) : filteredEstoque.map(item => (
+             <div key={item.id} className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-6 transition-all group relative overflow-hidden">
+                {/* Alerta de Estoque Baixo Badge */}
+                {item.quantidade <= item.estoqueMinimo && (
+                   <div className="absolute top-0 right-0 p-3">
+                      <div className="flex items-center gap-1 bg-amber-500/10 text-amber-500 text-[10px] font-bold px-2 py-1 rounded-full border border-amber-500/20 uppercase tracking-wider">
+                         <AlertTriangle className="w-3 h-3" /> Baixo
+                      </div>
+                   </div>
+                )}
+
+                <div className="flex items-start gap-4 mb-6">
+                   <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-emerald-500/10 group-hover:text-emerald-500 transition-colors shrink-0">
+                      <Package className="w-6 h-6" />
+                   </div>
+                   <div className="flex-1 min-w-0">
+                      <h4 className="text-white font-bold truncate pr-16">{item.nome}</h4>
+                      <p className="text-xs text-slate-500 mt-1">{item.categoria || "Sem categoria"}</p>
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                   <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
+                      <p className="text-[10px] text-slate-600 uppercase font-bold mb-1">Qtd Atual</p>
+                      <div className="flex items-center justify-between">
+                         <p className="text-lg font-bold text-white leading-none">
+                            {Number(item.quantidade)} <span className="text-xs font-normal text-slate-500">{item.unidade}</span>
+                         </p>
+                      </div>
+                   </div>
+                   <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
+                      <p className="text-[10px] text-slate-600 uppercase font-bold mb-1">Validade</p>
+                      <p className="text-xs font-medium text-slate-300">
+                         {item.validade ? format(new Date(item.validade), "dd/MM/yy") : "Não inf."}
+                      </p>
+                   </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+                   <div className="flex items-center gap-1">
+                      <button 
+                        onClick={() => handleUpdateQuantity(item.id, Number(item.quantidade) - 1)}
+                        className="w-10 h-10 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-all"
+                      >-</button>
+                      <button 
+                        onClick={() => handleUpdateQuantity(item.id, Number(item.quantidade) + 1)}
+                        className="w-10 h-10 rounded-lg bg-emerald-600/10 border border-emerald-600/20 hover:bg-emerald-600/20 text-emerald-400 flex items-center justify-center transition-all"
+                      >+</button>
+                   </div>
+                   <div className="flex items-center gap-2">
+                      <button className="p-2 text-slate-600 hover:text-slate-400 transition-colors">
+                         <History className="w-5 h-5" />
+                      </button>
+                      <button className="p-2 text-slate-600 hover:text-red-500 transition-colors">
+                         <Trash2 className="w-5 h-5" />
+                      </button>
+                   </div>
+                </div>
+             </div>
+           ))}
+        </div>
+      </div>
     </div>
   );
 }

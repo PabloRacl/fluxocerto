@@ -149,7 +149,7 @@ export async function DELETE(
 
     await prisma.assinatura.update({
       where: { id: params.id },
-      data: { excluida: true, excluidaEm: new Date() },
+      data: { isArchived: true, archivedAt: new Date() },
     });
 
     return NextResponse.json({ message: "Assinatura enviada para lixeira" });

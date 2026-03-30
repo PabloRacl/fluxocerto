@@ -1,40 +1,18 @@
 export const dynamic = "force-dynamic";
 
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/biblioteca/autenticacao";
-import { prisma } from "@/biblioteca/prisma";
+import { NextRequest, NextResponse } from "next/server";
+import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
+import { tratarErro } from "@/biblioteca/tratar-erro";
+import { sucesso } from "@/biblioteca/resposta-api";
+import { relatorioService } from "@/servicos/RelatorioService";
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await obterUsuarioAutenticado();
+    const history = await relatorioService.obterHistorico(user.id);
 
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 },
-      );
-    }
-
-    const history = await prisma.reportHistory.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return NextResponse.json(history);
+    return sucesso(history);
   } catch (error) {
-    console.error("Erro ao buscar histórico de relatórios:", error);
-    return NextResponse.json(
-      { error: "Erro interno no servidor" },
-      { status: 500 },
-    );
+    return tratarErro(error);
   }
 }

@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { Skeleton } from "@/componentes/ui/skeleton";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
 import { ptBR } from "date-fns/locale";
+import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
 import {
   ArrowUpDown,
   Search,
@@ -28,7 +29,12 @@ import {
   Eye,
   Archive,
   ArchiveRestore,
+  Activity,
+  Zap,
+  CreditCard as CardIcon,
+  Layers,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 // ✅ IMPORT DO NOVO MODAL FUTURISTA
 import NewTransactionModal from "./_componentes/NewTransactionModal";
 // Mantém o Drawer caso queira usar como fallback
@@ -89,6 +95,10 @@ interface Pagination {
 interface TransactionsResponse {
   transactions: Transaction[];
   pagination: Pagination;
+  counts?: {
+    totalActive: number;
+    totalArchived: number;
+  };
 }
 
 interface Account {
@@ -158,10 +168,16 @@ export default function TransactionsPage() {
     balance: 0,
   });
 
+  const [globalCounts, setGlobalCounts] = useState({
+    totalActive: 0,
+    totalArchived: 0,
+  });
+
   // ============================================
   // ESTADOS DO MODAL FUTURISTA ✅ NOVO
   // ============================================
   const [showNewTransactionModal, setShowNewTransactionModal] = useState(false);
+  const [modalInitialType, setModalInitialType] = useState<"INCOME" | "EXPENSE" | undefined>(undefined);
 
   // Estados do Drawer (mantido como fallback)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -270,6 +286,9 @@ export default function TransactionsPage() {
       const data: TransactionsResponse = await response.json();
       setTransactions(data.transactions);
       setPagination(data.pagination);
+      if (data.counts) {
+        setGlobalCounts(data.counts);
+      }
 
       // Calcular resumo financeiro (apenas transações ativas)
       if (!showArchived) {
@@ -349,9 +368,11 @@ export default function TransactionsPage() {
   // ============================================
   useEffect(() => {
     if (searchParams.get("drawer") === "open") {
-      handleOpenCreate();
+      const type = searchParams.get("type") as "INCOME" | "EXPENSE" | undefined;
+      handleOpenCreate(type);
       const url = new URL(window.location.href);
       url.searchParams.delete("drawer");
+      url.searchParams.delete("type");
       window.history.replaceState({}, "", url.toString());
     }
   }, [searchParams]);
@@ -369,7 +390,8 @@ export default function TransactionsPage() {
   // ============================================
   // HANDLERS DO MODAL FUTURISTA ✅ NOVO
   // ============================================
-  const handleOpenModal = () => {
+  const handleOpenModal = (type?: "INCOME" | "EXPENSE") => {
+    setModalInitialType(type);
     setShowNewTransactionModal(true);
   };
 
@@ -385,10 +407,9 @@ export default function TransactionsPage() {
   // ============================================
   // HANDLERS DO DRAWER (mantido como fallback)
   // ============================================
-  const handleOpenCreate = () => {
-    setDrawerMode("create");
-    setEditingTransaction(null);
-    setIsDrawerOpen(true);
+  const handleOpenCreate = (type?: "INCOME" | "EXPENSE") => {
+    // Agora sempre delega a criação para o novo modal
+    handleOpenModal(type);
   };
 
   const handleOpenEdit = (transaction: Transaction) => {
@@ -511,14 +532,7 @@ export default function TransactionsPage() {
   // RENDER: LOADING
   // ============================================
   if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-4" />
-          <p className="text-slate-400">Carregando transações...</p>
-        </div>
-      </div>
-    );
+    return <NeuralLoading message="Processando Matriz de Transações..." variant="full" />;
   }
 
   // ============================================
@@ -535,68 +549,83 @@ export default function TransactionsPage() {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-slate-950">
-        {/* ✅ HEADER PADRONIZADO COM TOGGLE ATIVAS/LIXEIRA */}
+        {/* ✅ HEADER PADRONIZADO COM O NOVO BREADCRUMB */}
         <PageHeader
-          title="Transações"
-          subtitle="Gerencie suas receitas e despesas"
-          onBack={() => router.push("/painel")}
-          onRefresh={fetchTransactions}
-          onNew={handleOpenModal}
-          newButtonText="Nova Transação"
-          showDashboardLink={true}
-          // ✅ Toggle Ativas/Lixeira + Botão Exportar
-          extraActions={
-            <>
-              {/* Toggle Ativas/Lixeira */}
-              <div className="flex items-center bg-slate-800 rounded-lg p-1 mr-2">
-                <button
-                  onClick={() => setShowArchived(false)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    !showArchived
-                      ? "bg-emerald-600 text-white"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <Wallet className="w-3 h-3" />
-                  Ativas
-                </button>
-                <button
-                  onClick={() => setShowArchived(true)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    showArchived
-                      ? "bg-amber-600 text-white"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <Archive className="w-3 h-3" />
-                  Lixeira
-                  {transactions.filter((t) => t.isArchived).length > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 text-xs bg-slate-700 rounded-full">
-                      {transactions.filter((t) => t.isArchived).length}
-                    </span>
-                  )}
-                </button>
-              </div>
+          title="Transações e Movimentações"
+          description="Monitore seu fluxo de caixa e categorize suas receitas e despesas"
+          breadcrumbs={[{ label: "Transações" }]}
+        >
+          {/* Toggle Ativas/Lixeira */}
+          <div className="flex items-center gap-2 mr-2">
+            <div className="flex bg-slate-800 rounded-lg p-1">
+              <button
+                onClick={() => setShowArchived(false)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${!showArchived ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-white"}`}
+              >
+                <Wallet className="w-3 h-3" />
+                Ativas
+                {globalCounts.totalActive > 0 && (
+                  <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${!showArchived ? "bg-emerald-500 text-white" : "bg-slate-700 text-slate-300"}`}>
+                    {globalCounts.totalActive}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setShowArchived(true)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${showArchived ? "bg-amber-600 text-white" : "text-slate-400 hover:text-white"}`}
+              >
+                <Archive className="w-3 h-3" />
+                Lixeira
+                {globalCounts.totalArchived > 0 && (
+                  <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${showArchived ? "bg-amber-500 text-white" : "bg-slate-700 text-slate-300"}`}>
+                    {globalCounts.totalArchived}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
 
-              {/* Botão Exportar */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={handleExport}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span className="hidden sm:block">Exportar</span>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Exportar transações para CSV ou PDF</p>
-                </TooltipContent>
-              </Tooltip>
-            </>
-          }
-        />
+          <button
+            onClick={fetchTransactions}
+            className="p-2 text-slate-400 hover:text-emerald-400 transition-colors"
+            title="Atualizar"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
 
+          {/* Botão Exportar */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:block">Exportar</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Exportar transações</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Nova Transação */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => handleOpenModal()}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:block">Nova Transação</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Cadastrar nova transação</p>
+            </TooltipContent>
+          </Tooltip>
+        </PageHeader>
+        
         {/* Conteúdo Principal */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* ✅ MENSAGEM DE INFO QUANDO NA LIXEIRA */}
@@ -615,242 +644,267 @@ export default function TransactionsPage() {
             </div>
           )}
 
-          {/* Resumo Financeiro (só mostra se não estiver na lixeira) */}
+          {/* Resumo Financeiro HUD 2.0 */}
           {!showArchived && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="bg-slate-900/50 backdrop-blur-md rounded-xl p-6 border border-slate-800 cursor-help">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-slate-400">Receitas</span>
-                      <TrendingUp className="w-5 h-5 text-emerald-500" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-4">
+              {/* Card: Receitas */}
+              <div className="bg-slate-950/40 backdrop-blur-2xl rounded-3xl p-6 border border-white/5 relative overflow-hidden group">
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                  style={{ skewX: -20 }}
+                />
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                      <TrendingUp className="w-5 h-5 text-emerald-400" />
                     </div>
-                    <p className="text-2xl font-bold text-emerald-400">
-                      {formatCurrency(summary.totalIncome)}
-                    </p>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Fluxo Entrada</span>
                   </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Total de receitas no período filtrado</p>
-                </TooltipContent>
-              </Tooltip>
+                </div>
+                <p className="text-2xl font-black text-emerald-400 ml-1 relative z-10 transition-transform group-hover:scale-105 origin-left" style={{ textShadow: "0 0 20px rgba(16,185,129,0.3)" }}>
+                  {formatCurrency(summary.totalIncome)}
+                </p>
+                <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                   <motion.div 
+                     className="h-full bg-emerald-500/50"
+                     initial={{ x: "-100%" }}
+                     whileHover={{ x: "0%" }}
+                     transition={{ duration: 0.6 }}
+                   />
+                </div>
+              </div>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="bg-slate-900/50 backdrop-blur-md rounded-xl p-6 border border-slate-800 cursor-help">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-slate-400">Despesas</span>
+              {/* Card: Despesas */}
+              <div className="bg-slate-950/40 backdrop-blur-2xl rounded-3xl p-6 border border-white/5 relative overflow-hidden group">
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                  style={{ skewX: -20 }}
+                />
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.15)]">
                       <TrendingDown className="w-5 h-5 text-red-500" />
                     </div>
-                    <p className="text-2xl font-bold text-red-400">
-                      {formatCurrency(summary.totalExpense)}
-                    </p>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Consumo Neural</span>
                   </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Total de despesas no período filtrado</p>
-                </TooltipContent>
-              </Tooltip>
+                </div>
+                <p className="text-2xl font-black text-red-500 ml-1 relative z-10 transition-transform group-hover:scale-105 origin-left" style={{ textShadow: "0 0 20px rgba(239,68,68,0.3)" }}>
+                  {formatCurrency(summary.totalExpense)}
+                </p>
+                <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                   <motion.div 
+                     className="h-full bg-red-500/50"
+                     initial={{ x: "-100%" }}
+                     whileHover={{ x: "0%" }}
+                     transition={{ duration: 0.6 }}
+                   />
+                </div>
+              </div>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="bg-slate-900/50 backdrop-blur-md rounded-xl p-6 border border-slate-800 cursor-help">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-slate-400">
-                        Saldo do Período
-                      </span>
-                      <Wallet className="w-5 h-5 text-blue-500" />
+              {/* Card: Saldo */}
+              <div className="bg-slate-950/40 backdrop-blur-2xl rounded-3xl p-6 border border-white/5 relative overflow-hidden group">
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                  style={{ skewX: -20 }}
+                />
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+                      <Activity className="w-5 h-5 text-blue-400" />
                     </div>
-                    <p
-                      className={`text-2xl font-bold ${
-                        summary.balance >= 0
-                          ? "text-emerald-400"
-                          : "text-red-400"
-                      }`}
-                    >
-                      {formatCurrency(summary.balance)}
-                    </p>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Balanceamento</span>
                   </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Diferença entre receitas e despesas</p>
-                </TooltipContent>
-              </Tooltip>
+                </div>
+                <p 
+                  className={`text-2xl font-black ml-1 relative z-10 transition-transform group-hover:scale-105 origin-left ${summary.balance >= 0 ? "text-emerald-400" : "text-red-400"}`} 
+                  style={{ textShadow: `0 0 20px ${summary.balance >= 0 ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}` }}
+                >
+                  {formatCurrency(summary.balance)}
+                </p>
+                <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                   <motion.div 
+                     className="h-full bg-blue-500/50"
+                     initial={{ x: "-100%" }}
+                     whileHover={{ x: "0%" }}
+                     transition={{ duration: 0.6 }}
+                   />
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Filtros */}
-          <div className="bg-slate-900/50 backdrop-blur-md rounded-xl p-6 border border-slate-800 mb-6">
-            <form onSubmit={handleSearch} className="space-y-4">
+          {/* Filtros Neural HUD */}
+          <div className="bg-slate-950/40 backdrop-blur-2xl rounded-3xl p-6 border border-white/5 mb-8 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
+            <form onSubmit={handleSearch} className="space-y-6 relative z-10">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <div className="relative group/input">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within/input:text-emerald-400 transition-colors" />
                     <input
                       type="text"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Buscar por descrição..."
-                      className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="IDENTIFICAR TRANSAÇÃO NO DATASTREAM..."
+                      className="w-full pl-11 pr-4 py-3 bg-slate-900/60 border border-white/5 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
                     />
                   </div>
                 </div>
 
-                <select
-                  value={typeFilter}
-                  onChange={(e) => {
-                    setTypeFilter(e.target.value as any);
-                    setPagination((prev) => ({ ...prev, page: 1 }));
-                  }}
-                  className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="ALL">Todos os Tipos</option>
-                  <option value="INCOME">🟢 Receitas</option>
-                  <option value="EXPENSE">🔴 Despesas</option>
-                </select>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-[2]">
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => {
+                      setTypeFilter(e.target.value as any);
+                      setPagination((prev) => ({ ...prev, page: 1 }));
+                    }}
+                    className="px-4 py-3 bg-slate-900/60 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                  >
+                    <option value="ALL">MODOS: TODOS</option>
+                    <option value="INCOME">ENTRADAS (+)</option>
+                    <option value="EXPENSE">SAÍDAS (-)</option>
+                  </select>
 
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value as any);
-                    setPagination((prev) => ({ ...prev, page: 1 }));
-                  }}
-                  className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="ALL">Todos os Status</option>
-                  <option value="PAID">✅ Pago</option>
-                  <option value="PENDING">⏳ Pendente</option>
-                  <option value="CANCELLED">❌ Cancelado</option>
-                </select>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value as any);
+                      setPagination((prev) => ({ ...prev, page: 1 }));
+                    }}
+                    className="px-4 py-3 bg-slate-900/60 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                  >
+                    <option value="ALL">STATUS: GLOBAL</option>
+                    <option value="PAID">AUTORIZADO</option>
+                    <option value="PENDING">EM ESPERA</option>
+                    <option value="CANCELLED">BLOQUEADO</option>
+                  </select>
 
-                <select
-                  value={selectedAccount}
-                  onChange={(e) => {
-                    setSelectedAccount(e.target.value);
-                    setPagination((prev) => ({ ...prev, page: 1 }));
-                  }}
-                  className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="">Todas as Contas</option>
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.name}
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={selectedAccount}
+                    onChange={(e) => {
+                      setSelectedAccount(e.target.value);
+                      setPagination((prev) => ({ ...prev, page: 1 }));
+                    }}
+                    className="px-4 py-3 bg-slate-900/60 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                  >
+                    <option value="">NÓDULOS: TODOS</option>
+                    {accounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.name.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
 
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => {
-                    setSelectedCategory(e.target.value);
-                    setPagination((prev) => ({ ...prev, page: 1 }));
-                  }}
-                  className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="">Todas as Categorias</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value);
+                      setPagination((prev) => ({ ...prev, page: 1 }));
+                    }}
+                    className="px-4 py-3 bg-slate-900/60 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                  >
+                    <option value="">TAGS: TODAS</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm text-slate-400 mb-1">
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => {
-                      setStartDate(e.target.value);
-                      setPagination((prev) => ({ ...prev, page: 1 }));
-                    }}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+              <div className="flex flex-col sm:flex-row items-end gap-4">
+                <div className="flex-1 grid grid-cols-2 gap-4 w-full">
+                  <div>
+                    <label className="block text-[9px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">
+                      Início de Ciclo
+                    </label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => {
+                        setStartDate(e.target.value);
+                        setPagination((prev) => ({ ...prev, page: 1 }));
+                      }}
+                      className="w-full px-4 py-3 bg-slate-900/60 border border-white/5 rounded-2xl text-[10px] font-medium text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">
+                      Fim de Ciclo
+                    </label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => {
+                        setEndDate(e.target.value);
+                        setPagination((prev) => ({ ...prev, page: 1 }));
+                      }}
+                      className="w-full px-4 py-3 bg-slate-900/60 border border-white/5 rounded-2xl text-[10px] font-medium text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                  </div>
                 </div>
 
-                <div className="flex-1">
-                  <label className="block text-sm text-slate-400 mb-1">
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => {
-                      setEndDate(e.target.value);
-                      setPagination((prev) => ({ ...prev, page: 1 }));
-                    }}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div className="flex items-end gap-2">
-                  <button
-                    type="submit"
-                    className="px-6 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors"
-                  >
-                    Filtrar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleClearFilters}
-                    className="px-6 py-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
-                  >
-                    Limpar
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5"
+                >
+                  Reset Matriz
+                </button>
               </div>
             </form>
           </div>
 
-          {/* Tabela de Transações */}
-          <div className="bg-slate-900/50 backdrop-blur-md rounded-xl border border-slate-800 overflow-hidden">
+          {/* Tabela de Transações HUD 2.0 */}
+          <div className="bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 overflow-hidden shadow-2xl relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+            
             {loading ? (
-              <div className="space-y-3">
+              <div className="p-8 space-y-4">
                 {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
+                  <div key={i} className="h-16 w-full bg-white/5 rounded-2xl animate-pulse" />
                 ))}
               </div>
             ) : null}
 
             {error && !loading && (
-              <div className="p-6">
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-                  <p className="text-red-400">{error}</p>
-                  <button
-                    onClick={fetchTransactions}
-                    className="mt-2 text-sm text-red-300 hover:text-red-200 underline"
-                  >
-                    Tentar novamente
-                  </button>
+              <div className="p-12 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 mb-4">
+                  <Activity className="w-8 h-8 text-red-500" />
                 </div>
+                <p className="text-red-400 font-black uppercase tracking-widest text-sm mb-4">{error}</p>
+                <button
+                  onClick={fetchTransactions}
+                  className="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-white text-xs font-black uppercase tracking-widest transition-all"
+                >
+                  Tentar Reinicializar
+                </button>
               </div>
             )}
 
             {!loading && !error && transactions.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-12 px-4">
-                {showArchived ? (
-                  <Archive className="w-16 h-16 text-slate-600 mb-4" />
-                ) : (
-                  <Wallet className="w-16 h-16 text-slate-600 mb-4" />
-                )}
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {showArchived
-                    ? "Nenhuma transação arquivada"
-                    : "Nenhuma transação encontrada"}
+              <div className="flex flex-col items-center justify-center py-20 px-4">
+                <div className="w-20 h-20 rounded-full bg-slate-900 flex items-center justify-center mb-6 border border-white/5">
+                  {showArchived ? (
+                    <Archive className="w-10 h-10 text-slate-600" />
+                  ) : (
+                    <Layers className="w-10 h-10 text-slate-600" />
+                  )}
+                </div>
+                <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-2">
+                  {showArchived ? "Arquivo Vazio" : "Pulso não Detectado"}
                 </h3>
-                <p className="text-slate-400 text-center mb-4">
+                <p className="text-xs text-slate-500 uppercase tracking-widest text-center mb-8 max-w-xs leading-relaxed">
                   {showArchived
-                    ? "Transações arquivadas aparecerão aqui"
-                    : "Comece adicionando sua primeira transação financeira"}
+                    ? "Nenhum dado arquivado nos registros de sistema."
+                    : "O fluxo de transações está estático. Inicie uma nova entrada de dados."}
                 </p>
                 {!showArchived && (
                   <button
-                    onClick={handleOpenModal}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg transition-all"
+                    onClick={() => handleOpenModal()}
+                    className="flex items-center gap-2 px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:scale-105 transition-transform"
                   >
                     <Plus className="w-4 h-4" />
                     Nova Transação
@@ -862,218 +916,174 @@ export default function TransactionsPage() {
             {!loading && !error && transactions.length > 0 && (
               <>
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full border-collapse">
                     <thead>
-                      <tr className="border-b border-slate-800">
-                        <th className="px-4 py-3 text-left">
+                      <tr className="border-b border-white/5 bg-white/5">
+                        <th className="px-6 py-4 text-left">
                           <button
                             onClick={() => handleSort("description")}
-                            className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
+                            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-emerald-400 transition-colors"
                           >
-                            Descrição
-                            <ArrowUpDown className="w-4 h-4" />
+                            Identificação
+                            <ArrowUpDown className="w-3 h-3" />
                           </button>
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-slate-300">
-                          Categoria
+                        <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          Classe
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-slate-300">
-                          Conta
+                        <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          Nódulo
                         </th>
-                        <th className="px-4 py-3 text-left">
+                        <th className="px-6 py-4 text-left">
                           <button
                             onClick={() => handleSort("occurrenceDate")}
-                            className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
+                            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-emerald-400 transition-colors"
                           >
-                            Data
-                            <ArrowUpDown className="w-4 h-4" />
+                            Timestamp
+                            <ArrowUpDown className="w-3 h-3" />
                           </button>
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-slate-300">
+                        <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">
                           Status
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-slate-300">
-                          Tipo
-                        </th>
-                        <th className="px-4 py-3 text-right">
+                        <th className="px-6 py-4 text-right">
                           <button
                             onClick={() => handleSort("amount")}
-                            className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
+                            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-emerald-400 transition-colors ml-auto"
                           >
-                            Valor
-                            <ArrowUpDown className="w-4 h-4" />
+                            Magnitude
+                            <ArrowUpDown className="w-3 h-3" />
                           </button>
                         </th>
-                        <th className="px-4 py-3 text-center text-sm font-medium text-slate-300">
-                          Ações
+                        <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          Operações
                         </th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-white/5">
                       {transactions.map((transaction) => (
                         <tr
                           key={transaction.id}
-                          className={`border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors ${
-                            transaction.isArchived ? "opacity-60" : ""
+                          className={`group hover:bg-white/[0.02] transition-colors relative ${
+                            transaction.isArchived ? "opacity-40" : ""
                           }`}
                         >
-                          <td className="px-4 py-4">
-                            <div>
-                              <p className="font-medium text-white">
+                          <td className="px-6 py-5">
+                            <div className="relative z-10">
+                              <p className="text-xs font-black text-white uppercase tracking-tight group-hover:text-emerald-400 transition-colors">
                                 {transaction.description}
                               </p>
-                              {transaction.notes && (
-                                <p className="text-sm text-slate-500 truncate max-w-xs">
-                                  {transaction.notes}
-                                </p>
-                              )}
-                              {transaction.isInstallment &&
-                                transaction.installmentCurrent && (
-                                  <p className="text-xs text-amber-400 mt-1">
-                                    Parcela {transaction.installmentCurrent} de{" "}
-                                    {transaction.installmentTotal}
-                                  </p>
+                              <div className="flex flex-wrap gap-2 mt-1.5">
+                                {transaction.isInstallment && (
+                                  <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                                    PCL: {transaction.installmentCurrent}/{transaction.installmentTotal}
+                                  </span>
                                 )}
-                              {transaction.isRecurring && (
-                                <p className="text-xs text-blue-400 mt-1">
-                                  🔄 Recorrente
-                                </p>
-                              )}
-                              {transaction.isArchived && (
-                                <p className="text-xs text-amber-400 mt-1">
-                                  📦 Arquivada
-                                </p>
-                              )}
+                                {transaction.isRecurring && (
+                                  <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                                    Loop-Sync
+                                  </span>
+                                )}
+                                {transaction.notes && (
+                                  <span className="text-[9px] font-medium text-slate-500 italic max-w-[150px] truncate">
+                                    // {transaction.notes}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </td>
 
-                          <td className="px-4 py-4">
+                          <td className="px-6 py-5">
                             <div className="flex items-center gap-2">
                               <div
-                                className="w-3 h-3 rounded-full"
+                                className="w-2 h-2 rounded-full shadow-[0_0_8px_currentColor]"
                                 style={{
                                   backgroundColor: transaction.category.color,
+                                  color: transaction.category.color
                                 }}
                               />
-                              <span className="text-sm text-slate-300">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                                 {transaction.category.name}
                               </span>
                             </div>
                           </td>
 
-                          <td className="px-4 py-4">
+                          <td className="px-6 py-5">
                             <div className="flex items-center gap-2">
-                              <span
-                                className="w-2 h-2 rounded-full"
-                                style={{
-                                  backgroundColor: transaction.account.color,
-                                }}
-                              />
-                              <span className="text-sm text-slate-300">
+                              <div className="w-6 h-6 rounded-lg bg-slate-900 border border-white/5 flex items-center justify-center">
+                                <CardIcon className="w-3 h-3 text-slate-500" />
+                              </div>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                                 {transaction.account.name}
                               </span>
                             </div>
                           </td>
 
-                          <td className="px-4 py-4">
-                            <span className="text-sm text-slate-300">
+                          <td className="px-6 py-5">
+                            <span className="text-[10px] font-black tabular-nums text-slate-500 tracking-wider">
                               {formatDate(transaction.occurrenceDate)}
                             </span>
                           </td>
 
-                          <td className="px-4 py-4">
-                            {getStatusBadge(transaction.status)}
-                          </td>
-                          <td className="px-4 py-4">
-                            {getTypeBadge(transaction.type)}
-                          </td>
-
-                          <td className="px-4 py-4 text-right">
-                            <span
-                              className={`font-semibold ${
-                                transaction.type === "INCOME"
-                                  ? "text-emerald-400"
-                                  : "text-red-400"
-                              }`}
-                            >
-                              {transaction.type === "INCOME" ? "+" : "-"}
-                              {formatCurrency(transaction.amount)}
-                            </span>
+                          <td className="px-6 py-5">
+                            <div className="scale-90 origin-left">
+                              {getStatusBadge(transaction.status)}
+                            </div>
                           </td>
 
-                          <td className="px-4 py-4">
-                            <div className="flex items-center justify-center gap-2">
-                              {/* NA LIXEIRA: Restaurar + Excluir Permanente */}
+                          <td className="px-6 py-5 text-right">
+                            <div className="flex flex-col items-end">
+                              <span
+                                className={`text-[13px] font-black tabular-nums tracking-tight ${
+                                  transaction.type === "INCOME"
+                                    ? "text-emerald-400"
+                                    : "text-red-500"
+                                }`}
+                                style={{
+                                  textShadow: `0 0 15px ${transaction.type === "INCOME" ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)"}`
+                                }}
+                              >
+                                {transaction.type === "INCOME" ? "+" : "-"} {formatCurrency(transaction.amount)}
+                              </span>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-slate-600 mt-0.5">
+                                BRL_SYNC
+                              </span>
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-5">
+                            <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               {showArchived ? (
                                 <>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() =>
-                                          handleArchive(transaction.id, true)
-                                        }
-                                        className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
-                                      >
-                                        <ArchiveRestore className="w-4 h-4" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Restaurar transação</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() =>
-                                          handleDeletePermanent(transaction.id)
-                                        }
-                                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="text-red-400">
-                                        Excluir Permanentemente
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                  <button
+                                    onClick={() => handleArchive(transaction.id, true)}
+                                    className="p-2 text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all"
+                                    title="Restaurar"
+                                  >
+                                    <ArchiveRestore className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeletePermanent(transaction.id)}
+                                    className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                                    title="Excluir Permanente"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
                                 </>
                               ) : (
                                 <>
-                                  {/* NAS ATIVAS: Arquivar + Editar */}
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() =>
-                                          handleArchive(transaction.id, false)
-                                        }
-                                        className="p-2 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
-                                      >
-                                        <Archive className="w-4 h-4" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Enviar para Lixeira</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() =>
-                                          handleOpenEdit(transaction)
-                                        }
-                                        className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
-                                      >
-                                        <Edit2 className="w-4 h-4" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Editar transação</p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                  <button
+                                    onClick={() => handleOpenEdit(transaction)}
+                                    className="p-2 text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleArchive(transaction.id, false)}
+                                    className="p-2 text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 rounded-xl transition-all"
+                                  >
+                                    <Archive className="w-4 h-4" />
+                                  </button>
                                 </>
                               )}
                             </div>
@@ -1153,14 +1163,17 @@ export default function TransactionsPage() {
           </div>
         </main>
 
-        {/* ✅ MODAL FUTURISTA PARA NOVA TRANSAÇÃO */}
-        <NewTransactionModal
-          isOpen={showNewTransactionModal}
-          onClose={handleModalClose}
-          accounts={accounts}
-          categories={categories}
-          onSuccess={handleModalSuccess}
-        />
+        {/* ✅ MODAL FUTURISTA */}
+        {showNewTransactionModal && (
+          <NewTransactionModal
+            isOpen={showNewTransactionModal}
+            onClose={handleModalClose}
+            onSuccess={handleModalSuccess}
+            initialType={modalInitialType}
+            accounts={accounts}
+            categories={categories}
+          />
+        )}
 
         {/* Drawer mantido como fallback (pode remover se não quiser usar) */}
         <TransactionDrawer

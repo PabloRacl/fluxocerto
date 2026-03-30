@@ -8,22 +8,21 @@ datasource db {
 }
 
 model User {
-  id                String            @id @default(uuid())
+  id                String              @id @default(uuid())
   name              String?
-  email             String            @unique
+  email             String              @unique
   emailVerified     DateTime?
   image             String?
   password          String?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  sessionDuration   Int               @default(7)
-  autoLogoutMinutes Int               @default(30)
-  darkMode          Boolean           @default(false)
-  currency          String            @default("BRL")
-  timezone          String            @default("America/Sao_Paulo")
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  sessionDuration   Int                 @default(7)
+  autoLogoutMinutes Int                 @default(30)
+  darkMode          Boolean             @default(false)
+  currency          String              @default("BRL")
+  timezone          String              @default("America/Sao_Paulo")
   accounts          Account[]
   auditLogs         AuditLog[]
-  budgets           Budget[]
   categories        Category[]
   debts             Debt[]
   notificationPrefs NotificationPref?
@@ -36,29 +35,36 @@ model User {
   lembretes         Lembrete[]
   estoque           Estoque[]
   listasCompra      ListaCompra[]
+  vendas            Venda[]
+  assets            Asset[]
+  notifications     Notification[]
+  ItemImportMapping ItemImportMapping[]
 }
 
 model Account {
-  id              String        @id @default(uuid())
-  userId          String
-  name            String
-  type            AccountType
-  balance         Int           @default(0)
-  color           String        @default("#047857")
-  icon            String?
-  isActive        Boolean       @default(true)
-  diaFechamento   Int?          // Cartão: dia do fechamento da fatura
-  diaVencimento   Int?          // Cartão: dia do vencimento
-  limiteCredito   Int?          // Cartão: limite total em centavos
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  isDeleted       Boolean       @default(false)
-  deletedAt       DateTime?
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  debts           Debt[]
-  purchases       Purchase[]
-  transactions    Transaction[]
-  assinaturas     Assinatura[]
+  id            String        @id @default(uuid())
+  userId        String
+  name          String
+  type          AccountType
+  balance       Int           @default(0)
+  color         String        @default("#047857")
+  icon          String?
+  isActive      Boolean       @default(true)
+  diaFechamento Int? // Cartão: dia do fechamento da fatura
+  diaVencimento Int? // Cartão: dia do vencimento
+  limiteCredito Int? // Cartão: limite total em centavos
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  isArchived    Boolean       @default(false)
+  archivedAt    DateTime?
+  isDeleted     Boolean       @default(false)
+  deletedAt     DateTime?
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  debts         Debt[]
+  purchases     Purchase[]
+  transactions  Transaction[]
+  assinaturas   Assinatura[]
+  vendas        Venda[]
 
   @@index([userId])
 }
@@ -94,6 +100,8 @@ model Category {
   isActive     Boolean         @default(true)
   isArchived   Boolean         @default(false)
   archivedAt   DateTime?
+  isDeleted    Boolean         @default(false)
+  deletedAt    DateTime?
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   parent       Category?       @relation("CategoryHierarchy", fields: [parentId], references: [id])
@@ -132,6 +140,8 @@ model Transaction {
   notes              String?
   isReconciled       Boolean           @default(false)
   reconciledAt       DateTime?
+  isArchived         Boolean           @default(false)
+  archivedAt         DateTime?
   isDeleted          Boolean           @default(false)
   deletedAt          DateTime?
   transactionId      String?           @unique
@@ -170,6 +180,8 @@ model Debt {
   isPaidOff        Boolean           @default(false)
   paidOffAt        DateTime?
   creditor         String?           @db.VarChar(100)
+  isArchived       Boolean           @default(false)
+  archivedAt       DateTime?
   isDeleted        Boolean           @default(false)
   deletedAt        DateTime?
   createdAt        DateTime          @default(now())
@@ -198,15 +210,15 @@ model Purchase {
   installmentValue Int?
   receiptUrl       String?
   receiptXml       String?
-  budgetId         String?
   isCompleted      Boolean        @default(true)
   transactionId    String?
+  isArchived       Boolean        @default(false)
+  archivedAt       DateTime?
   isDeleted        Boolean        @default(false)
   deletedAt        DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   account          Account?       @relation(fields: [accountId], references: [id])
-  budget           Budget?        @relation(fields: [budgetId], references: [id])
   category         Category?      @relation(fields: [categoryId], references: [id])
   user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   items            PurchaseItem[]
@@ -235,26 +247,21 @@ model PurchaseItem {
   @@index([name])
 }
 
-model Budget {
-  id              String       @id @default(uuid())
-  userId          String
-  month           Int
-  year            Int
-  globalLimit     Int
-  spentAmount     Int          @default(0)
-  rolloverEnabled Boolean      @default(true)
-  rolloverType    RolloverType @default(NEXT_MONTH)
-  alertThreshold  Int          @default(80)
-  alertEnabled    Boolean      @default(true)
-  isDeleted       Boolean      @default(false)
-  deletedAt       DateTime?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  purchases       Purchase[]
+model ItemImportMapping {
+  id             String   @id @default(uuid())
+  userId         String
+  itemPattern    String   @db.VarChar(255)
+  itemNormalized String   @db.VarChar(255)
+  categoryId     String?
+  accountId      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  @@unique([userId, month, year])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemNormalized])
   @@index([userId])
+  @@index([itemNormalized])
 }
 
 model NotificationPref {
@@ -262,6 +269,7 @@ model NotificationPref {
   userId            String   @unique
   emailEnabled      Boolean  @default(true)
   pushEnabled       Boolean  @default(true)
+  pushToken         String?  @db.Text // P14: Armazena subscrição WebPush
   budgetAlert       Boolean  @default(true)
   dueDateAlert      Boolean  @default(true)
   dueDateDaysBefore Int      @default(3)
@@ -321,15 +329,15 @@ enum RecurrenceType {
 }
 
 model ReportHistory {
-  id           String      @id @default(uuid())
-  userId       String
-  type         ReportType
-  parameters   Json?
-  fileUrl      String?
-  fileName     String
-  status       LogStatus   @default(GENERATED)
-  createdAt    DateTime    @default(now())
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String     @id @default(uuid())
+  userId     String
+  type       ReportType
+  parameters Json?
+  fileUrl    String?
+  fileName   String
+  status     LogStatus  @default(GENERATED)
+  createdAt  DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
@@ -384,7 +392,7 @@ model Meta {
   usuarioId     String
   nome          String    @db.VarChar(100)
   descricao     String?
-  valorAlvo     Int       // em centavos
+  valorAlvo     Int // em centavos
   montanteAtual Int       @default(0)
   prazo         DateTime?
   categoriaId   String?
@@ -392,8 +400,10 @@ model Meta {
   cor           String    @default("#10B981")
   concluida     Boolean   @default(false)
   concluidaEm   DateTime?
-  excluida      Boolean   @default(false)
-  excluidaEm    DateTime?
+  isArchived    Boolean   @default(false)
+  archivedAt    DateTime?
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
   criadoEm      DateTime  @default(now())
   atualizadoEm  DateTime  @updatedAt
   usuario       User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
@@ -407,15 +417,17 @@ model Assinatura {
   usuarioId        String
   nome             String          @db.VarChar(100)
   descricao        String?
-  valor            Int             // em centavos
+  valor            Int // em centavos
   ciclo            CicloAssinatura
   proximaRenovacao DateTime
   categoriaId      String?
   contaId          String?
   ativa            Boolean         @default(true)
   canceladaEm      DateTime?
-  excluida         Boolean         @default(false)
-  excluidaEm       DateTime?
+  isArchived       Boolean         @default(false)
+  archivedAt       DateTime?
+  isDeleted        Boolean         @default(false)
+  deletedAt        DateTime?
   criadoEm         DateTime        @default(now())
   atualizadoEm     DateTime        @updatedAt
   usuario          User            @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
@@ -436,8 +448,9 @@ model Lembrete {
   notificarEm          DateTime
   lido                 Boolean      @default(false)
   lidoEm               DateTime?
-  referenciaId         String?      // ID genérico da entidade (transação, dívida, etc.)
-  referenciaTipo       String?      // "TRANSACAO", "DIVIDA", "ASSINATURA", "META"
+  url                  String? // P14: Link para ação direta
+  referenciaId         String? // ID genérico da entidade (transação, dívida, etc.)
+  referenciaTipo       String? // "TRANSACAO", "DIVIDA", "ASSINATURA", "META", "ESTOQUE"
   criadoEm             DateTime     @default(now())
   usuario              User         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
@@ -463,6 +476,8 @@ enum TipoLembrete {
   PROGRESSO_META
   VENCIMENTO_TRANSACAO
   ALERTA_LIMITE_CARTAO
+  ALERTA_ESTOQUE
+  ALERTA_VALIDADE
   GERAL
 }
 
@@ -471,40 +486,113 @@ enum TipoLembrete {
 // ============================================
 
 model Estoque {
-  id            String    @id @default(uuid())
+  id            String      @id @default(uuid())
   usuarioId     String
-  produtoId     String?   // Referência ao produto do catálogo
-  nome          String    @db.VarChar(200)
-  categoria     String?   @db.VarChar(100)
-  quantidade    Decimal   @db.Decimal(10, 2) @default(0)
-  unidade       String    @default("un")
-  precoMedio     Int       @default(0) // em centavos
-  precoUltimo    Int       @default(0)
+  produtoId     String? // Referência ao produto do catálogo
+  nome          String      @db.VarChar(200)
+  categoria     String?     @db.VarChar(100)
+  quantidade    Decimal     @default(0) @db.Decimal(10, 2)
+  unidade       String      @default("un")
+  precoMedio    Int         @default(0) // em centavos
+  precoUltimo   Int         @default(0)
   ultimaCompra  DateTime?
   validade      DateTime?
-  estoqueMinimo Decimal   @db.Decimal(10, 2) @default(1)
-  barcode       String?   @db.VarChar(50)
-  ativo         Boolean   @default(true)
-  criadoEm      DateTime  @default(now())
-  atualizadoEm  DateTime  @updatedAt
-  usuario       User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  estoqueMinimo Decimal     @default(1) @db.Decimal(10, 2)
+  barcode       String?     @db.VarChar(50)
+  tipo          EstoqueTipo @default(PESSOAL)
+  isArchived    Boolean     @default(false)
+  archivedAt    DateTime?
+  isDeleted     Boolean     @default(false)
+  deletedAt     DateTime?
+  ativo         Boolean     @default(true)
+  criadoEm      DateTime    @default(now())
+  atualizadoEm  DateTime    @updatedAt
+  usuario       User        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  vendas        Venda[]
 
   @@index([usuarioId])
   @@index([categoria])
   @@index([barcode])
+  @@index([tipo])
+}
+
+enum EstoqueTipo {
+  PESSOAL
+  COMERCIAL
+}
+
+model Venda {
+  id         String   @id @default(uuid())
+  usuarioId  String
+  estoqueId  String
+  quantidade Decimal  @db.Decimal(10, 2)
+  valorVenda Int // em centavos
+  custoVenda Int // em centavos (fixado no momento da venda para histórico)
+  lucro      Int // em centavos
+  dataVenda  DateTime @default(now())
+  contaId    String? // Conta onde entrou o dinheiro
+  vendaId    String?  @unique // ID externo ou link com transação
+
+  usuario User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  estoque Estoque  @relation(fields: [estoqueId], references: [id])
+  account Account? @relation(fields: [contaId], references: [id])
+
+  @@index([usuarioId])
+  @@index([dataVenda])
+}
+
+// ============================================
+// PATRIMÔNIO — GESTÃO DE BENS E ATIVOS
+// ============================================
+
+model Asset {
+  id          String    @id @default(uuid())
+  usuarioId   String
+  nome        String    @db.VarChar(200)
+  descricao   String?   @db.Text
+  tipo        AssetType @default(OUTROS)
+  valorCompra Int       @default(0) // em centavos
+  valorAtual  Int       @default(0) // em centavos
+  dataCompra  DateTime?
+  instituicao String?   @db.VarChar(100) // ex: Imobiliária, Concessionária, Corretora
+  cor         String    @default("#047857")
+  icone       String?
+
+  // Governança P2
+  isArchived Boolean   @default(false)
+  archivedAt DateTime?
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([tipo])
+}
+
+enum AssetType {
+  IMOVEL
+  VEICULO
+  INVESTIMENTO_FIXO
+  EQUIPAMENTO
+  JOIA_ARTE
+  OUTROS
 }
 
 // Catálogo de produtos do atacarejo
 model Produto {
-  id            String    @id @default(uuid())
-  nome          String    @unique @db.VarChar(200)
-  categoria     String    @db.VarChar(100)
-  unidade       String    @default("un")
-  precoMedio    Int       @default(0) // em centavos
-  barcode       String?   @unique @db.VarChar(50)
-  imagem        String?   // URL da imagem
-  popular       Boolean   @default(false) // itens mais comuns
-  criadoEm      DateTime  @default(now())
+  id         String   @id @default(uuid())
+  nome       String   @unique @db.VarChar(200)
+  categoria  String   @db.VarChar(100)
+  unidade    String   @default("un")
+  precoMedio Int      @default(0) // em centavos
+  barcode    String?  @unique @db.VarChar(50)
+  imagem     String? // URL da imagem
+  popular    Boolean  @default(false) // itens mais comuns
+  criadoEm   DateTime @default(now())
 
   @@index([categoria])
   @@index([barcode])
@@ -512,30 +600,43 @@ model Produto {
 }
 
 model ListaCompra {
-  id            String    @id @default(uuid())
-  usuarioId     String
-  nome          String    @db.VarChar(200)
-  concluida     Boolean   @default(false)
-  concluidaEm   DateTime?
-  criadoEm      DateTime  @default(now())
-  usuario       User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  itens         ListaCompraItem[]
+  id          String            @id @default(uuid())
+  usuarioId   String
+  nome        String            @db.VarChar(200)
+  concluida   Boolean           @default(false)
+  concluidaEm DateTime?
+  criadoEm    DateTime          @default(now())
+  usuario     User              @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  itens       ListaCompraItem[]
 
   @@index([usuarioId])
 }
 
 model ListaCompraItem {
-  id            String    @id @default(uuid())
-  listaId       String
-  nome          String    @db.VarChar(200)
-  quantidade    Decimal   @db.Decimal(10, 2) @default(1)
-  unidade       String    @default("un")
-  comprado      Boolean   @default(false)
-  precoMaximo   Int?      // em centavos
-  observacao    String?
-  ordem         Int       @default(0)
-  criadoEm      DateTime  @default(now())
-  lista         ListaCompra @relation(fields: [listaId], references: [id], onDelete: Cascade)
+  id          String      @id @default(uuid())
+  listaId     String
+  nome        String      @db.VarChar(200)
+  quantidade  Decimal     @default(1) @db.Decimal(10, 2)
+  unidade     String      @default("un")
+  comprado    Boolean     @default(false)
+  precoMaximo Int? // em centavos
+  observacao  String?
+  ordem       Int         @default(0)
+  criadoEm    DateTime    @default(now())
+  lista       ListaCompra @relation(fields: [listaId], references: [id], onDelete: Cascade)
 
   @@index([listaId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("INFO")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

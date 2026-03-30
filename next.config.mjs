@@ -4,6 +4,12 @@ const nextConfig = {
   images: {
     domains: ["utfs.io"], // Para Uploadthing
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { Settings, Save, RefreshCw } from "lucide-react";
+import { Settings, Save, RefreshCw, ShieldCheck, ChevronRight } from "lucide-react";
 
 export default function ConfiguracoesPage() {
   const { status } = useSession();
@@ -87,9 +87,17 @@ export default function ConfiguracoesPage() {
     <div className="min-h-screen bg-slate-950">
       <PageHeader
         title="Configurações"
-        subtitle="Personalize sua experiência"
-        onRefresh={fetchConfig}
-      />
+        description="Personalize sua experiência"
+        breadcrumbs={[{ label: "Configurações" }]}
+      >
+        <button
+          onClick={fetchConfig}
+          className="p-2 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:block"
+          title="Atualizar"
+        >
+          <RefreshCw className="w-5 h-5" />
+        </button>
+      </PageHeader>
       <main className="max-w-2xl mx-auto px-4 py-8">
         {loading ? (
           <div className="flex justify-center py-12">
@@ -129,7 +137,7 @@ export default function ConfiguracoesPage() {
               <h3 className="text-lg font-semibold text-white mb-4">
                 Sessão e Segurança
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="block text-sm text-slate-400 mb-1">
                     Duração da sessão (dias)
@@ -156,6 +164,22 @@ export default function ConfiguracoesPage() {
                     className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
                   />
                 </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-800">
+                 <button 
+                  onClick={() => router.push("/painel/configuracoes/auditoria")}
+                  className="w-full flex items-center justify-between p-4 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/10 rounded-xl transition-all group"
+                 >
+                    <div className="flex items-center gap-3">
+                       <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                       <div className="text-left">
+                          <p className="text-sm font-bold text-white">Auditoria Enterprise</p>
+                          <p className="text-[10px] text-slate-500">Acesse o histórico detalhado de todas as suas alterações.</p>
+                       </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-emerald-500 transition-colors" />
+                 </button>
               </div>
             </div>
 

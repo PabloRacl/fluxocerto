@@ -29,8 +29,8 @@ export async function PATCH(
     const updatedTransaction = await prisma.transaction.update({
       where: { id: transactionId },
       data: {
-        isDeleted: isArchived,
-        deletedAt: isArchived ? new Date() : null,
+        isArchived: isArchived,
+        archivedAt: isArchived ? new Date() : null,
       },
     });
 

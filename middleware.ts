@@ -7,7 +7,12 @@ export default withAuth(
     const token = req.nextauth.token;
 
     if (!token) {
-      // Redireciona para login se não houver token
+      // Para APIs, devolver JSON 401 (sem redirect HTML), para chamadas em fetch (SPA)
+      if (req.nextUrl.pathname.startsWith("/api")) {
+        return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      }
+
+      // Para rotas de UI, redireciona para login
       return NextResponse.redirect(new URL("/entrar", req.url));
     }
 
