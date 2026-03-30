@@ -258,7 +258,7 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
   // RENDER: PRINCIPAL
   // ============================================
   return (
-    <div className="relative bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-slate-800/50 p-6 shadow-2xl h-full flex flex-col group overflow-hidden">
+    <div className="relative bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-slate-800/50 p-6 shadow-2xl flex flex-col group overflow-hidden">
       {/* Background glow orb */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none transition-opacity duration-700 opacity-50 group-hover:opacity-100" />
       
