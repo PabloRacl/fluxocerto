@@ -143,7 +143,7 @@ export default function DashboardPage() {
       <DashboardHeader user={data?.user} onSignOut={handleSignOut} />
 
       <motion.main 
-        className="relative z-10 p-8"
+        className="relative z-10 px-4 py-6 sm:p-8"
         initial="hidden"
         animate="visible"
         variants={containerVariants}

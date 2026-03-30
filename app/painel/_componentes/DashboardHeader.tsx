@@ -64,7 +64,7 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
           <div className="flex-1 w-full max-w-2xl mx-auto relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 via-transparent to-emerald-500/20 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
             
-            <div className="relative flex flex-col items-center bg-slate-900/40 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-4 overflow-hidden shadow-2xl min-h-[90px] justify-center">
+            <div className="relative flex flex-col items-center bg-slate-900/40 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-3 sm:p-4 overflow-hidden shadow-2xl min-h-[70px] sm:min-h-[90px] justify-center">
               
               {/* Brilho Neural Dinâmico de Fundo */}
               <motion.div 

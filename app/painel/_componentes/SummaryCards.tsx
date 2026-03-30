@@ -96,7 +96,7 @@ export function SummaryCards({ loading, summary, userLevel = 1 }: SummaryCardsPr
               {loading ? (
                 <Skeleton className="h-8 w-full bg-slate-700/50" />
               ) : (
-                <p className={`text-xl font-black relative z-10 ${summary.totalBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                <p className={`text-lg sm:text-xl font-black relative z-10 ${summary.totalBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                   {formatCurrency(summary.totalBalance)}
                 </p>
               )}
@@ -131,7 +131,7 @@ export function SummaryCards({ loading, summary, userLevel = 1 }: SummaryCardsPr
               {loading ? (
                 <Skeleton className="h-8 w-full bg-slate-700/50" />
               ) : (
-                <p className="text-xl font-black text-blue-400 relative z-10">
+                <p className="text-lg sm:text-xl font-black text-blue-400 relative z-10">
                   {formatCurrency(summary.totalIncome)}
                 </p>
               )}
@@ -166,7 +166,7 @@ export function SummaryCards({ loading, summary, userLevel = 1 }: SummaryCardsPr
               {loading ? (
                 <Skeleton className="h-8 w-full bg-slate-700/50" />
               ) : (
-                <p className="text-xl font-black text-red-400 relative z-10">
+                <p className="text-lg sm:text-xl font-black text-red-400 relative z-10">
                   {formatCurrency(summary.totalExpense)}
                 </p>
               )}
@@ -205,7 +205,7 @@ export function SummaryCards({ loading, summary, userLevel = 1 }: SummaryCardsPr
               {loading ? (
                 <Skeleton className="h-8 w-full bg-slate-700/50" />
               ) : (
-                <p className={`text-xl font-black relative z-10 ${summary.monthlyBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                <p className={`text-lg sm:text-xl font-black relative z-10 ${summary.monthlyBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                   {formatCurrency(summary.monthlyBalance)}
                 </p>
               )}
@@ -241,7 +241,7 @@ export function SummaryCards({ loading, summary, userLevel = 1 }: SummaryCardsPr
                 <Skeleton className="h-8 w-full bg-slate-700/50" />
               ) : (
                 <div className="flex items-baseline gap-2 relative z-10">
-                   <p className={`text-xl font-black ${getHealthColor(summary.healthScore)}`}>
+                   <p className={`text-lg sm:text-xl font-black ${getHealthColor(summary.healthScore)}`}>
                     {summary.healthScore ?? 0}
                   </p>
                   <span className="text-[10px] text-slate-500 font-black uppercase">pts</span>
