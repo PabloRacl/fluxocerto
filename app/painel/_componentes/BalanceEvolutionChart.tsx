@@ -297,59 +297,9 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
         </div>
       </div>
 
-  {/* Variação Total e Totais do Período */}
-      <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
-        {/* Variação */}
-        <div className="flex items-center gap-3 p-4 bg-slate-900/40 rounded-2xl border border-white/5 transition-all hover:bg-slate-900/60 group/card">
-          <div className={`p-2 rounded-xl ${isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'} border border-transparent group-hover/card:border-white/10 transition-colors`}>
-            {isPositive ? <TrendingUp className="w-5 h-5 flex-shrink-0" /> : <TrendingDown className="w-5 h-5 flex-shrink-0" />}
-          </div>
-          <div className="min-w-0">
-            <span
-              className={`text-sm font-black tracking-tight block truncate ${
-                isPositive ? "text-emerald-400" : "text-red-400"
-              }`}
-              style={isPositive ? { textShadow: "0 0 10px rgba(52,211,153,0.3)" } : { textShadow: "0 0 10px rgba(248,113,113,0.3)" }}
-            >
-              {isPositive ? "+" : ""}
-              {formatCurrency(variation.value)}
-            </span>
-            <span
-              className={`text-xs ${isPositive ? "text-emerald-400" : "text-red-400"}`}
-            >
-              ({Math.abs(variation.percentage).toFixed(1)}%)
-            </span>
-          </div>
-        </div>
-
-        {/* Total Receitas */}
-        <div className="flex items-center gap-3 p-4 bg-slate-900/40 rounded-2xl border border-white/5 transition-all hover:bg-slate-900/60 group/card">
-          <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-transparent group-hover/card:border-white/10 transition-colors">
-            <ArrowUpCircle className="w-5 h-5 flex-shrink-0" />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Receitas</span>
-            <span className="text-sm font-black text-blue-400 block truncate" style={{ textShadow: "0 0 10px rgba(96,165,250,0.3)" }}>
-              {formatCurrency(totals.totalIncome)}
-            </span>
-          </div>
-        </div>
-
-        {/* Total Despesas */}
-        <div className="flex items-center gap-3 p-4 bg-slate-900/40 rounded-2xl border border-white/5 transition-all hover:bg-slate-900/60 group/card">
-          <div className="p-2 rounded-xl bg-red-500/10 text-red-400 border border-transparent group-hover/card:border-white/10 transition-colors">
-            <ArrowDownCircle className="w-5 h-5 flex-shrink-0" />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Despesas</span>
-            <span className="text-sm font-black text-red-400 block truncate" style={{ textShadow: "0 0 10px rgba(248,113,113,0.3)" }}>
-              {formatCurrency(totals.totalExpense)}
-            </span>
-          </div>
-        </div>
-      </div>
 
       {/* Gráfico */}
+
       <div className="h-[200px] w-full relative z-10 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === "area" ? (
