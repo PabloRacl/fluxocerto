@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NeuralMascot } from "./NeuralMascot";
+import { mascotEvents } from "@/biblioteca/MascotEvents";
 import { X, Lock, CheckCircle2, TrendingUp, Trophy, Zap } from "lucide-react";
 import { AnimatedModal } from "./AnimatedModal";
 
@@ -27,6 +28,7 @@ const ITEMS = [
 
 export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps) {
   const [equippedItems, setEquippedItems] = useState<number[]>([]);
+  const [transforming, setTransforming] = useState(false);
 
   // Initially equip all unlocked items when the modal opens
   useEffect(() => {
@@ -36,11 +38,25 @@ export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps
   }, [isOpen, level]);
 
   const toggleItem = (itemLevel: number) => {
-    setEquippedItems(prev => 
-      prev.includes(itemLevel) 
-        ? prev.filter(l => l !== itemLevel) 
-        : [...prev, itemLevel]
-    );
+    setEquippedItems(prev => {
+      const isEquipping = !prev.includes(itemLevel);
+      if (isEquipping) {
+         setTransforming(true);
+         setTimeout(() => setTransforming(false), 800);
+         
+         const item = ITEMS.find(i => i.level === itemLevel);
+         if (item) {
+           mascotEvents.emit({
+             type: 'CUSTOM',
+             message: `Análise concluída: Item de nível ${itemLevel} sincronizado com sucesso!`,
+             mood: 'HAPPY'
+           });
+         }
+      }
+      return isEquipping 
+        ? [...prev, itemLevel] 
+        : prev.filter(l => l !== itemLevel);
+    });
   };
 
   return (
@@ -65,7 +81,21 @@ export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps
 
           <div className="relative z-10 mb-8 transform group-hover:scale-110 transition-transform duration-700">
              <div className="absolute inset-0 bg-emerald-500/20 blur-[50px] rounded-full animate-pulse" />
-             <NeuralMascot size="xl" level={level} showScan={true} equippedItems={equippedItems} />
+             
+             {/* Efeito de Transformação (Flash) */}
+             <AnimatePresence>
+                {transforming && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1.2 }}
+                    exit={{ opacity: 0, scale: 1.5 }}
+                    transition={{ duration: 0.4 }}
+                    className="absolute inset-[-40%] bg-emerald-300 rounded-full blur-[60px] z-50 mix-blend-screen"
+                  />
+                )}
+             </AnimatePresence>
+
+             <NeuralMascot size="xl" level={level} showScan={true} equippedItems={equippedItems} interactive={true} />
           </div>
 
           <div className="text-center relative z-10">

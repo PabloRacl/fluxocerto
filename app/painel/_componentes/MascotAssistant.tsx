@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Lock, CheckCircle2, TrendingUp, Trophy, Zap } from "lucide-react";
 import { NeuralMascot } from "./NeuralMascot";
 import { neuralVoice } from "@/biblioteca/NeuralVoiceService";
+import { mascotEvents, MascotEventPayload } from "@/biblioteca/MascotEvents";
 
 interface Tip {
   id: string;
@@ -63,6 +64,39 @@ export function MascotAssistant({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [muted, setMuted] = useState(false);
   const [show, setShow] = useState(false);
+  const [currentMood, setCurrentMood] = useState<"HAPPY" | "WORRIED" | "THINKING">("HAPPY");
+
+  // Subscribe to Realtime mascot Events
+  useEffect(() => {
+    const handleEvent = (payload: MascotEventPayload) => {
+      // Se já estiver pensando, não interrompemos para evitar flashes
+      setShow(true);
+      setCurrentTip(payload.message);
+      
+      if (payload.mood) {
+         setCurrentMood(payload.mood);
+      } else if (payload.type === 'TRANSACTION_EXPENSIVE') {
+         setCurrentMood("WORRIED");
+      } else if (payload.type === 'GOAL_ACHIEVED') {
+         setCurrentMood("HAPPY");
+      } else {
+         setCurrentMood("HAPPY");
+      }
+
+      setIsThinking(false);
+      
+      neuralVoice.speak(payload.message, payload.type.toLowerCase(), 
+        () => setIsSpeaking(true), 
+        () => setIsSpeaking(false)
+      );
+
+      // Auto-hide após 14 segundos
+      setTimeout(() => setShow(false), 14000);
+    };
+
+    const unsubscribe = mascotEvents.subscribe(handleEvent);
+    return () => { unsubscribe(); };
+  }, []);
 
   // Sincroniza estado de mute com o serviço
   useEffect(() => {
@@ -77,6 +111,7 @@ export function MascotAssistant({
       
       setIsThinking(true);
       setShow(true);
+      setCurrentMood("THINKING");
 
       setTimeout(() => {
         // 1. PRIORIDADE: SITUAÇÕES CRÍTICAS
@@ -104,6 +139,12 @@ export function MascotAssistant({
 
         setCurrentTip(selectedTip.text);
         setIsThinking(false);
+        // Ajusta o humor de acordo com a dica
+        if (selectedTip.type === 'BRAIN' || selectedTip.type === 'STRATEGY') {
+          setCurrentMood(balance < 0 ? "WORRIED" : "HAPPY");
+        } else {
+          setCurrentMood("HAPPY");
+        }
         
         // Tenta falar o insight (ID agora aponta para um possível arquivo .mp3 no futuro)
         neuralVoice.speak(selectedTip.text, selectedTip.id, 
@@ -232,7 +273,20 @@ export function MascotAssistant({
 
           {/* O Mascote 3D (Mentor) */}
           <div className="mb-2 md:mb-4 self-center md:self-auto transform scale-75 md:scale-100 origin-bottom">
-             <NeuralMascot size="lg" mood="HAPPY" level={userLevel} isSpeaking={isSpeaking} />
+             <NeuralMascot 
+               size="lg" 
+               mood={currentMood} 
+               level={userLevel} 
+               isSpeaking={isSpeaking} 
+               interactive={true}
+               onClick={() => {
+                  mascotEvents.emit({
+                    type: 'RANDOM_POKE',
+                    message: TIPS[Math.floor(Math.random() * TIPS.length)].text,
+                    mood: 'HAPPY'
+                  });
+               }}
+             />
           </div>
 
         </motion.div>

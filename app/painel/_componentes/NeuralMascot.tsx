@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Image from "next/image";
 
 interface NeuralMascotProps {
@@ -11,6 +12,8 @@ interface NeuralMascotProps {
   level?: number;
   isSpeaking?: boolean;
   equippedItems?: number[];
+  interactive?: boolean;
+  onClick?: () => void;
 }
 
 export function NeuralMascot({ 
@@ -20,8 +23,52 @@ export function NeuralMascot({
   showScan = true,
   level = 1,
   isSpeaking = false,
-  equippedItems
+  equippedItems,
+  interactive = true,
+  onClick
 }: NeuralMascotProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isPoked, setIsPoked] = useState(false);
+
+  // Parallax Mechanics
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { damping: 20, stiffness: 200, mass: 1 };
+  const smoothX = useSpring(mouseX, springConfig);
+  const smoothY = useSpring(mouseY, springConfig);
+
+  const rotateX = useTransform(smoothY, [-0.5, 0.5], [10, -10]);
+  const rotateY = useTransform(smoothX, [-0.5, 0.5], [-15, 15]);
+  const translateX = useTransform(smoothX, [-0.5, 0.5], [-8, 8]);
+  const translateY = useTransform(smoothY, [-0.5, 0.5], [-8, 8]);
+
+  useEffect(() => {
+    if (!interactive) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        // Calculate mouse position relative to center of the component (-0.5 to 0.5)
+        const x = (e.clientX - rect.left - rect.width / 2) / (window.innerWidth / 2) * 0.5;
+        const y = (e.clientY - rect.top - rect.height / 2) / (window.innerHeight / 2) * 0.5;
+        mouseX.set(x);
+        mouseY.set(y);
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [interactive, mouseX, mouseY]);
+
+  const handlePoke = () => {
+    if (onClick) onClick();
+    if (!isPoked) {
+      setIsPoked(true);
+      setTimeout(() => setIsPoked(false), 2000);
+    }
+  };
+
   const src = mood === "WORRIED" 
     ? "/mascote/sapo_preocupado_dark.png" 
     : "/mascote/sapo_feliz_dark.png";
@@ -34,7 +81,12 @@ export function NeuralMascot({
   }[size];
 
   return (
-    <div className={`relative flex items-center justify-center ${className}`} style={{ width: sizePixels, height: sizePixels }}>
+    <div 
+       ref={containerRef}
+       className={`relative flex items-center justify-center ${className} ${interactive ? 'cursor-pointer' : ''}`} 
+       style={{ width: sizePixels, height: sizePixels, perspective: 1000 }}
+       onClick={interactive ? handlePoke : undefined}
+    >
       
       {/* 1. Aura de Energia Neural ou Aura Mestre (Lvl 40+ e 50+) */}
       {level >= 50 ? (
@@ -57,27 +109,45 @@ export function NeuralMascot({
         />
       )}
 
-      {/* 2. Mascote 3D com Movimento Orgânico */}
+      {/* 2. Mascote 3D com Movimento Orgânico e Parallax */}
       <motion.div
-        animate={{ 
-          y: [0, -10, 0],
-          rotate: [-1, 1, -1],
-          scale: isSpeaking ? [1, 1.05, 1, 1.05, 1] : 1
+        style={{ 
+          rotateX: interactive ? rotateX : 0, 
+          rotateY: interactive ? rotateY : 0,
+          x: interactive ? translateX : 0,
+          y: interactive ? translateY : 0,
+          transformStyle: "preserve-3d"
         }}
-        transition={{ 
-          y: { duration: 5, repeat: Infinity, ease: "easeInOut" },
-          rotate: { duration: 5, repeat: Infinity, ease: "easeInOut" },
-          scale: isSpeaking ? { duration: 0.5, repeat: Infinity } : { duration: 0 }
-        }}
-        className="relative z-10 w-full h-full"
+        className="relative z-10 w-full h-full will-change-transform"
       >
-        <Image 
-          src={src}
-          alt={`Mascote 3D ${mood}`}
-          fill
-          className="object-contain brightness-110 saturate-[1.1] drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]"
-          priority
-        />
+        <motion.div
+          animate={{ 
+            y: isPoked ? [-20, 0, -10, 0] : [0, -6, 0],   // Poke salta
+            rotate: isPoked ? [0, -15, 15, -5, 5, 0] : [-1, 1, -1], // Poked faz o mascote balançar e recuperar
+            scale: isSpeaking ? [1, 1.05, 1, 1.05, 1] : (isPoked ? [1, 1.1, 1] : 1)
+          }}
+          transition={{ 
+            y: isPoked ? { duration: 0.6 } : { duration: 4, repeat: Infinity, ease: "easeInOut" },
+            rotate: isPoked ? { duration: 0.8 } : { duration: 5, repeat: Infinity, ease: "easeInOut" },
+            scale: isSpeaking ? { duration: 0.8, repeat: Infinity } : (isPoked ? { duration: 0.6 } : { duration: 0 })
+          }}
+          className="relative w-full h-full"
+        >
+          {/* Efeito Respiratório Ocioso */}
+          <motion.div
+            animate={!isPoked && !isSpeaking ? {
+              scaleY: [1, 1.03, 1], // Breathing chest expansion
+            } : { scaleY: 1 }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+             className="w-full h-full relative"
+          >
+            <Image 
+              src={src}
+              alt={`Mascote 3D ${mood}`}
+              fill
+              className="object-contain brightness-110 saturate-[1.1] drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]"
+              priority
+            />
 
         {/* --- INÍCIO DOS COSMÉTICOS --- */}
         {/* Lvl 5: Óculos de Sol */}
@@ -139,6 +209,8 @@ export function NeuralMascot({
             className={`absolute left-0 right-0 h-[1.5px] z-20 pointer-events-none blur-[1px] opacity-60 ${mood === 'WORRIED' ? 'bg-red-400 shadow-[0_0_10px_#f87171]' : 'bg-emerald-400 shadow-[0_0_10px_#34d399]'}`}
           />
         )}
+          </motion.div>
+        </motion.div>
       </motion.div>
 
       {/* 4. Partículas Orbitais (Neural Fragments ou Dinheiro/Estrelas) */}
