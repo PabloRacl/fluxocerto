@@ -164,7 +164,7 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* PAINEL UNIFICADO DE ANÁLISE (ABAS NEURAIS) */}
-          <motion.div variants={itemVariants} className="max-w-7xl mx-auto mb-8 relative z-10 min-h-[500px]">
+          <motion.div variants={itemVariants} className="max-w-7xl mx-auto mb-8 relative z-10 min-h-[400px]">
             {/* Controle de Abas */}
             <div className="flex justify-center mb-6 relative z-20">
               <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 p-1.5 rounded-2xl flex items-center gap-1 sm:gap-2 shadow-2xl">
@@ -190,7 +190,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Conteúdo da Aba com Animação Genuína */}
-            <div className="relative">
+            <div className="relative w-full">
               <AnimatePresence mode="wait">
                 {activeTab === 'evolution' && (
                   <motion.div
@@ -199,7 +199,7 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
                     transition={{ duration: 0.3 }}
-                    className="absolute inset-x-0"
+                    className="w-full"
                   >
                     <BalanceEvolutionChart userId={data?.user?.email || ""} />
                   </motion.div>
@@ -211,7 +211,7 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
                     transition={{ duration: 0.3 }}
-                    className="absolute inset-x-0"
+                    className="w-full"
                   >
                     <ExpensesByCategoryChart userId={data?.user?.email || ""} />
                   </motion.div>
@@ -223,7 +223,7 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
                     transition={{ duration: 0.3 }}
-                    className="absolute inset-x-0"
+                    className="w-full"
                   >
                     <BalanceForecastChart userId={data?.user?.email || ""} />
                   </motion.div>
