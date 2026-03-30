@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Wallet, LogOut, Trophy, Settings as SettingsIcon, Volume2, VolumeX } from "lucide-react";
+import { Wallet, LogOut, Trophy, Settings as SettingsIcon, Volume2, VolumeX, Shield } from "lucide-react";
 import { neuralVoice } from "@/biblioteca/NeuralVoiceService";
 import Link from "next/link";
 import { financialTips } from "@/app/painel/_constants/financial-tips";
@@ -16,7 +16,7 @@ import {
 } from "@/componentes/ui/tooltip";
 
 interface DashboardHeaderProps {
-  user: { name?: string | null; email?: string | null } | undefined;
+  user: any;
   onSignOut: () => void;
 }
 
@@ -176,6 +176,26 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-800 border-slate-700 text-white">Minhas Conquistas</TooltipContent>
               </Tooltip>
+
+              {/* Botão de Administração (SÓ PARA ADMINS) */}
+              {user?.role === 'ADMIN' && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href="/painel/admin">
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: [0, -10, 10, -10, 0] }}
+                        whileTap={{ scale: 0.95 }}
+                        className="p-2.5 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 rounded-xl transition-all hover:border-indigo-500/60 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
+                      >
+                        <Shield className="w-5 h-5 filter drop-shadow-[0_0_5px_rgba(99,102,241,0.6)]" />
+                      </motion.div>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-slate-800 border-slate-700 text-white border-indigo-500">
+                    Painel Central do Admin
+                  </TooltipContent>
+                </Tooltip>
+              )}
 
               {/* Central de Notificações / Lembretes */}
               <NotificationCenter />

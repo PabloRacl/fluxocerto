@@ -49,6 +49,8 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           image: user.image,
+          role: (user as any).role,
+          plan: (user as any).plan,
         };
       },
     }),
@@ -69,12 +71,26 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.role = (user as any).role;
+        token.plan = (user as any).plan;
       }
+      
+      // Garante que sessoes antigas ou logins OAuth peguem o role e plan do banco
+      if (!token.role && token.email) {
+        const dbUser = await prisma.user.findUnique({ where: { email: token.email } });
+        if (dbUser) {
+          token.role = (dbUser as any).role;
+          token.plan = (dbUser as any).plan;
+        }
+      }
+      
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        (session.user as any).id = token.id as string;
+        (session.user as any).role = token.role as any;
+        (session.user as any).plan = token.plan as any;
       }
       return session;
     },

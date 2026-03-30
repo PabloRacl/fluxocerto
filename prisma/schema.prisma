@@ -23,6 +23,8 @@ model User {
   darkMode          Boolean             @default(false)
   currency          String              @default("BRL")
   timezone          String              @default("America/Sao_Paulo")
+  role              Role                @default(USER)
+  plan              Plan                @default(FREE)
   accounts          Account[]
   auditLogs         AuditLog[]
   categories        Category[]
@@ -306,6 +308,17 @@ enum AccountType {
   INVESTMENT
   PIX
   OTHER
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
 }
 
 enum TransactionType {
