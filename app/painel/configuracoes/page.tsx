@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { Settings, Save, RefreshCw, ShieldCheck, ChevronRight } from "lucide-react";
+import { Settings, Save, RefreshCw, ShieldCheck, ChevronRight, Trash2, Database, AlertCircle, LogOut, Skull } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 export default function ConfiguracoesPage() {
   const { status } = useSession();
@@ -58,6 +59,43 @@ export default function ConfiguracoesPage() {
     router.push("/entrar");
     return null;
   }
+
+  const handleDataReset = async (type: string, label: string) => {
+    const confirmMessage = type === "full_account_delete" 
+      ? `ATENÇÃO: Isso excluirá sua conta e TODOS os seus dados permanentemente. Reservado apenas para casos críticos. Digite "EXCLUIR" para confirmar:` 
+      : `Deseja realmente limpar seus dados de ${label}? Esta ação é irreversível.`;
+    
+    if (type === "full_account_delete") {
+      const input = prompt(confirmMessage);
+      if (input !== "EXCLUIR") return;
+    } else {
+      if (!confirm(confirmMessage)) return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch("/api/usuario/reset-data", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type }),
+      });
+      if (res.ok) {
+        alert("Dados processados com sucesso!");
+        if (type === "full_account_delete") {
+          signOut({ callbackUrl: "/entrar" });
+        } else {
+          window.location.reload();
+        }
+      } else {
+        alert("Erro ao processar limpeza.");
+      }
+    } catch {
+      alert("Falha crítica no motor de limpeza.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const salvar = async () => {
     setSaving(true);
@@ -236,6 +274,54 @@ export default function ConfiguracoesPage() {
                   />
                   <span className="text-white">Modo escuro</span>
                 </label>
+              </div>
+            </div>
+
+            {/* Gestão de Dados (Zona de Perigo) */}
+            <div className="bg-slate-900/50 rounded-xl border border-red-500/10 p-6 overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                 <AlertCircle className="w-24 h-24 text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-red-400 mb-1 flex items-center gap-2">
+                <Database className="w-5 h-5" /> Zona de Perigo Neural
+              </h3>
+              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-6">Controle e Purificação de Dados</p>
+              
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleDataReset("mappings", "Mapeamentos de Notas")}
+                    className="flex items-center gap-3 p-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl text-left transition-all"
+                  >
+                    <div className="p-2 bg-red-500/10 rounded-lg">
+                      <RefreshCw className="w-4 h-4 text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">Resetar Mapeamentos</p>
+                      <p className="text-[10px] text-slate-500">Limpa a memória de IA das notas.</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => handleDataReset("transactions", "Transações")}
+                    className="flex items-center gap-3 p-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl text-left transition-all"
+                  >
+                    <div className="p-2 bg-red-500/10 rounded-lg">
+                      <Trash2 className="w-4 h-4 text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">Limpar Transações</p>
+                      <p className="text-[10px] text-slate-500">Reseta o histórico financeiro.</p>
+                    </div>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => handleDataReset("full_account_delete", "MINHA CONTA")}
+                  className="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-red-600/10 hover:bg-red-600/20 border border-red-600/20 rounded-xl text-red-500 font-black text-xs uppercase tracking-widest transition-all"
+                >
+                  <Skull className="w-4 h-4" /> EXCLUIR MINHA CONTA PERMANENTEMENTE
+                </button>
               </div>
             </div>
 
