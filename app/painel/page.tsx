@@ -190,7 +190,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Conteúdo da Aba com Animação Genuína */}
-            <div className="relative w-full">
+            <div className="relative w-full h-[500px]">
               <AnimatePresence mode="wait">
                 {activeTab === 'evolution' && (
                   <motion.div
@@ -199,7 +199,7 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
                     transition={{ duration: 0.3 }}
-                    className="w-full"
+                    className="w-full h-full"
                   >
                     <BalanceEvolutionChart userId={data?.user?.email || ""} />
                   </motion.div>
@@ -211,7 +211,7 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
                     transition={{ duration: 0.3 }}
-                    className="w-full"
+                    className="w-full h-full"
                   >
                     <ExpensesByCategoryChart userId={data?.user?.email || ""} />
                   </motion.div>
@@ -223,7 +223,7 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
                     transition={{ duration: 0.3 }}
-                    className="w-full"
+                    className="w-full h-full"
                   >
                     <BalanceForecastChart userId={data?.user?.email || ""} />
                   </motion.div>
