@@ -164,7 +164,7 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* PAINEL UNIFICADO DE ANÁLISE (ABAS NEURAIS) */}
-          <motion.div variants={itemVariants} className="max-w-7xl mx-auto mb-8 relative z-10">
+          <motion.div variants={itemVariants} className="max-w-7xl mx-auto mb-8 relative z-10 min-h-[500px]">
             {/* Controle de Abas */}
             <div className="flex justify-center mb-6 relative z-20">
               <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 p-1.5 rounded-2xl flex items-center gap-1 sm:gap-2 shadow-2xl">
@@ -189,17 +189,46 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Conteúdo da Aba - mantido montado para não perder dimensões do ResponsiveContainer */}
-            <div className="w-full">
-              <div className={activeTab === 'evolution' ? 'block' : 'hidden'}>
-                <BalanceEvolutionChart userId={data?.user?.email || ""} />
-              </div>
-              <div className={activeTab === 'category' ? 'block' : 'hidden'}>
-                <ExpensesByCategoryChart userId={data?.user?.email || ""} />
-              </div>
-              <div className={activeTab === 'forecast' ? 'block' : 'hidden'}>
-                <BalanceForecastChart userId={data?.user?.email || ""} />
-              </div>
+            {/* Conteúdo da Aba com Animação Genuína */}
+            <div className="relative">
+              <AnimatePresence mode="wait">
+                {activeTab === 'evolution' && (
+                  <motion.div
+                    key="evolution"
+                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-x-0"
+                  >
+                    <BalanceEvolutionChart userId={data?.user?.email || ""} />
+                  </motion.div>
+                )}
+                {activeTab === 'category' && (
+                  <motion.div
+                    key="category"
+                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-x-0"
+                  >
+                    <ExpensesByCategoryChart userId={data?.user?.email || ""} />
+                  </motion.div>
+                )}
+                {activeTab === 'forecast' && (
+                  <motion.div
+                    key="forecast"
+                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-x-0"
+                  >
+                    <BalanceForecastChart userId={data?.user?.email || ""} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
 
