@@ -62,9 +62,11 @@ const formatPercentage = (value: number) => {
 // CORES
 // ============================================
 const CHART_COLORS = [
-  "#EF4444", "#FA1564", "#F43F5E", "#E11D48", 
-  "#F97316", "#F59E0B", "#D97706", "#EA580C",
-  "#F87171", "#FB923C", "#FBBF24", "#FB7185"
+  "#10B981", "#34D399", "#059669", "#6EE7B7",
+  "#3B82F6", "#60A5FA", "#2563EB", "#93C5FD",
+  "#8B5CF6", "#A78BFA", "#7C3AED",
+  "#F59E0B", "#FBBF24", "#D97706",
+  "#EC4899", "#F43F5E", "#EF4444",
 ];
 
 const animateChart = (delay: number = 0) => {
@@ -174,7 +176,7 @@ export function ExpensesByCategoryChart({
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-4">
               <span className="text-xs text-slate-400">Valor:</span>
-              <span className="text-sm font-bold text-red-400">
+              <span className="text-sm font-bold text-emerald-400">
                 {formatCurrency(pData.value)}
               </span>
             </div>
@@ -377,10 +379,25 @@ export function ExpensesByCategoryChart({
         </div>
       </div>
 
-      <div className="mb-2 sm:hidden flex justify-end relative z-10">
-        <button onClick={() => setShowAllModal(true)} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
-            <List className="w-5 h-5" />
-        </button>
+      <div className="mb-6 flex items-center justify-between relative z-10">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-900/60 border border-white/5 rounded-xl shadow-lg">
+            <TrendingDown className="w-5 h-5 text-red-500" />
+            <span className="text-lg font-black text-red-400" style={{ textShadow: "0 0 10px rgba(248,113,113,0.3)" }}>
+              {formatCurrency(totalExpenses)}
+            </span>
+          </div>
+          <div className="text-[10px] uppercase font-bold text-slate-500 hidden sm:block">
+            Impactando <span className="text-white font-black">{data.length}</span> ramificações
+          </div>
+        </div>
+        
+        {/* Abrir Modal Direto Mobile */}
+        <div className="sm:hidden">
+            <button onClick={() => setShowAllModal(true)} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
+                <List className="w-5 h-5" />
+            </button>
+        </div>
       </div>
 
       {/* Layout Side-by-Side (Neuro HUD) */}
@@ -504,7 +521,7 @@ export function ExpensesByCategoryChart({
                                 <p className="text-[10px] text-slate-500">{formatPercentage(entry.percentage)}</p>
                             </div>
                         </div>
-                        <span className="text-xs font-black text-slate-400 group-hover:text-red-400 transition-colors">
+                        <span className="text-xs font-black text-slate-400 group-hover:text-emerald-400 transition-colors">
                             {formatCurrency(entry.value)}
                         </span>
                     </button>

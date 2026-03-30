@@ -7,8 +7,7 @@ import useSWR from "swr";
 import { RefreshCw } from "lucide-react";
 import { api } from "@/biblioteca/http-client";
 import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
-import { motion, Variants, AnimatePresence } from "framer-motion";
-import { TrendingUp, PieChart, LineChart } from "lucide-react";
+import { motion, Variants } from "framer-motion";
 
 // Componentes Desacoplados (UI limpa)
 import { DashboardHeader } from "@/app/painel/_componentes/DashboardHeader";
@@ -62,7 +61,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [activeTab, setActiveTab] = useState<"evolution" | "category" | "forecast">("evolution");
 
   // Hook SWR que carrega e revalida os dados mestres do Dashboard automaticamente
   const { data: summaryData, isLoading } = useSWR(
@@ -156,84 +154,28 @@ export default function DashboardPage() {
             <SummaryCards summary={summary} loading={loading} userLevel={userLevel} />
           </motion.div>
 
-          {/* Atalhos Rápidos Renderizados Modularmente Moveram para cima */}
-          <QuickActions onNewTransaction={() => router.push("/painel/transacoes?drawer=open")} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 items-stretch">
+            <motion.div variants={itemVariants} className="h-full">
+              <BalanceEvolutionChart userId={data?.user?.email || ""} />
+            </motion.div>
+            <motion.div variants={itemVariants} className="h-full">
+              <ExpensesByCategoryChart userId={data?.user?.email || ""} />
+            </motion.div>
+          </div>
 
-          <motion.div variants={itemVariants} className="mb-8 mt-4">
-            <InsightsPanel userId={data?.user?.email || ""} userLevel={userLevel} />
+          <motion.div variants={itemVariants} className="max-w-7xl mx-auto mb-8 text-center">
+            <BalanceForecastChart userId={data?.user?.email || ""} />
           </motion.div>
 
-          {/* PAINEL UNIFICADO DE ANÁLISE (ABAS NEURAIS) */}
-          <motion.div variants={itemVariants} className="max-w-7xl mx-auto mb-8 relative z-10 min-h-[500px]">
-            {/* Controle de Abas */}
-            <div className="flex justify-center mb-6 relative z-20">
-              <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 p-1.5 rounded-2xl flex items-center gap-1 sm:gap-2 shadow-2xl">
-                <button
-                  onClick={() => setActiveTab("evolution")}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all text-xs font-black tracking-widest uppercase ${activeTab === 'evolution' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
-                >
-                  <TrendingUp className="w-4 h-4" /> <span className="hidden sm:inline">Evolução</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("category")}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all text-xs font-black tracking-widest uppercase ${activeTab === 'category' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
-                >
-                  <PieChart className="w-4 h-4" /> <span className="hidden sm:inline">Categorias</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("forecast")}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all text-xs font-black tracking-widest uppercase ${activeTab === 'forecast' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
-                >
-                  <LineChart className="w-4 h-4" /> <span className="hidden sm:inline">Previsão (IA)</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Conteúdo da Aba com Animação Genuína */}
-            <div className="relative">
-              <AnimatePresence mode="wait">
-                {activeTab === 'evolution' && (
-                  <motion.div
-                    key="evolution"
-                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-x-0"
-                  >
-                    <BalanceEvolutionChart userId={data?.user?.email || ""} />
-                  </motion.div>
-                )}
-                {activeTab === 'category' && (
-                  <motion.div
-                    key="category"
-                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-x-0"
-                  >
-                    <ExpensesByCategoryChart userId={data?.user?.email || ""} />
-                  </motion.div>
-                )}
-                {activeTab === 'forecast' && (
-                  <motion.div
-                    key="forecast"
-                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-x-0"
-                  >
-                    <BalanceForecastChart userId={data?.user?.email || ""} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+          <motion.div variants={itemVariants} className="mb-8">
+            <InsightsPanel userId={data?.user?.email || ""} userLevel={userLevel} />
           </motion.div>
 
           {/* Widget Flutuante de Gamificação (P7) */}
           <FloatingGamification />
+
+          {/* Atalhos Rápidos Renderizados Modularmente */}
+          <QuickActions onNewTransaction={() => router.push("/painel/transacoes?drawer=open")} />
           
           {/* Assistente Mascot Neural (Mestre Sábio) */}
           <MascotAssistant 
