@@ -1941,13 +1941,13 @@ function ImportarNFModal({
                         </span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <select
                         value={item.categoryId || ""}
                         onChange={(e) => updateParsedItem(idx, "categoryId", e.target.value)}
-                        className="flex-1 bg-slate-950/50 border border-white/5 rounded-xl px-3 py-2 text-xs text-slate-300 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all group-hover/item:border-blue-500/30"
+                        className={`flex-1 bg-slate-950/60 border ${!item.categoryId ? 'border-amber-500/30' : 'border-white/5'} rounded-xl px-4 py-3 text-sm text-slate-300 focus:ring-2 focus:ring-blue-500/50 outline-none transition-all group-hover/item:border-blue-500/30`}
                       >
-                        <option value="">Categoria</option>
+                        <option value="">📁 Selecionar Categoria</option>
                         {categories.map((cat) => (
                           <option key={cat.id} value={cat.id}>{cat.name}</option>
                         ))}
@@ -1955,9 +1955,9 @@ function ImportarNFModal({
                       <select
                         value={item.accountId || ""}
                         onChange={(e) => updateParsedItem(idx, "accountId", e.target.value)}
-                        className="flex-1 bg-slate-950/50 border border-white/5 rounded-xl px-3 py-2 text-xs text-slate-300 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all group-hover/item:border-blue-500/30"
+                        className={`flex-1 bg-slate-950/60 border ${!item.accountId ? 'border-amber-500/30' : 'border-white/5'} rounded-xl px-4 py-3 text-sm text-slate-300 focus:ring-2 focus:ring-blue-500/50 outline-none transition-all group-hover/item:border-blue-500/30`}
                       >
-                        <option value="">Conta</option>
+                        <option value="">💳 Selecionar Conta</option>
                         {accounts.map((acc) => (
                           <option key={acc.id} value={acc.id}>{acc.name}</option>
                         ))}
