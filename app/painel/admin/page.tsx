@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import useSWR from "swr";
-import { Users, Trash2, ShieldAlert, ChevronLeft, Search } from "lucide-react";
+import { Users, Trash2, ShieldAlert, ChevronLeft, Search, Info, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { api } from "@/biblioteca/http-client";
 import Link from "next/link";
@@ -13,6 +13,7 @@ const fetcher = (url: string) => api.get<any[]>(url);
 export default function AdminDashboardPage() {
   const { data: users, error, mutate } = useSWR("/api/admin/users", fetcher);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [showPlanInfo, setShowPlanInfo] = useState(false);
 
   const handleUpdate = async (userId: string, changes: { role?: string, plan?: string }) => {
     setLoadingAction(userId);
@@ -89,6 +90,12 @@ export default function AdminDashboardPage() {
           </div>
           
           <div className="flex gap-4 w-full md:w-auto">
+            <button 
+              onClick={() => setShowPlanInfo(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/30 hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-400 transition-all font-bold text-xs uppercase"
+            >
+              <Info className="w-4 h-4" /> Entender Planos
+            </button>
             <div className="flex-1 md:flex-none bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-3xl p-5 flex items-center gap-4 shadow-2xl relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-indigo-500/0 -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
               <div className="p-3 bg-indigo-500/20 rounded-2xl">
@@ -212,6 +219,56 @@ export default function AdminDashboardPage() {
           </motion.div>
         )}
       </main>
+
+      {/* Modal Embutido de Explicação de Planos (Para o Admin) */}
+      {showPlanInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl relative"
+          >
+            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+              <h2 className="text-xl font-black text-white flex items-center gap-2">
+                <Info className="w-6 h-6 text-emerald-500" /> Matriz de Inteligência: Planos & Recursos
+              </h2>
+              <button onClick={() => setShowPlanInfo(false)} className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-red-500/20 rounded-xl transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              <div className="p-5 rounded-2xl bg-slate-950/50 border border-slate-800">
+                <h3 className="text-lg font-bold text-slate-300 mb-2">FREE (Plano Limiar)</h3>
+                <ul className="text-sm text-slate-500 space-y-2 list-disc list-inside">
+                  <li>Incentivo para conhecer o app com limite de 2 carteiras.</li>
+                  <li>Gráficos básicos; Mascot sem voz neural (mudo).</li>
+                  <li>Previsões de fluxo de caixa limitadas a apenas 1 mês.</li>
+                </ul>
+              </div>
+              <div className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
+                <h3 className="text-lg font-bold text-emerald-400 mb-2">PRO (Plano Elite) ⭐️</h3>
+                <ul className="text-sm text-emerald-500/70 space-y-2 list-disc list-inside">
+                  <li>Todas as restrições de contas e despesas removidas.</li>
+                  <li>Mascot ativado na totalidade com Gatilhos Auditivos (+Voz Neural).</li>
+                  <li>Liberado Dashboard de Patrimônios Fixos (Imóveis, Veículos).</li>
+                  <li>Previsões de caixa para até 12 meses do ano.</li>
+                </ul>
+              </div>
+              <div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
+                <h3 className="text-lg font-bold text-amber-500 mb-2">ENTERPRISE (Plano Supremo) 🏢</h3>
+                <ul className="text-sm text-amber-500/70 space-y-2 list-disc list-inside">
+                  <li>Tudo do Plano Pro + Funcionalidades exclusivas para autônomos B2B.</li>
+                  <li>Liberação do Módulo de Estoque e Vendas (Atacarejo).</li>
+                  <li>Aviso Inteligente do Mascote para escassez de produtos e precificação de lucros.</li>
+                </ul>
+              </div>
+            </div>
+            <div className="p-4 bg-slate-950/50 text-center text-xs font-bold uppercase tracking-widest text-slate-500 border-t border-slate-800">
+              Só você como Admin pode atribuir e contornar a assinatura manualmente na tabela matriz.
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
