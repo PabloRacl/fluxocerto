@@ -286,7 +286,7 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
           </button>
           <button
             onClick={() => setChartType("line")}
-            className={`px-3 py-1 text-xs rounded-md transition-colors ${
+            className={`px-4 py-1.5 text-[10px] font-black tracking-widest uppercase rounded-lg transition-all ${
               chartType === "line"
                 ? "bg-emerald-600 text-white"
                 : "text-slate-400 hover:text-white"
@@ -542,7 +542,7 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
       </div>
 
       {/* Botão de Análise Completa */}
-      <div className="mt-5 relative z-10">
+      <div className="mt-auto pt-5 relative z-10">
         <button
           onClick={() => window.location.href = '/painel/transacoes'}
           className="w-full group relative flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-black text-xs uppercase tracking-widest overflow-hidden transition-all duration-300"
