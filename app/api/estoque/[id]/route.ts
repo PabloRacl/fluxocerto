@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { sucesso } from "@/biblioteca/resposta-api";
 import { withAuthRoute } from "@/biblioteca/route-wrapper";
 import { schemaAtualizarEstoque } from "@/validacoes/estoque.schema";

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { withAuthRoute } from "@/biblioteca/route-wrapper";
 import { assetService } from "@/servicos/AssetService";
 import { schemaCriarAsset } from "@/validacoes/asset.schema";

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { withAuthRoute } from "@/biblioteca/route-wrapper";
 import { projecaoService } from "@/servicos/ProjecaoService";
 import { NextResponse } from "next/server";

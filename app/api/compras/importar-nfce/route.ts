@@ -3,6 +3,8 @@ import { XMLParser } from "fast-xml-parser";
 import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
 import { itemImportMappingService } from "@/servicos/ItemImportMappingService";
 
+export const dynamic = "force-dynamic";
+
 const parseDecimal = (value: any) => {
   if (value === null || value === undefined) return 0;
   const raw = String(value).trim();

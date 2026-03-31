@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
 import { tratarErro } from "@/biblioteca/tratar-erro";

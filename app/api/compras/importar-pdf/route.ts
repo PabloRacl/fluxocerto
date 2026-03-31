@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
 import { itemImportMappingService } from "@/servicos/ItemImportMappingService";
