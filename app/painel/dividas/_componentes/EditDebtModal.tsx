@@ -123,7 +123,7 @@ export default function EditDebtModal({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: customAccount.trim(),
-            type: "CHECKING_ACCOUNT",
+            type: "CHECKING",
             color: "#6366F1",
             balance: 0,
           }),
