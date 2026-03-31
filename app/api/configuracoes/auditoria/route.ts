@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
 import { auditService } from "@/servicos/AuditService";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();

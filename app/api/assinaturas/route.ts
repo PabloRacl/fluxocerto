@@ -5,6 +5,8 @@ import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
 import { schemaCriarAssinatura } from "@/validacoes/assinatura.schema";
 import { assinaturaService } from "@/servicos/AssinaturaService";
 
+export const dynamic = "force-dynamic";
+
 // ============================================
 // GET - Listar Assinaturas do Usuário
 // ============================================
