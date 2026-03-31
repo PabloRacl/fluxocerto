@@ -42,7 +42,15 @@ export const authOptions: NextAuthOptions = {
           where: {
             email: credentials.email,
           },
+          include: {
+            accounts: true
+          }
         });
+
+        // Caso especial: Usuário existe (ex: via Google), mas não tem senha definida
+        if (user && !user.password) {
+          throw new Error("PASSWORD_NOT_SET");
+        }
 
         if (!user || !user.password) {
           throw new Error("Email ou senha inválidos");
@@ -82,26 +90,24 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Login por credenciais: sempre permitir
+      // Login por credenciais: sempre permitir se chegou aqui (authorize já validou)
       if (account?.provider === "credentials") return true;
       
       // Login OAuth: vincular automaticamente se o email já existe
       if (account && user.email) {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
+          include: { accounts: true }
         });
         
         if (existingUser) {
           // Verifica se já existe essa conta OAuth vinculada
-          const existingAccount = await prisma.account.findFirst({
-            where: {
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-            },
-          });
+          const alreadyLinked = existingUser.accounts.some(
+            acc => acc.provider === account.provider && acc.providerAccountId === account.providerAccountId
+          );
           
           // Se não existe, vincula o provedor OAuth ao usuário existente
-          if (!existingAccount) {
+          if (!alreadyLinked) {
             await prisma.account.create({
               data: {
                 userId: existingUser.id,
@@ -119,27 +125,30 @@ export const authOptions: NextAuthOptions = {
             });
           }
           
-          // Sobreescreve o user.id para usar o existente
+          // Importante: Manter o ID do usuário original
           user.id = existingUser.id;
         }
       }
       
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
         token.plan = (user as any).plan;
       }
       
-      // Garante que sessões OAuth peguem o role e plan do banco
-      if (!token.role && token.email) {
-        const dbUser = await prisma.user.findUnique({ where: { email: token.email } });
+      // Garante que sessões OAuth peguem o role e plan atualizados do banco
+      if (token.email) {
+        const dbUser = await prisma.user.findUnique({ 
+          where: { email: token.email },
+          select: { id: true, role: true, plan: true }
+        });
         if (dbUser) {
           token.id = dbUser.id;
-          token.role = (dbUser as any).role;
-          token.plan = (dbUser as any).plan;
+          token.role = dbUser.role;
+          token.plan = dbUser.plan;
         }
       }
       

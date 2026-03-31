@@ -50,5 +50,6 @@ export const config = {
     "/api/lembretes/:path*",
     "/api/configuracoes/:path*",
     "/api/produtos/:path*",
+    "/api/bank/:path*",
   ],
 };

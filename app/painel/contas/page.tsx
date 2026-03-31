@@ -21,6 +21,29 @@ import {
   Eye,
   Trash2,
   ArrowUpRight,
+  PiggyBank,
+  Banknote,
+  Landmark,
+  Coins,
+  Building2,
+  Globe,
+  Heart,
+  Utensils,
+  ShoppingCart,
+  Car,
+  Plane,
+  Smartphone,
+  GraduationCap,
+  ShieldCheck,
+  Home,
+  Briefcase,
+  Stethoscope,
+  Music,
+  Gift,
+  Coffee,
+  Dumbbell,
+  Rocket,
+  Anchor
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -34,6 +57,8 @@ import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
 // ✅ IMPORT DOS MODAIS FUTURISTAS
 import NewAccountModal from "./_componentes/NewAccountModal";
 import EditAccountModal from "./_componentes/EditAccountModal";
+import { PluggyConnect } from "./_componentes/PluggyConnect";
+import { useSearchParams } from "next/navigation";
 
 // ============================================
 // FORMATADOR DE MOEDA (BRL)
@@ -49,17 +74,39 @@ const formatCurrency = (valueInCents: number) => {
 // MAPEAMENTO DE ÍCONES
 // ============================================
 const getIcon = (iconName: string | null) => {
-  const icons: Record<string, JSX.Element> = {
-    wallet: <Wallet className="w-6 h-6" />,
-    "piggy-bank": <Wallet className="w-6 h-6" />,
-    "credit-card": <Wallet className="w-6 h-6" />,
-    banknote: <Wallet className="w-6 h-6" />,
-    landmark: <Wallet className="w-6 h-6" />,
-    coins: <Wallet className="w-6 h-6" />,
-    "shopping-cart": <Wallet className="w-6 h-6" />,
-    utensils: <Wallet className="w-6 h-6" />,
+  const icons: Record<string, any> = {
+    wallet: Wallet,
+    "piggy-bank": PiggyBank,
+    "credit-card": CardIcon,
+    banknote: Banknote,
+    landmark: Landmark,
+    coins: Coins,
+    "building-2": Building2,
+    globe: Globe,
+    zap: Zap,
+    heart: Heart,
+    utensils: Utensils,
+    "shopping-cart": ShoppingCart,
+    car: Car,
+    plane: Plane,
+    smartphone: Smartphone,
+    "graduation-cap": GraduationCap,
+    "trending-up": TrendingUp,
+    "shield-check": ShieldCheck,
+    home: Home,
+    briefcase: Briefcase,
+    stethoscope: Stethoscope,
+    music: Music,
+    gift: Gift,
+    coffee: Coffee,
+    dumbbell: Dumbbell,
+    cpu: Cpu,
+    rocket: Rocket,
+    anchor: Anchor,
   };
-  return icons[iconName || "wallet"] || <Wallet className="w-6 h-6" />;
+
+  const Icon = icons[iconName || "wallet"] || Wallet;
+  return <Icon className="w-6 h-6" />;
 };
 
 // ============================================
@@ -68,6 +115,7 @@ const getIcon = (iconName: string | null) => {
 export default function AccountsPage() {
   const { status, data } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [accounts, setAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,6 +127,7 @@ export default function AccountsPage() {
 
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPluggy, setShowPluggy] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
 
   // ✅ ESTADO PARA DADOS DE FATURA DOS CARTÕES
@@ -148,6 +197,15 @@ export default function AccountsPage() {
       fetchCartaoData();
     }
   }, [status, fetchAccounts, fetchCartaoData]);
+
+  // Verificar se deve abrir o connect via URL
+  useEffect(() => {
+    if (searchParams.get("action") === "connect") {
+       setShowPluggy(true);
+       // Limpar URL sem recarregar
+       router.replace("/painel/contas");
+    }
+  }, [searchParams, router]);
 
   // ============================================
   // HANDLERS
@@ -299,6 +357,21 @@ export default function AccountsPage() {
           >
             <RefreshCw className="w-5 h-5" />
           </button>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setShowPluggy(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg transition-all"
+              >
+                <Landmark className="w-4 h-4" />
+                <span className="hidden sm:block">Conectar Banco</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-slate-800 border-slate-700 text-white shadow-xl">
+              <p>Conectar conta via Open Finance (Pluggy)</p>
+            </TooltipContent>
+          </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
@@ -569,7 +642,9 @@ export default function AccountsPage() {
                            <Activity className="w-3 h-3" />
                            last_sync: {new Date(account.updatedAt || account.createdAt).toLocaleDateString("pt-BR")}
                         </div>
-                        {account.isActive ? (
+                        {account.provider ? (
+                           <span className="text-emerald-400 font-bold group-hover:animate-pulse">LINKED: {account.provider}</span>
+                        ) : account.isActive ? (
                            <span className="text-emerald-500/50 group-hover:text-emerald-400 transition-colors">Neural_Active</span>
                         ) : (
                            <span className="text-amber-500/50">Node_Offline</span>

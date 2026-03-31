@@ -2,7 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { X, Wallet, Check } from "lucide-react";
+import { 
+  X, Wallet, Check, PiggyBank, CreditCard, Banknote, 
+  Landmark, Coins, Building2, Globe, Zap, Heart, 
+  Utensils, ShoppingCart, Car, Plane, Smartphone, 
+  GraduationCap, TrendingUp, ShieldCheck, Home, 
+  Briefcase, Stethoscope, Music, Gift, 
+  Trash2, Settings, Lock, FileText, BarChart3, 
+  MessageSquare, Star, Users, MapPin, Camera, 
+  Monitor, Headphones, Coffee, Brush, Dumbbell, 
+  Binary, Cpu, Code2, Database, Rocket, Link2, 
+  Anchor, Compass, Cloud, Sun, Moon, Wind, 
+  Droplets, Flame, Microscope, FlaskConical, Scale, 
+  Hammer, Key, Search, Bell, Mail, Eye, 
+  ExternalLink, ChevronRight, Download, Filter, Share2, 
+  Plus, Minus, RotateCcw, Save, Trash, Pencil
+} from "lucide-react";
 import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
 
 // Cores disponíveis
@@ -25,14 +40,36 @@ const AVAILABLE_COLORS = [
   "#0D9488",
 ];
 
-// Ícones disponíveis
+// Ícones disponíveis para as contas (mais variados e modernos)
 const AVAILABLE_ICONS = [
-  { id: "wallet", label: "Carteira" },
-  { id: "piggy-bank", label: "Poupança" },
-  { id: "credit-card", label: "Cartão" },
-  { id: "banknote", label: "Dinheiro" },
-  { id: "landmark", label: "Banco" },
-  { id: "coins", label: "Moedas" },
+  { id: "wallet", label: "Finanças", icon: Wallet },
+  { id: "piggy-bank", label: "Poupança", icon: PiggyBank },
+  { id: "credit-card", label: "Cartão", icon: CreditCard },
+  { id: "banknote", label: "Dinheiro", icon: Banknote },
+  { id: "landmark", label: "Banco", icon: Landmark },
+  { id: "coins", label: "Moedas", icon: Coins },
+  { id: "building-2", label: "Empresa", icon: Building2 },
+  { id: "globe", label: "Global", icon: Globe },
+  { id: "zap", label: "Essenciais", icon: Zap },
+  { id: "heart", label: "Saúde", icon: Heart },
+  { id: "utensils", label: "Comida", icon: Utensils },
+  { id: "shopping-cart", label: "Compras", icon: ShoppingCart },
+  { id: "car", label: "Veículo", icon: Car },
+  { id: "plane", label: "Viagem", icon: Plane },
+  { id: "smartphone", label: "Digital", icon: Smartphone },
+  { id: "graduation-cap", label: "Educação", icon: GraduationCap },
+  { id: "trending-up", label: "Ações", icon: TrendingUp },
+  { id: "shield-check", label: "Seguro", icon: ShieldCheck },
+  { id: "home", label: "Imóvel", icon: Home },
+  { id: "briefcase", label: "Profissão", icon: Briefcase },
+  { id: "stethoscope", label: "Emergência", icon: Stethoscope },
+  { id: "music", label: "Lazer", icon: Music },
+  { id: "gift", label: "Presente", icon: Gift },
+  { id: "coffee", label: "Café", icon: Coffee },
+  { id: "dumbbell", label: "Academia", icon: Dumbbell },
+  { id: "cpu", label: "Hardware", icon: Cpu },
+  { id: "rocket", label: "Pagar", icon: Rocket },
+  { id: "anchor", label: "Previsão", icon: Anchor },
 ];
 
 // Tipos de conta
@@ -104,10 +141,7 @@ export default function NewAccountModal({
     setError("");
 
     try {
-      const finalType =
-        showOtherType && customType.trim()
-          ? customType.trim().toUpperCase().replace(/\s+/g, "_")
-          : formData.type;
+      const finalType = showOtherType ? "OTHER" : formData.type;
 
       if (!formData.name || !finalType) {
         throw new Error("Nome e tipo são obrigatórios");
@@ -139,99 +173,9 @@ export default function NewAccountModal({
   };
 
   const renderIcon = (iconId: string) => {
-    const icons: Record<string, JSX.Element> = {
-      wallet: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-          />
-        </svg>
-      ),
-      "piggy-bank": (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-          />
-        </svg>
-      ),
-      "credit-card": (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-          />
-        </svg>
-      ),
-      banknote: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-          />
-        </svg>
-      ),
-      landmark: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"
-          />
-        </svg>
-      ),
-      coins: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      ),
-    };
-    return icons[iconId] || icons.wallet;
+    const iconObj = AVAILABLE_ICONS.find((i) => i.id === iconId) || AVAILABLE_ICONS[0];
+    const IconComponent = iconObj.icon;
+    return <IconComponent className="w-6 h-6" />;
   };
 
   return (
@@ -349,7 +293,7 @@ export default function NewAccountModal({
                 <label className="block text-sm font-medium text-slate-300 mb-3">
                   Ícone
                 </label>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-5 gap-3">
                   {AVAILABLE_ICONS.map((icon) => (
                     <button
                       key={icon.id}

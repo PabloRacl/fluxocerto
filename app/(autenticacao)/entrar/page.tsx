@@ -32,6 +32,12 @@ export default function LoginPage() {
       redirect: false,
     });
 
+    if (result?.error === "PASSWORD_NOT_SET") {
+      // Redireciona para definir senha se o usuário existe mas não tem senha
+      window.location.href = `/definir-senha?email=${encodeURIComponent(email)}`;
+      return;
+    }
+
     if (result?.error) {
       setError("Email ou senha inválidos");
       setLoading(false);

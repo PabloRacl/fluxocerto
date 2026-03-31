@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Wallet, LogOut, Trophy, Settings as SettingsIcon, Volume2, VolumeX, Shield } from "lucide-react";
+import { Wallet, LogOut, Trophy, Settings as SettingsIcon, Volume2, VolumeX, Shield, Zap } from "lucide-react";
 import { neuralVoice } from "@/biblioteca/NeuralVoiceService";
 import Link from "next/link";
 import { financialTips } from "@/app/painel/_constants/financial-tips";
@@ -247,6 +247,23 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
               <LogOut className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               <span className="hidden sm:block">Sair</span>
             </button>
+
+            {/* NEURO LAUNCHER TRIGGER */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => window.dispatchEvent(new CustomEvent("open-neuro-launcher"))}
+                  className="p-2.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] group"
+                >
+                  <Zap className="w-5 h-5 fill-emerald-500" />
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-slate-800 border-slate-700 text-white">
+                Neuro Launcher (Ctrl + K)
+              </TooltipContent>
+            </Tooltip>
           </div>
 
         </div>

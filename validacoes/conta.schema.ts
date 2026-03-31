@@ -25,9 +25,9 @@ export const schemaCriarConta = z.object({
     .or(z.string().regex(/^-?\d+(\.\d{1,2})?$/, "Formato de saldo inválido"))
     .optional()
     .transform((val) => {
-      if (typeof val === "number") return val;
-      if (typeof val === "string") return Math.round(parseFloat(val) * 100);
-      return 0;
+      if (!val) return 0;
+      const num = typeof val === "string" ? parseFloat(val) : val;
+      return Math.round(num * 100);
     }),
   color: z.string().optional().default("#047857"),
   icon: z.string().nullable().optional(),

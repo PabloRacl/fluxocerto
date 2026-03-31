@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Wallet, Check, AlertCircle } from "lucide-react";
+import { 
+  X, Wallet, Check, AlertCircle, PiggyBank, CreditCard, 
+  Banknote, Landmark, Coins, Building2, Globe, Zap, 
+  Heart, Utensils, ShoppingCart, Car, Plane, Smartphone, 
+  GraduationCap, TrendingUp, ShieldCheck, Home, 
+  Briefcase, Stethoscope, Music, Gift, Coffee, Dumbbell, 
+  Cpu, Rocket, Anchor
+} from "lucide-react";
 import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
 
 // Cores disponíveis (mesmo padrão do NewAccountModal)
@@ -13,14 +20,36 @@ const AVAILABLE_COLORS = [
   "#EC4899", "#DB2777", "#14B8A6", "#0D9488",
 ];
 
-// Ícones disponíveis
+// Ícones disponíveis para as contas (mais variados e modernos)
 const AVAILABLE_ICONS = [
-  { id: "wallet", label: "Carteira" },
-  { id: "piggy-bank", label: "Poupança" },
-  { id: "credit-card", label: "Cartão" },
-  { id: "banknote", label: "Dinheiro" },
-  { id: "landmark", label: "Banco" },
-  { id: "coins", label: "Moedas" },
+  { id: "wallet", label: "Finanças", icon: Wallet },
+  { id: "piggy-bank", label: "Poupança", icon: PiggyBank },
+  { id: "credit-card", label: "Cartão", icon: CreditCard },
+  { id: "banknote", label: "Dinheiro", icon: Banknote },
+  { id: "landmark", label: "Banco", icon: Landmark },
+  { id: "coins", label: "Moedas", icon: Coins },
+  { id: "building-2", label: "Empresa", icon: Building2 },
+  { id: "globe", label: "Global", icon: Globe },
+  { id: "zap", label: "Essenciais", icon: Zap },
+  { id: "heart", label: "Saúde", icon: Heart },
+  { id: "utensils", label: "Comida", icon: Utensils },
+  { id: "shopping-cart", label: "Compras", icon: ShoppingCart },
+  { id: "car", label: "Veículo", icon: Car },
+  { id: "plane", label: "Viagem", icon: Plane },
+  { id: "smartphone", label: "Digital", icon: Smartphone },
+  { id: "graduation-cap", label: "Educação", icon: GraduationCap },
+  { id: "trending-up", label: "Ações", icon: TrendingUp },
+  { id: "shield-check", label: "Seguro", icon: ShieldCheck },
+  { id: "home", label: "Imóvel", icon: Home },
+  { id: "briefcase", label: "Profissão", icon: Briefcase },
+  { id: "stethoscope", label: "Emergência", icon: Stethoscope },
+  { id: "music", label: "Lazer", icon: Music },
+  { id: "gift", label: "Presente", icon: Gift },
+  { id: "coffee", label: "Café", icon: Coffee },
+  { id: "dumbbell", label: "Academia", icon: Dumbbell },
+  { id: "cpu", label: "Hardware", icon: Cpu },
+  { id: "rocket", label: "Pagar", icon: Rocket },
+  { id: "anchor", label: "Previsão", icon: Anchor },
 ];
 
 // Tipos de conta
@@ -109,10 +138,7 @@ export default function EditAccountModal({
     setError("");
 
     try {
-      const finalType =
-        showOtherType && customType.trim()
-          ? customType.trim().toUpperCase().replace(/\s+/g, "_")
-          : formData.type;
+      const finalType = showOtherType ? "OTHER" : formData.type;
 
       if (!formData.name || !finalType) {
         throw new Error("Nome e tipo são obrigatórios");
@@ -145,15 +171,9 @@ export default function EditAccountModal({
   };
 
   const renderIcon = (iconId: string) => {
-    const icons: Record<string, JSX.Element> = {
-      wallet: <Wallet className="w-6 h-6" />,
-      "piggy-bank": <Wallet className="w-6 h-6" />,
-      "credit-card": <Wallet className="w-6 h-6" />,
-      banknote: <Wallet className="w-6 h-6" />,
-      landmark: <Wallet className="w-6 h-6" />,
-      coins: <Wallet className="w-6 h-6" />,
-    };
-    return icons[iconId] || icons.wallet;
+    const iconObj = AVAILABLE_ICONS.find((i) => i.id === iconId) || AVAILABLE_ICONS[0];
+    const IconComponent = iconObj.icon;
+    return <IconComponent className="w-6 h-6" />;
   };
 
   return (
@@ -258,7 +278,7 @@ export default function EditAccountModal({
             ))}
           </div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          <div className="grid grid-cols-5 gap-3">
             {AVAILABLE_ICONS.map((icon) => (
               <button
                 key={icon.id}

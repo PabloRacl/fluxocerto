@@ -44,6 +44,7 @@ model User {
   assets            Asset[]
   notifications     Notification[]
   ItemImportMapping ItemImportMapping[]
+  bankItems         BankItem[]
 }
 
 model Account {
@@ -83,6 +84,12 @@ model Conta {
   archivedAt    DateTime?
   isDeleted     Boolean       @default(false)
   deletedAt     DateTime?
+
+  // Integração Bancária
+  provider      String? // Ex: "PLUGGY"
+  externalId    String? // ID da conta no provedor externo
+  lastSync      DateTime?
+
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   debts         Debt[]
   purchases     Purchase[]
@@ -169,6 +176,7 @@ model Transaction {
   isDeleted          Boolean           @default(false)
   deletedAt          DateTime?
   transactionId      String?           @unique
+  externalId         String?           @unique // ID da transação no provedor externo
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
   account            Conta           @relation(fields: [accountId], references: [id])
@@ -674,4 +682,27 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ============================================
+// BANKING — INTEGRAÇÃO AUTOMÁTICA (Pluggy)
+// ============================================
+
+model BankItem {
+  id               String      @id @default(uuid())
+  userId           String
+  externalId       String      @unique // ID do Item no Pluggy
+  providerId       String? // ID do Conector (ex: 1 = Nubank)
+  providerName     String? // Nome do Banco
+  providerImageUrl String?
+  status           String      @default("UPDATED") // UPDATED, UPDATING, LOGIN_ERROR, WAITING_USER_INPUT
+  consentExpiresAt DateTime?
+  lastSyncAt       DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([externalId])
 }
