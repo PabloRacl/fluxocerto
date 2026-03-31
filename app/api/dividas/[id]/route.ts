@@ -170,6 +170,7 @@ export async function PATCH(
         installmentPaid: body.installmentPaid !== undefined ? body.installmentPaid : undefined,
         interestRate: body.interestRate !== undefined ? body.interestRate : undefined,
         amortizationType: body.amortizationType !== undefined ? body.amortizationType : undefined,
+        startDate: body.startDate ? new Date(body.startDate) : undefined,
         nextDueDate: body.nextDueDate ? new Date(body.nextDueDate) : undefined,
         creditor: body.creditor !== undefined ? body.creditor : undefined,
         allowsPrepayment: body.allowsPrepayment !== undefined ? body.allowsPrepayment : undefined,
@@ -179,9 +180,9 @@ export async function PATCH(
     });
 
     return NextResponse.json({ message: "Dívida atualizada", divida: updated });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro ao atualizar via PATCH:", error);
-    return NextResponse.json({ error: "Erro interno ao atualizar" }, { status: 500 });
+    return NextResponse.json({ error: "Erro interno ao atualizar: " + (error.message || String(error)) }, { status: 500 });
   }
 }
 

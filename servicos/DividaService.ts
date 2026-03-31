@@ -151,7 +151,7 @@ export class DividaService {
         });
 
         // Atualizar saldo da conta
-        await tx.account.update({
+        await tx.conta.update({
           where: { id: dados.accountId },
           data: { balance: { decrement: valorJaPago } }
         });
@@ -235,7 +235,7 @@ export class DividaService {
       });
 
       // 3. Atualizar saldo da conta
-      await tx.account.update({
+      await tx.conta.update({
         where: { id: debt.accountId },
         data: { balance: { decrement: totalAPagar } }
       });
