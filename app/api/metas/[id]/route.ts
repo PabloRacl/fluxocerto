@@ -6,7 +6,7 @@ import { prisma } from "@/biblioteca/prisma";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await obterUsuarioAutenticado();
@@ -14,7 +14,7 @@ export async function PUT(
 
     // Caso 1: Depósito Rápido (Gamificado + Auditado)
     if (body.deposito !== undefined) {
-      const result = await metaService.depositar(params.id, user.id, body.deposito);
+      const result = await metaService.depositar((await params).id, user.id, body.deposito);
       return NextResponse.json({
         message: result.atingiu ? "🎉 Meta atingida! Parabéns!" : "Depósito registrado",
         meta: result.meta,
@@ -24,7 +24,7 @@ export async function PUT(
 
     // Caso 2: Edição Normal
     const updated = await (prisma as any).meta.update({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
       data: {
         nome: body.nome,
         descricao: body.descricao,
@@ -45,13 +45,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await obterUsuarioAutenticado();
     
     await (prisma as any).meta.update({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
       data: { isArchived: true, archivedAt: new Date() },
     });
 

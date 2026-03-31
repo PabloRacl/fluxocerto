@@ -7,7 +7,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 // GET - Detalhe da Compra
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,7 +16,7 @@ export async function GET(
     }
 
     const compra = await prisma.purchase.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
         user: { select: { email: true } },
         items: { orderBy: { createdAt: "asc" } },
@@ -39,7 +39,7 @@ export async function GET(
 // DELETE - Soft Delete
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -48,7 +48,7 @@ export async function DELETE(
     }
 
     const compra = await prisma.purchase.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: { user: { select: { email: true } } },
     });
 
@@ -57,7 +57,7 @@ export async function DELETE(
     }
 
     await prisma.purchase.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: { isDeleted: true, deletedAt: new Date() },
     });
 

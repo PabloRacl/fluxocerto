@@ -9,7 +9,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 // ============================================
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 1. Verificar Autenticação
@@ -30,7 +30,7 @@ export async function DELETE(
       );
     }
 
-    const accountId = params.id;
+    const accountId = (await params).id;
 
     // 3. Verificar se conta existe, pertence ao usuário e está arquivada
     const account = await prisma.conta.findFirst({

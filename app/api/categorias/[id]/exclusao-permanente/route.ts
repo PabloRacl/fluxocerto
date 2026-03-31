@@ -6,7 +6,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,7 +14,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const categoryId = params.id;
+    const categoryId = (await params).id;
 
     const category = await prisma.category.findUnique({
       where: { id: categoryId },

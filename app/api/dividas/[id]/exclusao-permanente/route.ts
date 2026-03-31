@@ -7,7 +7,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 // PATCH - Restaurar dívida da lixeira
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,7 +16,7 @@ export async function PATCH(
     }
 
     const debt = await prisma.debt.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: { user: { select: { email: true } } },
     });
 
@@ -25,7 +25,7 @@ export async function PATCH(
     }
 
     await prisma.debt.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: { isDeleted: false, deletedAt: null },
     });
 
@@ -38,7 +38,7 @@ export async function PATCH(
 // DELETE - Exclusão permanente
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -47,7 +47,7 @@ export async function DELETE(
     }
 
     const debt = await prisma.debt.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: { user: { select: { email: true } } },
     });
 
@@ -55,7 +55,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Dívida não encontrada" }, { status: 404 });
     }
 
-    await prisma.debt.delete({ where: { id: params.id } });
+    await prisma.debt.delete({ where: { id: (await params).id } });
 
     return NextResponse.json({ message: "Dívida excluída permanentemente" });
   } catch (error) {

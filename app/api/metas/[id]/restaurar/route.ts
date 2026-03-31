@@ -6,7 +6,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -26,7 +26,7 @@ export async function POST(
     }
 
     const meta = await prisma.meta.findFirst({
-      where: { id: params.id, usuarioId: user.id, isArchived: true },
+      where: { id: (await params).id, usuarioId: user.id, isArchived: true },
     });
 
     if (!meta) {
@@ -37,7 +37,7 @@ export async function POST(
     }
 
     await prisma.meta.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: { isArchived: false, archivedAt: null },
     });
 

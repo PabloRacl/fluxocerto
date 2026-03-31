@@ -6,7 +6,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,7 +22,7 @@ export async function PUT(
       );
 
     const lembrete = await prisma.lembrete.findFirst({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
     });
     if (!lembrete)
       return NextResponse.json(
@@ -32,7 +32,7 @@ export async function PUT(
 
     const body = await request.json();
     const updated = await prisma.lembrete.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         lido: body.lido ?? lembrete.lido,
         lidoEm: body.lido ? new Date() : lembrete.lidoEm,
@@ -50,7 +50,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -66,7 +66,7 @@ export async function DELETE(
       );
 
     await prisma.lembrete.deleteMany({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
     });
     return NextResponse.json({ message: "Lembrete excluído" });
   } catch (error) {

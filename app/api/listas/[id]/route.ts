@@ -6,7 +6,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,7 +22,7 @@ export async function GET(
       );
 
     const lista = await prisma.listaCompra.findFirst({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
       include: { itens: { orderBy: { ordem: "asc" } } },
     });
     if (!lista)
@@ -38,7 +38,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -54,7 +54,7 @@ export async function PUT(
       );
 
     const lista = await prisma.listaCompra.findFirst({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
     });
     if (!lista)
       return NextResponse.json(
@@ -64,7 +64,7 @@ export async function PUT(
 
     const body = await request.json();
     const updated = await prisma.listaCompra.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         nome: body.nome ?? lista.nome,
         concluida: body.concluida ?? lista.concluida,
@@ -81,7 +81,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -97,7 +97,7 @@ export async function DELETE(
       );
 
     const lista = await prisma.listaCompra.findFirst({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
     });
     if (!lista)
       return NextResponse.json(
@@ -105,7 +105,7 @@ export async function DELETE(
         { status: 404 },
       );
 
-    await prisma.listaCompra.delete({ where: { id: params.id } });
+    await prisma.listaCompra.delete({ where: { id: (await params).id } });
     return NextResponse.json({ message: "Lista excluída" });
   } catch (error) {
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

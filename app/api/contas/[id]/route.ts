@@ -9,7 +9,7 @@ import { prisma } from "@/biblioteca/prisma";
 // ============================================
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Verificar autenticação
@@ -34,7 +34,7 @@ export async function PUT(
     // Verificar se a conta existe e pertence ao usuário
     const existingAccount = await prisma.conta.findFirst({
       where: {
-        id: params.id,
+        id: (await params).id,
         userId: user.id,
       },
     });
@@ -65,7 +65,7 @@ export async function PUT(
 
     // Atualizar conta
     const updatedAccount = await prisma.conta.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         name,
         type,
@@ -100,7 +100,7 @@ export async function PUT(
 // ============================================
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Verificar autenticação
@@ -125,7 +125,7 @@ export async function DELETE(
     // Verificar se a conta existe e pertence ao usuário
     const account = await prisma.conta.findFirst({
       where: {
-        id: params.id,
+        id: (await params).id,
         userId: user.id,
       },
       include: {
@@ -149,7 +149,7 @@ export async function DELETE(
 
     // Atualizar para inativa (soft delete)
     const archivedAccount = await prisma.conta.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         isActive: false,
       },
@@ -179,7 +179,7 @@ export async function DELETE(
 // ============================================
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Verificar autenticação
@@ -204,7 +204,7 @@ export async function GET(
     // Buscar conta específica
     const account = await prisma.conta.findFirst({
       where: {
-        id: params.id,
+        id: (await params).id,
         userId: user.id,
       },
       include: {

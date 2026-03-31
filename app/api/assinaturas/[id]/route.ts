@@ -7,7 +7,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 // GET - Detalhe da Assinatura
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,7 +25,7 @@ export async function GET(
       );
 
     const assinatura = await prisma.assinatura.findFirst({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
       include: {
         categoria: { select: { id: true, name: true, color: true } },
         conta: { select: { id: true, name: true, color: true, icon: true } },
@@ -48,7 +48,7 @@ export async function GET(
 // PUT - Atualizar Assinatura
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -66,7 +66,7 @@ export async function PUT(
       );
 
     const assinatura = await prisma.assinatura.findFirst({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
     });
 
     if (!assinatura) {
@@ -79,7 +79,7 @@ export async function PUT(
     const body = await request.json();
 
     const updated = await prisma.assinatura.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         nome: body.nome ?? assinatura.nome,
         descricao:
@@ -120,7 +120,7 @@ export async function PUT(
 // DELETE - Soft Delete
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -138,7 +138,7 @@ export async function DELETE(
       );
 
     const assinatura = await prisma.assinatura.findFirst({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
     });
 
     if (!assinatura) {
@@ -149,7 +149,7 @@ export async function DELETE(
     }
 
     await prisma.assinatura.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: { isArchived: true, archivedAt: new Date() },
     });
 

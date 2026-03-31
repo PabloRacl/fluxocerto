@@ -6,7 +6,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -26,7 +26,7 @@ export async function DELETE(
     }
 
     const meta = await prisma.meta.findFirst({
-      where: { id: params.id, usuarioId: user.id, isArchived: true },
+      where: { id: (await params).id, usuarioId: user.id, isArchived: true },
     });
 
     if (!meta) {
@@ -36,7 +36,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.meta.delete({ where: { id: params.id } });
+    await prisma.meta.delete({ where: { id: (await params).id } });
 
     return NextResponse.json({ message: "Meta excluída permanentemente" });
   } catch (error) {

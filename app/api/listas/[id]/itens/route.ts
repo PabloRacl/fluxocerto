@@ -6,7 +6,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,7 +22,7 @@ export async function POST(
       );
 
     const lista = await prisma.listaCompra.findFirst({
-      where: { id: params.id, usuarioId: user.id },
+      where: { id: (await params).id, usuarioId: user.id },
     });
     if (!lista)
       return NextResponse.json(
@@ -33,7 +33,7 @@ export async function POST(
     const body = await request.json();
     const item = await prisma.listaCompraItem.create({
       data: {
-        listaId: params.id,
+        listaId: (await params).id,
         nome: body.nome,
         quantidade: body.quantidade || 1,
         unidade: body.unidade || "un",
@@ -56,7 +56,7 @@ export async function POST(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -73,7 +73,7 @@ export async function PUT(
       );
 
     const item = await prisma.listaCompraItem.update({
-      where: { id: itemId, listaId: params.id },
+      where: { id: itemId, listaId: (await params).id },
       data: {
         nome: data.nome,
         quantidade: data.quantidade,
@@ -97,7 +97,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -113,7 +113,7 @@ export async function DELETE(
       );
 
     await prisma.listaCompraItem.delete({
-      where: { id: itemId, listaId: params.id },
+      where: { id: itemId, listaId: (await params).id },
     });
     return NextResponse.json({ message: "Item excluído" });
   } catch (error) {

@@ -6,7 +6,7 @@ import { prisma } from "@/biblioteca/prisma";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -27,7 +27,7 @@ export async function PUT(
     }
 
     const existingCategory = await prisma.category.findFirst({
-      where: { id: params.id, userId: user.id },
+      where: { id: (await params).id, userId: user.id },
     });
 
     if (!existingCategory) {
@@ -68,7 +68,7 @@ export async function PUT(
 
     // ⚠️ ATENÇÃO: Deve ter EXATAMENTE:  data:  {
     const updatedCategory = await prisma.category.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         name: name,
         type: type,
@@ -97,7 +97,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -118,7 +118,7 @@ export async function DELETE(
     }
 
     const category = await prisma.category.findFirst({
-      where: { id: params.id, userId: user.id },
+      where: { id: (await params).id, userId: user.id },
       include: { _count: { select: { transactions: true } } },
     });
 
@@ -141,7 +141,7 @@ export async function DELETE(
 
     // ⚠️ ATENÇÃO: Deve ter EXATAMENTE:  data:  {
     const archivedCategory = await prisma.category.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         isActive: false,
       },
@@ -165,7 +165,7 @@ export async function DELETE(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -186,7 +186,7 @@ export async function GET(
     }
 
     const category = await prisma.category.findFirst({
-      where: { id: params.id, userId: user.id },
+      where: { id: (await params).id, userId: user.id },
       include: {
         _count: { select: { transactions: true } },
         parent: { select: { id: true, name: true } },

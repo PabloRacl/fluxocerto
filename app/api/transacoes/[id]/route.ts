@@ -9,7 +9,7 @@ import { authOptions } from "@/biblioteca/autenticacao";
 // ============================================
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 1. Verificar Autenticação
@@ -33,7 +33,7 @@ export async function GET(
     // 3. Buscar Transação
     const transaction = await prisma.transaction.findFirst({
       where: {
-        id: params.id,
+        id: (await params).id,
         userId: user.id,
         isDeleted: false, // Não mostrar transações excluídas
       },
@@ -70,7 +70,7 @@ export async function GET(
 // ============================================
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 1. Verificar Autenticação
@@ -133,7 +133,7 @@ export async function PUT(
 
     // 5. Validar Propriedade da Transação Original
     const existingTransaction = await prisma.transaction.findFirst({
-      where: { id: params.id, userId: user.id },
+      where: { id: (await params).id, userId: user.id },
     });
 
     if (!existingTransaction) {
@@ -186,7 +186,7 @@ export async function PUT(
 
       // B. Atualizar os Dados da Transação
       const transaction = await tx.transaction.update({
-        where: { id: params.id },
+        where: { id: (await params).id },
         data: {
           description,
           amount,
@@ -247,7 +247,7 @@ export async function PUT(
 // ============================================
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 1. Verificar Autenticação
@@ -270,7 +270,7 @@ export async function DELETE(
 
     // 3. Validar Propriedade da Transação
     const existingTransaction = await prisma.transaction.findFirst({
-      where: { id: params.id, userId: user.id },
+      where: { id: (await params).id, userId: user.id },
     });
 
     if (!existingTransaction) {
@@ -300,7 +300,7 @@ export async function DELETE(
 
       // B. Marcar como Excluído (Soft Delete)
       const transaction = await tx.transaction.update({
-        where: { id: params.id },
+        where: { id: (await params).id },
         data: {
           isDeleted: true,
           deletedAt: new Date(),
