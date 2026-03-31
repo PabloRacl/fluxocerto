@@ -81,6 +81,51 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // Login por credenciais: sempre permitir
+      if (account?.provider === "credentials") return true;
+      
+      // Login OAuth: vincular automaticamente se o email já existe
+      if (account && user.email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        });
+        
+        if (existingUser) {
+          // Verifica se já existe essa conta OAuth vinculada
+          const existingAccount = await prisma.account.findFirst({
+            where: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          });
+          
+          // Se não existe, vincula o provedor OAuth ao usuário existente
+          if (!existingAccount) {
+            await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                access_token: account.access_token,
+                refresh_token: account.refresh_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+                session_state: account.session_state as string | null,
+              },
+            });
+          }
+          
+          // Sobreescreve o user.id para usar o existente
+          user.id = existingUser.id;
+        }
+      }
+      
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -88,10 +133,11 @@ export const authOptions: NextAuthOptions = {
         token.plan = (user as any).plan;
       }
       
-      // Garante que sessoes antigas ou logins OAuth peguem o role e plan do banco
+      // Garante que sessões OAuth peguem o role e plan do banco
       if (!token.role && token.email) {
         const dbUser = await prisma.user.findUnique({ where: { email: token.email } });
         if (dbUser) {
+          token.id = dbUser.id;
           token.role = (dbUser as any).role;
           token.plan = (dbUser as any).plan;
         }
