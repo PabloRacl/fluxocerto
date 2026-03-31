@@ -83,9 +83,9 @@ export async function GET(
         progresso: Math.round((debt.installmentPaid / debt.installmentTotal) * 100),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro ao buscar dívida:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return NextResponse.json({ error: "Erro interno: " + (error.message || String(error)) }, { status: 500 });
   }
 }
 

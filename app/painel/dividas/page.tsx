@@ -558,7 +558,7 @@ export default function DividasPage() {
                                   </button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>Pagar Parcela</p>
+                                  <p>Pagar / Amortizar</p>
                                 </TooltipContent>
                               </Tooltip>
                             )}
