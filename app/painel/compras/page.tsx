@@ -1277,7 +1277,7 @@ function NovaCompraModal({
          });
          if (accRes.ok) {
             const accData = await accRes.json();
-            finalAccountId = accData.id;
+            finalAccountId = accData.account?.id || accData.id;
          }
       }
 

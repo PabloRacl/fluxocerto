@@ -382,7 +382,7 @@ export function TransactionDrawer({
 
         if (!accRes.ok) throw new Error("Erro ao criar a nova conta");
         const accData = await accRes.json();
-        finalAccountId = accData.id;
+        finalAccountId = accData.account?.id || accData.id;
       }
 
       // Criar nova categoria se necessário
