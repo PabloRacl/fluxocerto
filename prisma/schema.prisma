@@ -25,6 +25,7 @@ model User {
   timezone          String              @default("America/Sao_Paulo")
   role              Role                @default(USER)
   plan              Plan                @default(FREE)
+  contas            Conta[]
   accounts          Account[]
   auditLogs         AuditLog[]
   categories        Category[]
@@ -46,6 +47,25 @@ model User {
 }
 
 model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Conta {
   id            String        @id @default(uuid())
   userId        String
   name          String
@@ -151,7 +171,7 @@ model Transaction {
   transactionId      String?           @unique
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
-  account            Account           @relation(fields: [accountId], references: [id])
+  account            Conta           @relation(fields: [accountId], references: [id])
   category           Category          @relation(fields: [categoryId], references: [id])
   purchase           Purchase?         @relation(fields: [transactionId], references: [id])
   user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -190,7 +210,7 @@ model Debt {
   deletedAt        DateTime?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
-  account          Account           @relation(fields: [accountId], references: [id])
+  account          Conta           @relation(fields: [accountId], references: [id])
   category         Category          @relation(fields: [categoryId], references: [id])
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -222,7 +242,7 @@ model Purchase {
   deletedAt        DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
-  account          Account?       @relation(fields: [accountId], references: [id])
+  account          Conta?       @relation(fields: [accountId], references: [id])
   category         Category?      @relation(fields: [categoryId], references: [id])
   user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   items            PurchaseItem[]
@@ -447,7 +467,7 @@ model Assinatura {
   atualizadoEm     DateTime        @updatedAt
   usuario          User            @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   categoria        Category?       @relation(fields: [categoriaId], references: [id])
-  conta            Account?        @relation(fields: [contaId], references: [id])
+  conta            Conta?        @relation(fields: [contaId], references: [id])
 
   @@index([usuarioId])
   @@index([proximaRenovacao])
@@ -550,7 +570,7 @@ model Venda {
 
   usuario User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   estoque Estoque  @relation(fields: [estoqueId], references: [id])
-  account Account? @relation(fields: [contaId], references: [id])
+  account Conta? @relation(fields: [contaId], references: [id])
 
   @@index([usuarioId])
   @@index([dataVenda])
