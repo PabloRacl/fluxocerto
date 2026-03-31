@@ -52,24 +52,24 @@ componentes/
 
 ## 📅 Task Breakdown
 
-### Phase 1: Foundation & Data Layer
-| Task ID | Name | Agent | Skills | Priority | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `DB-01` | **Database Schema** | `database-architect` | `prisma-expert` | P0 | Create `BankConnection`, `BankItem`, and link `Transaction` to `BankTransaction`. |
-| `API-01` | **Pluggy Integration** | `backend-specialist` | `api-patterns` | P0 | Implement `BankService` using Pluggy Client (Sandbox). |
-| `API-02` | **Sync Route** | `backend-specialist` | `nodejs-best-practices` | P1 | Create API route to trigger data fetch on Launcher open. |
+### Phase 1: Foundation & Data Layer (✅ COMPLETE)
+| Task ID | Name | Agent | Skills | Priority | Status | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `DB-01` | **Database Schema** | `database-architect` | `prisma-expert` | P0 | ✅ | Create `BankConnection`, `BankItem`, and link `Transaction` to `BankTransaction`. |
+| `API-01` | **Pluggy Integration** | `backend-specialist` | `api-patterns` | P0 | ✅ | Implement `BankService` using Pluggy Client (Sandbox). |
+| `API-02` | **Sync Route** | `backend-specialist` | `nodejs-best-practices` | P1 | ✅ | Create API route to trigger data fetch on Launcher open. |
 
 **INPUT → OUTPUT → VERIFY:**
 - **Input**: Prisma schema.
 - **Output**: Migrated DB and `BankService.ts`.
 - **Verify**: `npx prisma generate` succeeds; service test returns mock bank data.
 
-### Phase 2: The Neuro Launcher (UI/UX)
-| Task ID | Name | Agent | Skills | Priority | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `UI-01` | **Launcher Shell** | `frontend-specialist` | `frontend-design` | P1 | Create the `LauncherModal` with Backdrop Blur (Glassmorphism 2.0) and Sharp edges. |
-| `UI-02` | **Balance Hub** | `frontend-specialist` | `react-best-practices` | P1 | Implement real-time balance summary and "Invoice Alerts" in the launcher. |
-| `UI-03` | **Quick Actions** | `frontend-specialist` | `clean-code` | P1 | Natural language input and shortcut keys (Add category, transaction). |
+### Phase 2: The Neuro Launcher (✅ COMPLETE)
+| Task ID | Name | Agent | Skills | Priority | Status | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `UI-01` | **Launcher Shell** | `frontend-specialist` | `frontend-design` | P1 | ✅ | Create the `LauncherModal` with Backdrop Blur (Glassmorphism 2.0) and Sharp edges. |
+| `UI-02` | **Balance Hub** | `frontend-specialist` | `react-best-practices` | P1 | ✅ | Implement real-time balance summary and "Invoice Alerts" in the launcher. |
+| `UI-03` | **Quick Actions** | `frontend-specialist` | `clean-code` | P1 | ✅ | Natural language input and shortcut keys (Add category, transaction). |
 
 **INPUT → OUTPUT → VERIFY:**
 - **Input**: Design requirements.
