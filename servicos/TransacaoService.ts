@@ -126,7 +126,7 @@ export class TransacaoService {
    * Cria uma nova transação com atualização atômica de saldo e auditoria.
    */
   async criar(usuarioId: string, dados: CriarTransacaoInput) {
-    const account = await prisma.account.findFirst({
+    const account = await prisma.conta.findFirst({
       where: { id: dados.accountId, userId: usuarioId },
     });
     if (!account) {

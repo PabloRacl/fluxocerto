@@ -144,7 +144,7 @@ export async function PUT(
     }
 
     // 6. Validar Propriedade da Nova Conta e Categoria
-    const account = await prisma.account.findFirst({
+    const account = await prisma.conta.findFirst({
       where: { id: accountId, userId: user.id },
     });
 

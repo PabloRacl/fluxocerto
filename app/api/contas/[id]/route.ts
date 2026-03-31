@@ -32,7 +32,7 @@ export async function PUT(
     }
 
     // Verificar se a conta existe e pertence ao usuário
-    const existingAccount = await prisma.account.findFirst({
+    const existingAccount = await prisma.conta.findFirst({
       where: {
         id: params.id,
         userId: user.id,
@@ -64,7 +64,7 @@ export async function PUT(
       : existingAccount.balance;
 
     // Atualizar conta
-    const updatedAccount = await prisma.account.update({
+    const updatedAccount = await prisma.conta.update({
       where: { id: params.id },
       data: {
         name,
@@ -123,7 +123,7 @@ export async function DELETE(
     }
 
     // Verificar se a conta existe e pertence ao usuário
-    const account = await prisma.account.findFirst({
+    const account = await prisma.conta.findFirst({
       where: {
         id: params.id,
         userId: user.id,
@@ -148,7 +148,7 @@ export async function DELETE(
     // Conforme documento: "Excluir Conta com Transações: Arquivar (não exclui)"
 
     // Atualizar para inativa (soft delete)
-    const archivedAccount = await prisma.account.update({
+    const archivedAccount = await prisma.conta.update({
       where: { id: params.id },
       data: {
         isActive: false,
@@ -202,7 +202,7 @@ export async function GET(
     }
 
     // Buscar conta específica
-    const account = await prisma.account.findFirst({
+    const account = await prisma.conta.findFirst({
       where: {
         id: params.id,
         userId: user.id,

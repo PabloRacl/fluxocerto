@@ -33,7 +33,7 @@ async function main() {
   // 2. Criar Contas Bancárias
   console.log("\n🏦 Criando contas bancárias...");
   const contas = await Promise.all([
-    prisma.account.create({
+    prisma.conta.create({
       data: {
         userId: user.id,
         name: "Conta Corrente",
@@ -44,7 +44,7 @@ async function main() {
         isActive: true,
       },
     }),
-    prisma.account.create({
+    prisma.conta.create({
       data: {
         userId: user.id,
         name: "Poupança",
@@ -55,7 +55,7 @@ async function main() {
         isActive: true,
       },
     }),
-    prisma.account.create({
+    prisma.conta.create({
       data: {
         userId: user.id,
         name: "Cartão de Crédito",
@@ -66,7 +66,7 @@ async function main() {
         isActive: true,
       },
     }),
-    prisma.account.create({
+    prisma.conta.create({
       data: {
         userId: user.id,
         name: "Investimentos",
@@ -77,7 +77,7 @@ async function main() {
         isActive: true,
       },
     }),
-    prisma.account.create({
+    prisma.conta.create({
       data: {
         userId: user.id,
         name: "PIX",

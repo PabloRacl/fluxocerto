@@ -33,7 +33,7 @@ export async function DELETE(
     const accountId = params.id;
 
     // 3. Verificar se conta existe, pertence ao usuário e está arquivada
-    const account = await prisma.account.findFirst({
+    const account = await prisma.conta.findFirst({
       where: {
         id: accountId,
         userId: user.id,
@@ -70,7 +70,7 @@ export async function DELETE(
     }
 
     // 5. Excluir permanentemente (apenas se não tiver transações)
-    await prisma.account.delete({
+    await prisma.conta.delete({
       where: { id: accountId },
     });
 

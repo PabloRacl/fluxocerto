@@ -14,7 +14,7 @@ export class ProjecaoService {
     const dataLimite = endOfDay(addDays(hoje, dias));
 
     // 1. Obter Saldo Atual Consolidado (Líquido de contas ativas)
-    const contas = await prisma.account.findMany({
+    const contas = await prisma.conta.findMany({
       where: { userId: usuarioId, isDeleted: false, isArchived: false, isActive: true },
       select: { balance: true }
     });

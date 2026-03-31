@@ -6,7 +6,7 @@ export class PainelService {
    * Obtém saldo total das contas e receitas/despesas fechadas do mês atual
    */
   async obterResumoRapido(usuarioId: string) {
-    const contas = await prisma.account.findMany({
+    const contas = await prisma.conta.findMany({
       where: {
         userId: usuarioId,
         isActive: true,
@@ -133,7 +133,7 @@ export class PainelService {
       where: { userId: usuarioId, isDeleted: false, isArchived: false },
     });
 
-    const totalContas = await prisma.account.count({
+    const totalContas = await prisma.conta.count({
       where: { userId: usuarioId, isActive: true, isDeleted: false, isArchived: false },
     });
 
@@ -384,7 +384,7 @@ export class PainelService {
    * Calcula o Patrimônio Líquido (Ativos X Passivos).
    */
   async obterPatrimonio(usuarioId: string) {
-    const contasAtivas = await prisma.account.findMany({
+    const contasAtivas = await prisma.conta.findMany({
       where: {
         userId: usuarioId,
         isActive: true,
@@ -428,7 +428,7 @@ export class PainelService {
       0,
     );
 
-    const cartoes = await prisma.account.findMany({
+    const cartoes = await prisma.conta.findMany({
       where: { userId: usuarioId, type: "CREDIT_CARD", isActive: true, isDeleted: false, isArchived: false },
     });
 
@@ -487,7 +487,7 @@ export class PainelService {
       }
     }
 
-    const cartoes = await prisma.account.findMany({
+    const cartoes = await prisma.conta.findMany({
       where: {
         userId: usuarioId,
         type: "CREDIT_CARD",
@@ -584,7 +584,7 @@ export class PainelService {
    * Projetar previsão de saldo por 6 meses contabilizando assinaturas, recorrentes e dividas.
    */
   async obterPrevisao(usuarioId: string) {
-    const contas = await prisma.account.findMany({
+    const contas = await prisma.conta.findMany({
       where: { userId: usuarioId, isActive: true, isDeleted: false, isArchived: false, type: { not: "CREDIT_CARD" } },
     });
     const saldoAtual = contas.reduce((acc, c) => acc + c.balance, 0);
@@ -722,7 +722,7 @@ export class PainelService {
    * Recalcula o saldo de todas as contas do usuário com base no histórico de transações PAID.
    */
   async sincronizarSaldos(usuarioId: string) {
-    const contas = await prisma.account.findMany({
+    const contas = await prisma.conta.findMany({
       where: { userId: usuarioId, isDeleted: false, isArchived: false },
       select: { id: true, name: true }
     });
@@ -747,7 +747,7 @@ export class PainelService {
       const saldoCalculado = totalCreditos - totalDebitos;
 
       // Atualizar no banco
-      await prisma.account.update({
+      await prisma.conta.update({
         where: { id: conta.id },
         data: { balance: saldoCalculado }
       });

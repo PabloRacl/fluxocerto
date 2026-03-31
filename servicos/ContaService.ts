@@ -17,7 +17,7 @@ export class ContaService {
       isArchived: includeArchived,
     };
 
-    const accounts = await prisma.account.findMany({
+    const accounts = await prisma.conta.findMany({
       where: whereClause,
       orderBy: {
         name: "asc",
@@ -55,7 +55,7 @@ export class ContaService {
    * Cria uma nova conta.
    */
   async criar(usuarioId: string, dados: CriarContaInput) {
-    const newAccount = await prisma.account.create({
+    const newAccount = await prisma.conta.create({
       data: {
         userId: usuarioId,
         name: dados.name,

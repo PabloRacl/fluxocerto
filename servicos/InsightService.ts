@@ -33,7 +33,7 @@ export class InsightService {
     const despesas = transacoesMes.filter(t => t.type === 'EXPENSE').reduce((s, t) => s + (t.amount || 0), 0) || 0;
 
     // 2. DADOS DE PATRIMÔNIO E DÍVIDA
-    const contas = await prisma.account.findMany({
+    const contas = await prisma.conta.findMany({
       where: { userId: usuarioId, isDeleted: false, isArchived: false },
       select: { balance: true }
     });

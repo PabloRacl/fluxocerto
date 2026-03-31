@@ -82,7 +82,7 @@ export class DividaService {
    */
   async criar(usuarioId: string, dados: CriarDividaInput) {
     // Validar propriedade da conta
-    const account = await prisma.account.findFirst({
+    const account = await prisma.conta.findFirst({
       where: { id: dados.accountId, userId: usuarioId },
     });
     if (!account) {

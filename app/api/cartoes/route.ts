@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     };
     if (contaId) where.id = contaId;
 
-    const cartoes = await prisma.account.findMany({
+    const cartoes = await prisma.conta.findMany({
       where,
       orderBy: { name: "asc" },
     });

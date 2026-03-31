@@ -33,7 +33,7 @@ export async function POST(
     const accountId = params.id;
 
     // 3. Verificar se conta existe, pertence ao usuário e está arquivada
-    const account = await prisma.account.findFirst({
+    const account = await prisma.conta.findFirst({
       where: {
         id: accountId,
         userId: user.id,
@@ -50,7 +50,7 @@ export async function POST(
 
     // 4. Restaurar conta (reativar)
     // ✅ CORREÇÃO: Removido archivedAt pois não existe no schema
-    const restoredAccount = await prisma.account.update({
+    const restoredAccount = await prisma.conta.update({
       where: { id: accountId },
       data: {
         isActive: true,

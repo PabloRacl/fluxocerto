@@ -240,7 +240,7 @@ export class NotificacaoService {
   }
 
   private async processarLimitesCartao(usuarioId: string) {
-    const cartoes = await prisma.account.findMany({
+    const cartoes = await prisma.conta.findMany({
       where: { userId: usuarioId, type: "CREDIT_CARD", isActive: true, isDeleted: false, limiteCredito: { gt: 0 } }
     });
 
