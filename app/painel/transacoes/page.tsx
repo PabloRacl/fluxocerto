@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
@@ -117,9 +117,9 @@ interface Category {
 }
 
 // ============================================
-// COMPONENTE PRINCIPAL
+// CONTEÚDO DA PÁGINA (WRAPPER PARA SUSPENSE)
 // ============================================
-export default function TransactionsPage() {
+function TransactionsPageContent() {
   // ============================================
   // ESTADOS
   // ============================================
@@ -1169,5 +1169,16 @@ export default function TransactionsPage() {
         />
       </div>
     </TooltipProvider>
+  );
+}
+
+// ============================================
+// COMPONENTE PRINCIPAL (COM BOUNDARY)
+// ============================================
+export default function TransactionsPage() {
+  return (
+    <Suspense fallback={<NeuralLoading message="Acessando DataStream de Transações..." variant="full" />}>
+      <TransactionsPageContent />
+    </Suspense>
   );
 }

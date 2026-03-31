@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -128,9 +128,9 @@ type PeriodoPreset =
 type TipoFiltro = "ALL" | "INCOME" | "EXPENSE";
 
 // ============================================
-// COMPONENTE PRINCIPAL
+// CONTEÚDO DA PÁGINA (WRAPPER PARA SUSPENSE)
 // ============================================
-export default function RelatoriosPage() {
+function RelatoriosPageContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1180,5 +1180,16 @@ export default function RelatoriosPage() {
         <HistoricoRelatorios />
       )}
     </div>
+  );
+}
+
+// ============================================
+// COMPONENTE PRINCIPAL (COM BOUNDARY)
+// ============================================
+export default function RelatoriosPage() {
+  return (
+    <Suspense fallback={<NeuralLoading message="Sincronizando Matriz de Dados..." variant="full" />}>
+      <RelatoriosPageContent />
+    </Suspense>
   );
 }
