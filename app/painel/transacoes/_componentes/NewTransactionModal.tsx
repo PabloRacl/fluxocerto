@@ -30,10 +30,10 @@ const TRANSACTION_TYPES = [
   },
 ];
 
-// Status
-const STATUS_OPTIONS = [
-  { value: "PAID", label: "✅ Pago" },
-  { value: "PENDING", label: "⏳ Pendente" },
+// Status dinâmico por tipo de transação
+const getStatusOptions = (type: string) => [
+  { value: "PAID", label: type === "INCOME" ? "✅ Recebido" : "✅ Pago" },
+  { value: "PENDING", label: type === "INCOME" ? "⏳ A Receber" : "⏳ Pendente" },
 ];
 
 // ✅ INTERFACE CORRIGIDA COM onSuccess
@@ -185,7 +185,7 @@ export default function NewTransactionModal({
       if (
         !formData.description ||
         !formData.amount ||
-        !formData.accountId ||
+        !finalAccountId ||
         !finalCategoryId
       ) {
         throw new Error("Preencha todos os campos obrigatórios");
@@ -436,7 +436,7 @@ export default function NewTransactionModal({
                   Status
                 </label>
                 <div className="flex gap-3">
-                  {STATUS_OPTIONS.map((status) => (
+                  {getStatusOptions(formData.type).map((status) => (
                     <button
                       key={status.value}
                       type="button"
@@ -486,7 +486,8 @@ export default function NewTransactionModal({
                     loading ||
                     !formData.description ||
                     !formData.amount ||
-                    !formData.accountId ||
+                    (!formData.accountId && !showOtherAccount) ||
+                    (showOtherAccount && !customAccount.trim()) ||
                     (showOtherCategory && !customCategory.trim())
                   }
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-500/30 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
