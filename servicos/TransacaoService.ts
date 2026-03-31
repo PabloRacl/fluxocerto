@@ -180,7 +180,7 @@ export class TransacaoService {
 
       const balanceChange = dados.type === "INCOME" ? dados.amount : -dados.amount;
 
-      await tx.account.update({
+      await tx.conta.update({
         where: { id: dados.accountId },
         data: {
           balance: { increment: balanceChange },
