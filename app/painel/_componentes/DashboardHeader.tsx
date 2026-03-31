@@ -238,7 +238,6 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-800 border-slate-700 text-white">Configurações</TooltipContent>
               </Tooltip>
-            </TooltipProvider>
             
             <button
               onClick={onSignOut}
@@ -264,6 +263,7 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
                 Neuro Launcher (Ctrl + K)
               </TooltipContent>
             </Tooltip>
+            </TooltipProvider>
           </div>
 
         </div>
