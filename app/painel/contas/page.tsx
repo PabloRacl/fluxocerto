@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/componentes/ui/skeleton";
@@ -110,9 +110,9 @@ const getIcon = (iconName: string | null) => {
 };
 
 // ============================================
-// COMPONENTE PRINCIPAL
+// CONTEÚDO DA PÁGINA (WRAPPER PARA SUSPENSE)
 // ============================================
-export default function AccountsPage() {
+function AccountsPageContent() {
   const { status, data } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -727,5 +727,16 @@ export default function AccountsPage() {
         />
       </div>
     </TooltipProvider>
+  );
+}
+
+// ============================================
+// COMPONENTE PRINCIPAL (COM BOUNDARY)
+// ============================================
+export default function AccountsPage() {
+  return (
+    <Suspense fallback={<NeuralLoading message="Acessando Nótulos Bancários..." variant="full" />}>
+      <AccountsPageContent />
+    </Suspense>
   );
 }
