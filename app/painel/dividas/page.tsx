@@ -425,8 +425,8 @@ export default function DividasPage() {
                     }`}
                   >
                     {/* HUD Shimmer */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent -translate-x-full group-hover/debt:translate-x-full transition-transform duration-1000" style={{ transform: 'skewX(-20deg)' }} />
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-white/[0.02] to-transparent -translate-x-full group-hover/debt:translate-x-full transition-transform duration-1000" style={{ transform: 'skewX(-20deg)' }} />
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       {/* Info Principal */}
                       <div className="flex-1 space-y-3">
                         <div className="flex items-start justify-between">
