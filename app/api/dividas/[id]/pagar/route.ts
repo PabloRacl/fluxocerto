@@ -8,7 +8,7 @@ import { dividaService } from "@/servicos/DividaService";
 // PATCH - Registrar pagamento de parcela / Antecipar
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,8 +16,10 @@ export async function PATCH(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const debt = await prisma.debt.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { user: { select: { email: true, id: true } } },
     });
 
@@ -30,7 +32,7 @@ export async function PATCH(
 
     const result = await dividaService.registrarPagamento(
       debt.user.id,
-      params.id,
+      id,
       { tipo, quantidadeParcelas, valorPago }
     );
 
