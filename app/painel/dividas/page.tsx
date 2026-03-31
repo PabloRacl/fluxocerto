@@ -10,6 +10,7 @@ import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
 import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
 import { MascotAssistant } from "@/app/painel/_componentes/MascotAssistant";
 import EditDebtModal from "./_componentes/EditDebtModal";
+import AmortizeDebtModal from "./_componentes/AmortizeDebtModal";
 import {
   Tooltip,
   TooltipContent,
@@ -117,6 +118,7 @@ export default function DividasPage() {
   >("ALL");
   const [showNewModal, setShowNewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAmortizeModal, setShowAmortizeModal] = useState(false);
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
 
   // ============================================
@@ -205,25 +207,9 @@ export default function DividasPage() {
     }
   };
 
-  const handlePayInstallment = async (id: string) => {
-    if (!confirm("Registrar pagamento de 1 parcela?")) return;
-    try {
-      const res = await fetch(`/api/dividas/${id}/pagar`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ tipo: "PAGAR_PARCELA", quantidadeParcelas: 1 }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        if (data.quitada) alert("🎉 Parabéns! Dívida quitada!");
-        fetchDividas();
-      } else {
-        alert(data.error || "Erro ao registrar pagamento");
-      }
-    } catch {
-      alert("Erro ao pagar parcela");
-    }
+  const handlePayInstallment = (debt: Debt) => {
+    setSelectedDebt(debt);
+    setShowAmortizeModal(true);
   };
 
   const handleEdit = (debt: Debt) => {
@@ -564,7 +550,7 @@ export default function DividasPage() {
                                 <TooltipTrigger asChild>
                                   <button
                                     onClick={() =>
-                                      handlePayInstallment(divida.id)
+                                      handlePayInstallment(divida)
                                     }
                                     className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
                                   >
@@ -651,6 +637,15 @@ export default function DividasPage() {
             fetchDividas();
           }}
           debt={selectedDebt}
+        />
+        <AmortizeDebtModal
+          isOpen={showAmortizeModal}
+          onClose={() => {
+            setShowAmortizeModal(false);
+            setSelectedDebt(null);
+          }}
+          debt={selectedDebt}
+          onSuccess={fetchDividas}
         />
       </div>
     </TooltipProvider>

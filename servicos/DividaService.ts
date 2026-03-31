@@ -168,14 +168,10 @@ export class DividaService {
       return divida;
     });
   }
-  /**
-   * Registra o pagamento de uma ou mais parcelas de uma dívida.
-   * Cria transações reais e abate do saldo da conta vinculada.
-   */
   async registrarPagamento(
     usuarioId: string,
     dividaId: string,
-    dados: { tipo: "PAGAR_PARCELA" | "ANTECIPAR"; quantidadeParcelas: number; valorPago?: number }
+    dados: { tipo: "PAGAR_PARCELA" | "AMORTIZAR_PRAZO" | "AMORTIZAR_PARCELA"; quantidadeParcelas: number; valorPago?: number }
   ) {
     const { tipo, quantidadeParcelas, valorPago } = dados;
 
@@ -188,22 +184,44 @@ export class DividaService {
       throw new Error("Dívida não encontrada");
     }
 
-    const valorUnitario = debt.installmentValue;
-    const totalAPagar = valorPago || (valorUnitario * quantidadeParcelas);
-    const novasPagas = debt.installmentPaid + quantidadeParcelas;
-    const quitada = novasPagas >= debt.installmentTotal;
-
-    // Calcular próximo vencimento
-    const proximoVencimento = new Date(debt.nextDueDate);
-    proximoVencimento.setMonth(proximoVencimento.getMonth() + quantidadeParcelas);
-
-    // Calcular economia se antecipação
+    let totalAPagar = 0;
+    let novasPagas = debt.installmentPaid;
+    let novoTotalParcelas = debt.installmentTotal;
+    let proximoVencimento = new Date(debt.nextDueDate);
     let economia = 0;
-    if (tipo === "ANTECIPAR" && debt.interestRate) {
-      const taxaMensal = Number(debt.interestRate) / 100;
-      const saldoRestante = debt.totalAmount - (valorUnitario * debt.installmentPaid);
-      economia = Math.round(saldoRestante * taxaMensal * quantidadeParcelas);
+    let novoTotalAmount = debt.totalAmount;
+    let novoValorParcela = debt.installmentValue;
+
+    const parcelasRestantes = debt.installmentTotal - debt.installmentPaid;
+
+    if (tipo === "PAGAR_PARCELA") {
+      totalAPagar = debt.installmentValue * quantidadeParcelas;
+      novasPagas += quantidadeParcelas;
+      proximoVencimento.setMonth(proximoVencimento.getMonth() + quantidadeParcelas);
+    } else if (tipo === "AMORTIZAR_PRAZO") {
+      // Amortizar de trás pra frente (reduz prazo, vencimento não muda)
+      totalAPagar = debt.installmentValue * quantidadeParcelas;
+      if (debt.interestRate) {
+        const taxaMensal = Number(debt.interestRate) / 100;
+        const saldoRestante = debt.totalAmount - (debt.installmentValue * debt.installmentPaid);
+        economia = Math.round(saldoRestante * taxaMensal * quantidadeParcelas);
+        totalAPagar = Math.max(0, totalAPagar - economia);
+      }
+      novoTotalParcelas -= quantidadeParcelas;
+      novoTotalAmount -= (debt.installmentValue * quantidadeParcelas);
+      // novasPagas stays the same, or we increment them? It's better to decrement total parcelas instead of counting them as paid early, so the progress bar reflects correctly.
+    } else if (tipo === "AMORTIZAR_PARCELA") {
+      // Valor pago livre (reduz valor da parcela, prazo e vencimento não mudam)
+      totalAPagar = valorPago || 0;
+      if (totalAPagar <= 0) throw new Error("Valor pago inválido para amortização");
+      if (parcelasRestantes > 0) {
+         novoValorParcela = Math.max(0, debt.installmentValue - Math.round(totalAPagar / parcelasRestantes));
+      }
+      novoTotalAmount -= totalAPagar;
+      economia = 0; // Simple amortization doesn't strictly log 'economia' in the same way, as it dilutes interest over time.
     }
+
+    const quitada = novasPagas >= novoTotalParcelas || novoTotalAmount <= 0;
 
     return prisma.$transaction(async (tx) => {
       // 1. Atualizar a dívida
@@ -211,6 +229,9 @@ export class DividaService {
         where: { id: dividaId },
         data: {
           installmentPaid: novasPagas,
+          installmentTotal: novoTotalParcelas,
+          installmentValue: novoValorParcela,
+          totalAmount: Math.max(0, novoTotalAmount),
           isPaidOff: quitada,
           paidOffAt: quitada ? new Date() : null,
           status: quitada ? "PAID" : "ACTIVE",
@@ -224,13 +245,13 @@ export class DividaService {
           userId: usuarioId,
           accountId: debt.accountId,
           categoryId: debt.categoryId,
-          description: `${tipo === "ANTECIPAR" ? "Antecipação" : "Pagamento"} ${quantidadeParcelas}x: ${debt.name}`,
+          description: `${tipo.replace('_', ' ')}: ${debt.name}`,
           amount: totalAPagar,
           type: "EXPENSE",
           status: "PAID",
           occurrenceDate: new Date(),
           paidAt: new Date(),
-          notes: `Pagamento de parcela(s) via módulo de dívidas. Dívida: ${debt.name}`,
+          notes: `Pagamento/Amortização via módulo de dívidas. Dívida: ${debt.name}`,
         }
       });
 
