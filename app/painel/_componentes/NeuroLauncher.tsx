@@ -86,6 +86,14 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         className="relative w-full max-w-4xl bg-slate-950/80 rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.15)] overflow-hidden flex flex-col md:flex-row h-[600px] max-h-[85vh] border border-emerald-500/30 backdrop-blur-3xl"
       >
+        {/* Botão Explícito de Fechar */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 z-[99] p-2 bg-slate-900 border border-white/10 rounded-full hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 text-slate-400 transition-all"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
         {/* Glow animado no fundo */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1/2 bg-emerald-500/20 blur-[100px] pointer-events-none rounded-full" />
         {/* Linha de Scanner que desce */}
@@ -157,25 +165,25 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
                   icon={<Landmark className="w-5 h-5" />}
                   title="Conectar Banco"
                   desc="Pluggy Open Finance"
-                  onClick={() => router.push("/painel/contas?action=connect")}
+                  onClick={() => { router.push("/painel/contas?action=connect"); onClose(); }}
                 />
                 <LauncherButton 
                   icon={<Import className="w-5 h-5" />}
                   title="Importar Dados"
                   desc="CSV, OFX ou NF-e"
-                  onClick={() => router.push("/painel/transacoes/importar")}
+                  onClick={() => { router.push("/painel/transacoes/importar"); onClose(); }}
                 />
                 <LauncherButton 
                   icon={<PlusCircle className="w-5 h-5" />}
                   title="Nova Transação"
                   desc="Gasto ou Receita manual"
-                  onClick={() => router.push("/painel/transacoes?new=true")}
+                  onClick={() => { router.push("/painel/transacoes?new=true"); onClose(); }}
                 />
                 <LauncherButton 
                   icon={<CreditCard className="w-5 h-5" />}
                   title="Ver Faturas"
                   desc="Controle de cartões"
-                  onClick={() => router.push("/painel/contas?type=credit")}
+                  onClick={() => { router.push("/painel/contas?type=credit"); onClose(); }}
                 />
               </div>
             </div>
@@ -183,10 +191,21 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
             <div className="space-y-4">
               <h3 className="text-[10px] uppercase tracking-widest text-slate-500 font-black">Navegação Direta</h3>
               <div className="grid grid-cols-2 space-y-1">
-                {['Dashboard', 'Relatórios', 'Categorias', 'Contas', 'Metas', 'Configurações'].map(link => (
-                  <button key={link} className="flex items-center gap-2 group p-2 rounded hover:bg-white/5 transition-all">
+                {[
+                  { name: 'Dashboard', path: '/painel' },
+                  { name: 'Relatórios', path: '/painel/relatorios' },
+                  { name: 'Categorias', path: '/painel/categorias' },
+                  { name: 'Contas', path: '/painel/contas' },
+                  { name: 'Metas', path: '/painel/metas' },
+                  { name: 'Configurações', path: '/painel/configuracoes' }
+                ].map(link => (
+                  <button 
+                    key={link.name} 
+                    onClick={() => { router.push(link.path); onClose(); }} 
+                    className="flex items-center gap-2 group p-2 rounded hover:bg-white/5 transition-all text-left"
+                  >
                     <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-emerald-500" />
-                    <span className="text-sm font-medium text-slate-400 group-hover:text-white">{link}</span>
+                    <span className="text-sm font-medium text-slate-400 group-hover:text-white">{link.name}</span>
                   </button>
                 ))}
               </div>
