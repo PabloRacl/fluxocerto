@@ -11,6 +11,9 @@ import {
 import { MascoteNeural } from "./MascoteNeural";
 import { useRouter } from "next/navigation";
 
+import useSWR from "swr";
+import { api } from "@/biblioteca/http-client";
+
 interface NeuroLauncherProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,10 +22,16 @@ interface NeuroLauncherProps {
 export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [summary, setSummary] = useState({
-    totalBalance: 0,
-    alerts: [] as any[],
-  });
+
+  // Usar SWR para puxar o resumo global já cacheado no layout
+  const { data: summaryData } = useSWR(isOpen ? "/api/painel/resumo" : null, (url) => api.get<any>(url));
+  
+  // Tratar os dados ou cair no fallback seguro
+  const totalBalance = summaryData?.resumo?.balance || 0;
+  
+  // Usaremos um mock refinado APENAS se a API não retornar boletos ou faturas, para manter a aura neuro, 
+  // mas vamos condicionar isso ao retorno real
+  const [alerts, setAlerts] = useState<any[]>([]);
 
   // Atalho Teclado
   useEffect(() => {
@@ -39,19 +48,29 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
     return () => document.removeEventListener("keydown", down);
   }, [isOpen, onClose]);
 
-  // Carregar dados de resumo (simulado por enquanto, ligar ao backend depois)
+  // Carregar alertas simulados ou reais no mount para a IA do launcher
   useEffect(() => {
     if (isOpen) {
-      // buscar dados from /api/dashboard/summary or direct prisma if server component (but this is client)
-      setSummary({
-        totalBalance: 4250000, // R$ 42.500,00
-        alerts: [
-          { id: 1, type: "INVOICE", bank: "Nubank", amount: 154090, dueDate: "Amanhã", critical: true },
-          { id: 2, type: "LIMIT", bank: "Itaú", message: "Limite atingido (85%)", critical: false },
-        ]
-      });
+      if (summaryData?.transacoes) {
+        // Logica para gerar alertas reais baseados nas transações pendentes ou atrasadas
+        const transacoesAtrasadas = summaryData.transacoes.filter((t: any) => t.isPaid === false && new Date(t.date) < new Date());
+        
+        if (transacoesAtrasadas.length > 0) {
+           setAlerts([{ id: 1, type: "OVERDUE", bank: "Aviso do Sistema", amount: transacoesAtrasadas.reduce((sum: number, t: any) => sum + t.amount, 0), dueDate: "Atrasado", critical: true }]);
+        } else {
+           setAlerts([{ id: 1, type: "LIMIT", bank: "Saúde Financeira", message: "Fluxo sob controle", critical: false }]);
+        }
+      } else {
+         // Fallback Visual até backend ter dados reais de contas
+         setAlerts([
+            { id: 1, type: "INVOICE", bank: "Nubank", amount: 154090, dueDate: "Amanhã", critical: true },
+            { id: 2, type: "LIMIT", bank: "Itaú", message: "Limite saudável (15%)", critical: false },
+         ]);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, summaryData]);
+
+  const hasCriticalAlert = alerts.some(a => a.critical);
 
   if (!isOpen) return null;
 
@@ -66,36 +85,45 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
         className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
       />
 
-      {/* Launcher Container */}
+      {/* Launcher Container Neural */}
       <motion.div 
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        className="relative w-full max-w-4xl bg-slate-900/50 border-[2px] border-emerald-500/30 rounded-none shadow-[0_0_50px_rgba(16,185,129,0.1)] overflow-hidden flex flex-col md:flex-row h-[600px] max-h-[85vh]"
+        className="relative w-full max-w-4xl bg-slate-950/80 rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.15)] overflow-hidden flex flex-col md:flex-row h-[600px] max-h-[85vh] border border-emerald-500/30 backdrop-blur-3xl"
       >
+        {/* Glow animado no fundo */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1/2 bg-emerald-500/20 blur-[100px] pointer-events-none rounded-full" />
+        {/* Linha de Scanner que desce */}
+        <motion.div 
+          animate={{ top: ["-10%", "110%"] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          className="absolute left-0 right-0 h-[2px] bg-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,1)] z-50 opacity-20 pointer-events-none"
+        />
+
         {/* Lado Esquerdo: HUD Financeiro (Neuro-HUD Style) */}
-        <div className="w-full md:w-80 bg-slate-900/80 border-r border-emerald-500/20 p-6 flex flex-col items-center">
-          <MascoteNeural size="lg" mood="HAPPY" className="mb-6" />
+        <div className="relative w-full md:w-80 bg-slate-900/40 border-r border-white/5 p-6 flex flex-col items-center">
+          <MascoteNeural size="lg" mood={hasCriticalAlert ? "SAD" : "HAPPY"} className="mb-6 z-10 filter drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
           
-          <div className="w-full space-y-6">
+          <div className="w-full space-y-6 relative z-10">
             <div className="space-y-1">
               <span className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Saldo Consolidado</span>
               <div className="text-3xl font-mono font-bold text-white tracking-tighter">
-                R$ {(summary.totalBalance / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                R$ {(totalBalance / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </div>
             </div>
 
             <div className="space-y-3">
               <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Alertas Críticos</span>
-              {summary.alerts.map(alert => (
-                <div key={alert.id} className={`p-3 border-[1px] ${alert.critical ? 'border-red-500/50 bg-red-500/5' : 'border-amber-500/50 bg-amber-500/5'} flex items-start gap-3 relative overflow-hidden group`}>
-                  <div className={`absolute left-0 top-0 bottom-0 w-[2px] ${alert.critical ? 'bg-red-500' : 'bg-amber-500'}`} />
-                  {alert.critical ? <AlertCircle className="w-4 h-4 text-red-400 mt-0.5" /> : <Zap className="w-4 h-4 text-amber-400 mt-0.5" />}
+              {alerts.map(alert => (
+                <div key={alert.id} className={`p-3 border-[1px] ${alert.critical ? 'border-red-500/50 bg-red-500/5' : 'border-emerald-500/50 bg-emerald-500/5'} flex items-start gap-3 relative overflow-hidden group rounded-lg`}>
+                  <div className={`absolute left-0 top-0 bottom-0 w-[2px] ${alert.critical ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                  {alert.critical ? <AlertCircle className="w-4 h-4 text-red-400 mt-0.5" /> : <ShieldCheck className="w-4 h-4 text-emerald-400 mt-0.5" />}
                   <div className="flex-1">
                     <p className="text-xs font-bold text-white">{alert.bank}</p>
-                    <p className="text-[10px] text-slate-400 truncate">{alert.type === 'INVOICE' ? `Vencimento: ${alert.dueDate}` : alert.message}</p>
+                    <p className="text-[10px] text-slate-400 truncate">{alert.type === 'INVOICE' || alert.type === 'OVERDUE' ? `Vencimento: ${alert.dueDate}` : alert.message}</p>
                   </div>
-                  {alert.type === 'INVOICE' && (
+                  {(alert.type === 'INVOICE' || alert.type === 'OVERDUE') && (
                     <span className="text-[10px] font-mono text-white">R$ {(alert.amount/100).toFixed(2)}</span>
                   )}
                 </div>
@@ -104,9 +132,9 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
           </div>
 
           <div className="mt-auto w-full pt-6 border-t border-emerald-500/10">
-            <div className="flex items-center gap-2 text-[10px] text-emerald-500/60 font-mono">
+            <div className={`flex items-center gap-2 text-[10px] font-mono ${hasCriticalAlert ? 'text-red-400' : 'text-emerald-500/60'}`}>
               <Command className="w-3 h-3" />
-              <span>🐸 Mestre Dino | Tudo em ordem!</span>
+              <span>🐸 Mestre Dino | {hasCriticalAlert ? "Atenção necessária em suas contas!" : "Operação Segura. Tudo em ordem!"}</span>
             </div>
           </div>
         </div>
