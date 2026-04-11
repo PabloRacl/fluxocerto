@@ -26,7 +26,8 @@ export default function ConquistasPage() {
       <main className="p-8 max-w-7xl mx-auto">
         <CabecalhoPagina
           title="Minhas Conquistas"
-          description="Acompanhe seu nível, metas e medalhas conquistadas."
+          description="Central de progressão do seu perfil de Mestre Financeiro."
+          breadcrumbs={[{ label: "Minhas Conquistas" }]}
         />
 
         <div className="mt-8">
