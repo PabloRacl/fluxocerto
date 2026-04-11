@@ -21,13 +21,20 @@ const BASIC_STEPS: TourStep[] = [
 
 const DETAILED_STEPS: TourStep[] = [
   ...BASIC_STEPS,
-  { elementSelector: "[data-tour='chart-evolucao']", title: "Matriz de Evolução", content: "Sabe aquela dúvida se gastou mais do que devia? Esse gráfico cruza tudo e mostra se você está em ascensão ou se precisa de manobra de correção." },
-  { elementSelector: "[data-tour='chart-categorias']", title: "Raio-X de Gastos", content: "Passe o cursor por aqui e descubra qual categoria está 'vampirizando' seu saldo. Identificar é o primeiro passo para o controle total." },
-  { elementSelector: "[data-tour='chart-projecao']", title: "Previsão Futurista", content: "Com base no seu hábito atual, como estará sua conta daqui 90 dias? Eu calculo o futuro para você não ter surpresas desagradáveis." },
-  { elementSelector: "[data-tour='insights']", title: "Diagnóstico Neural", content: "Aqui você recebe minha nota final de disciplina. Também monitore os alertas de vencimentos para a multa não comer seu lucro!" },
-  { elementSelector: "[data-tour='menu-compras']", title: "Escaneamento de Compras", content: "Preguiça de digitar? Use minha visão térmica para ler QR Codes de notas fiscais e eu lanço tudo categorizado para você." },
-  { elementSelector: "[data-tour='menu-metas']", title: "Seus Sonhos no Alvo", content: "Viagem? Reserva? Trocar de máquina? Crie metas e eu te direi exatamente o quão perto você está de atingir cada objetivo." },
-  { elementSelector: "[data-tour='menu-relatorios']", title: "Relatórios de Elite", content: "Precisa de dados específicos para seu contador ou excel? Aqui você filtra como um ninja e exporta tudo em segundos." },
+  { elementSelector: "[data-tour='chart-evolucao']", title: "Matriz de Evolução", content: "Sabe aquela dúvida se gastou mais do que devia? Esse gráfico cruza tudo e mostra se você está em ascensão ou precisando corrigir a nave." },
+  { elementSelector: "[data-tour='chart-categorias']", title: "Raio-X de Gastos", content: "Passe o cursor por aqui e descubra qual categoria está 'vampirizando' seu saldo neste exato momento." },
+  { elementSelector: "[data-tour='chart-projecao']", title: "Previsão Futurista", content: "Com base no seu hábito atual, como estará sua conta daqui a 90 dias? Eu prevejo o futuro para você evitar o caos." },
+  { elementSelector: "[data-tour='insights']", title: "Diagnóstico Neural", content: "Aqui é o coração da IA. Eu solto relatórios diretos, alertas de faturas e dicas de como otimizar seus lucros com base nos seus dados!" },
+  { elementSelector: "[data-tour='menu-transacoes']", title: "Entradas e Saídas", content: "A central de lançamentos. Todas as suas despesas e receitas em um painel único e rápido." },
+  { elementSelector: "[data-tour='menu-categorias']", title: "Organização Extrema", content: "Crie categorias de despesa livres aqui. Quanto melhor categorizado, mais poderoso fica o seu HUD de análise." },
+  { elementSelector: "[data-tour='menu-dividas']", title: "Exterminador de Dívidas", content: "Cansado de juros? Monte seus parcelamentos e financiamentos aqui, nós faremos a projeção de amortização pra você quitar tudo!" },
+  { elementSelector: "[data-tour='menu-compras']", title: "Radar de Compras", content: "Supermercado, feiras e lista. Gerencie seus carrinhos, compare preços ou até escaneie QR Codes de nota fiscal!" },
+  { elementSelector: "[data-tour='menu-metas']", title: "Sonhos Tangíveis", content: "Não basta guardar. Crie Metas (ex: 'Carro Novo', 'Reserva'). Eu coloco uma barra de carregamento letal focada no sucesso." },
+  { elementSelector: "[data-tour='menu-orcamentos']", title: "Teto de Aço", content: "Defina os limites do quanto você pode queimar no mês para não estourar o cartão. O sistema bloqueia os exageros!" },
+  { elementSelector: "[data-tour='menu-assinaturas']", title: "Auditor de Assinaturas", content: "Você tem Spotify, Netflix, Gympass e até esqueceu o que paga no dia 15? Este espaço caça as cobranças recorrentes ocultas." },
+  { elementSelector: "[data-tour='menu-patrimonio']", title: "Potência Líquida", content: "O sumário real da sua riqueza. Tudo o que você TEM menos o que DEVE. Este número é o que realmente separa os profissionais dos amadores." },
+  { elementSelector: "[data-tour='menu-calculadora']", title: "Armas Matemáticas", content: "Acesse nossas calculadoras Enterprise: simule Juros Compostos, Amortizações Fixas, PRICE ou SAC livremente." },
+  { elementSelector: "[data-tour='menu-relatorios']", title: "Relatórios de Elite", content: "Enfim, nossa joia da coroa. Gere balanços absurdos exportáveis em Excel ou PDF perfeitos para fechar o caixa ou mandar pro seu contador." },
 ];
 
 interface ProductTourProps {
