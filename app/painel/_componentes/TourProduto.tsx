@@ -120,6 +120,7 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
       {/* 1. Modal de Escolha Inicial */}
       {!tourStarted && status === "PENDING" && (
         <motion.div
+          key="modal-inicial"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -184,6 +185,7 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
       {/* 2. Overlay de Escurecimento (Spotlight Neural) */}
       {tourStarted && (
         <motion.div
+          key="spotlight-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -250,6 +252,7 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
       {/* 3. Tour Em Execução (Floating Card) */}
       {tourStarted && (
         <motion.div
+           key="tour-floating-card"
            initial={{ opacity: 0, scale: 0.9 }}
            animate={{ 
              opacity: 1, 
