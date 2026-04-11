@@ -15,20 +15,13 @@ export default function ConquistasPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <CabecalhoPainel 
-        user={session.user} 
-        onSignOut={async () => {
-          await fetch("/api/auth/signout", { method: "POST" });
-          router.push("/entrar");
-        }} 
+      <CabecalhoPagina
+        title="Minhas Conquistas"
+        description="Central de progressão do seu perfil de Mestre Financeiro."
+        breadcrumbs={[{ label: "Minhas Conquistas" }]}
       />
-      
+
       <main className="p-8 max-w-7xl mx-auto">
-        <CabecalhoPagina
-          title="Minhas Conquistas"
-          description="Central de progressão do seu perfil de Mestre Financeiro."
-          breadcrumbs={[{ label: "Minhas Conquistas" }]}
-        />
 
         <div className="mt-8">
           <PainelGamificacao userId={session.user.id as string} />

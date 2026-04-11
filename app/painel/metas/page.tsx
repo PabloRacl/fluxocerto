@@ -267,164 +267,146 @@ export default function MetasPage() {
           </CabecalhoPagina>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-          {/* Header Dashboard & Mascot Side-by-Side */}
-          <div className="flex flex-col lg:flex-row gap-6">
-            
-            {/* Lado Esquerdo: Resumo Geral */}
-            <div className="flex-1">
-              {resumo && !showDeleted ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
-                  {/* Card: Metas Ativas */}
-                  <div className="p-5 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
-                    {/* Laser Scan Animation */}
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
-                      style={{ skewX: -20 }}
-                    />
-                    
-                    <div className="flex items-center gap-3 mb-4 relative z-10">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.15)] group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all">
-                        <Target className="w-5 h-5 text-emerald-400" />
-                      </div>
-                      <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">Módulos Ativos</span>
+          {/* Header Dashboard Simplificado e Linear (Estilo Contas) */}
+          <div className="w-full">
+            {resumo && !showDeleted ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                {/* Card: Metas Ativas */}
+                <div className="p-5 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
+                  {/* Laser Scan Animation */}
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                    style={{ skewX: -20 }}
+                  />
+                  
+                  <div className="flex items-center gap-3 mb-4 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.15)] group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all">
+                      <Target className="w-5 h-5 text-emerald-400" />
                     </div>
-                    <p className="text-3xl font-black text-white ml-1 relative z-10" style={{ textShadow: "0 0 20px rgba(16,185,129,0.2)" }}>
-                      {resumo.totalMetas}
-                    </p>
-
-                    {/* Glow Line Bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
-                       <motion.div 
-                         className="h-full bg-emerald-500/50"
-                         initial={{ x: "-100%" }}
-                         whileHover={{ x: "0%" }}
-                         transition={{ duration: 0.6 }}
-                       />
-                    </div>
+                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">Módulos Ativos</span>
                   </div>
+                  <p className="text-3xl font-black text-white ml-1 relative z-10" style={{ textShadow: "0 0 20px rgba(16,185,129,0.2)" }}>
+                    {resumo.totalMetas}
+                  </p>
 
-                  {/* Card: Concluídas */}
-                  <div className="p-5 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
-                     {/* Laser Scan Animation */}
+                  {/* Glow Line Bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
                      <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
-                      style={{ skewX: -20 }}
-                    />
-
-                    <div className="flex items-center gap-3 mb-4 relative z-10">
-                      <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.15)] group-hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all">
-                        <Trophy className="w-5 h-5 text-amber-400" />
-                      </div>
-                      <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">Sync Completa</span>
-                    </div>
-                    <p className="text-3xl font-black text-amber-400 ml-1 relative z-10" style={{ textShadow: "0 0 20px rgba(245,158,11,0.3)" }}>
-                      {resumo.totalConcluidas}
-                    </p>
-
-                    {/* Glow Line Bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
-                       <motion.div 
-                         className="h-full bg-amber-500/50"
-                         initial={{ x: "-100%" }}
-                         whileHover={{ x: "0%" }}
-                         transition={{ duration: 0.6 }}
-                       />
-                    </div>
-                  </div>
-
-                  {/* Card: Progresso Geral */}
-                  <div className="p-5 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group sm:col-span-2 lg:col-span-1">
-                    {/* Laser Scan Animation */}
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
-                      style={{ skewX: -20 }}
-                    />
-                    
-                    <div className="flex items-center gap-3 mb-4 relative z-10">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.15)] group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all">
-                        <Activity className="w-5 h-5 text-blue-400" />
-                      </div>
-                      <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">Sincronização</span>
-                    </div>
-                    <p className="text-3xl font-black text-blue-400 ml-1 mb-3 relative z-10" style={{ textShadow: "0 0 20px rgba(59,130,246,0.3)" }}>
-                      {resumo.progressoGeral}%
-                    </p>
-                    <div className="w-full h-1.5 mt-2 bg-slate-800/80 rounded-full overflow-hidden relative z-10 border border-white/5 p-[1px]">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${resumo.progressoGeral}%` }}
-                        transition={{ duration: 1.5, ease: "easeOut" }}
-                        className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
-                      />
-                    </div>
-
-                    {/* Glow Line Bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
-                       <motion.div 
-                         className="h-full bg-blue-500/50"
-                         initial={{ x: "-100%" }}
-                         whileHover={{ x: "0%" }}
-                         transition={{ duration: 0.6 }}
-                       />
-                    </div>
-                  </div>
-
-                  {/* Card: Acumulado Global */}
-                  <div className="p-5 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group sm:col-span-2 lg:col-span-1">
-                    {/* Laser Scan Animation */}
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
-                      style={{ skewX: -20 }}
-                    />
-
-                    <div className="flex items-center gap-3 mb-4 relative z-10">
-                      <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.15)] group-hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all">
-                        <DollarSign className="w-5 h-5 text-cyan-400" />
-                      </div>
-                      <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">Patrimônio Alvo</span>
-                    </div>
-                    <p className="text-2xl font-black text-white ml-1 relative z-10" style={{ textShadow: "0 0 20px rgba(255,255,255,0.2)" }}>
-                      {formatCurrency(resumo.totalAtual)}
-                    </p>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mt-1 relative z-10">
-                      Total: <span className="text-white/80">{formatCurrency(resumo.totalAlvo)}</span>
-                    </p>
-
-                    {/* Glow Line Bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
-                       <motion.div 
-                         className="h-full bg-cyan-500/50"
-                         initial={{ x: "-100%" }}
-                         whileHover={{ x: "0%" }}
-                         transition={{ duration: 0.6 }}
-                       />
-                    </div>
+                       className="h-full bg-emerald-500/50"
+                       initial={{ x: "-100%" }}
+                       whileHover={{ x: "0%" }}
+                       transition={{ duration: 0.6 }}
+                     />
                   </div>
                 </div>
-              ) : (
-                <div className="h-full min-h-[160px] bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 flex items-center justify-center">
-                  {showDeleted ? (
-                    <p className="text-slate-500 text-sm">Visualizando Lixeira</p>
-                  ) : (
-                    <p className="text-slate-500 text-sm">Crie sua primeira meta para ver o resumo global.</p>
-                  )}
-                </div>
-              )}
-            </div>
 
-            {/* Lado Direito: Neural Mascot Panel */}
-            <div className="w-full lg:w-[280px] shrink-0 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl p-6 relative overflow-hidden flex flex-col items-center justify-center group">
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-emerald-500/5 pointer-events-none" />
-              <MascoteNeural 
-                size="lg" 
-                level={userLevel} 
-                className="hover:scale-105 transition-transform duration-500 relative z-10 drop-shadow-2xl" 
-              />
-              <div className="mt-4 text-center relative z-10">
-                <span className="text-[10px] uppercase font-black text-emerald-400 tracking-widest mb-1 block">Mentor Focado</span>
-                <p className="text-xs text-slate-300 italic">&quot;Cada depósito é um tijolo na sua fortaleza financeira. Força, Gafanhoto!&quot;</p>
+                {/* Card: Concluídas */}
+                <div className="p-5 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
+                   {/* Laser Scan Animation */}
+                   <motion.div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                    style={{ skewX: -20 }}
+                  />
+
+                  <div className="flex items-center gap-3 mb-4 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.15)] group-hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all">
+                      <Trophy className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">Sync Completa</span>
+                  </div>
+                  <p className="text-3xl font-black text-amber-400 ml-1 relative z-10" style={{ textShadow: "0 0 20px rgba(245,158,11,0.3)" }}>
+                    {resumo.totalConcluidas}
+                  </p>
+
+                  {/* Glow Line Bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                     <motion.div 
+                       className="h-full bg-amber-500/50"
+                       initial={{ x: "-100%" }}
+                       whileHover={{ x: "0%" }}
+                       transition={{ duration: 0.6 }}
+                     />
+                  </div>
+                </div>
+
+                {/* Card: Progresso Geral */}
+                <div className="p-5 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
+                  {/* Laser Scan Animation */}
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                    style={{ skewX: -20 }}
+                  />
+                  
+                  <div className="flex items-center gap-3 mb-4 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.15)] group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all">
+                      <Activity className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">Sincronização</span>
+                  </div>
+                  <p className="text-3xl font-black text-blue-400 ml-1 mb-3 relative z-10" style={{ textShadow: "0 0 20px rgba(59,130,246,0.3)" }}>
+                    {resumo.progressoGeral}%
+                  </p>
+                  <div className="w-full h-1.5 mt-2 bg-slate-800/80 rounded-full overflow-hidden relative z-10 border border-white/5 p-[1px]">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${resumo.progressoGeral}%` }}
+                      transition={{ duration: 1.5, ease: "easeOut" }}
+                      className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
+                    />
+                  </div>
+
+                  {/* Glow Line Bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                     <motion.div 
+                       className="h-full bg-blue-500/50"
+                       initial={{ x: "-100%" }}
+                       whileHover={{ x: "0%" }}
+                       transition={{ duration: 0.6 }}
+                     />
+                  </div>
+                </div>
+
+                {/* Card: Acumulado Global */}
+                <div className="p-5 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
+                  {/* Laser Scan Animation */}
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                    style={{ skewX: -20 }}
+                  />
+
+                  <div className="flex items-center gap-3 mb-4 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.15)] group-hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all">
+                      <DollarSign className="w-5 h-5 text-cyan-400" />
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">Patrimônio Alvo</span>
+                  </div>
+                  <p className="text-2xl font-black text-white ml-1 relative z-10" style={{ textShadow: "0 0 20px rgba(255,255,255,0.2)" }}>
+                    {formatCurrency(resumo.totalAtual)}
+                  </p>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mt-1 relative z-10">
+                    Total: <span className="text-white/80">{formatCurrency(resumo.totalAlvo)}</span>
+                  </p>
+
+                  {/* Glow Line Bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                     <motion.div 
+                       className="h-full bg-cyan-500/50"
+                       initial={{ x: "-100%" }}
+                       whileHover={{ x: "0%" }}
+                       transition={{ duration: 0.6 }}
+                     />
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="h-full min-h-[160px] bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 flex items-center justify-center">
+                {showDeleted ? (
+                  <p className="text-slate-500 text-sm">Visualizando Lixeira</p>
+                ) : (
+                  <p className="text-slate-500 text-sm">Crie sua primeira meta para ver o resumo global.</p>
+                )}
+              </div>
+            )}
           </div>
 
           {loading && (
