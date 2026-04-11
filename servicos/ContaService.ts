@@ -1,5 +1,8 @@
 import { prisma } from "@/biblioteca/prisma";
 import type { CriarContaInput } from "@/validacoes/conta.schema";
+import { ForbiddenError } from "@/biblioteca/erros-customizados";
+
+import { revalidarCacheDashboard } from "@/biblioteca/cache-revalidation";
 
 /**
  * Serviço de Contas — Encapsula a lógica de negócio
@@ -55,6 +58,24 @@ export class ContaService {
    * Cria uma nova conta.
    */
   async criar(usuarioId: string, dados: CriarContaInput) {
+    // Validação de Limites de Plano (Fase 1: Freemium Gates)
+    const usuario = await prisma.user.findUnique({
+      where: { id: usuarioId },
+      select: { plan: true },
+    });
+
+    if (usuario?.plan === "FREE") {
+      const contasAtivas = await prisma.conta.count({
+        where: { userId: usuarioId, isDeleted: false, isArchived: false },
+      });
+
+      if (contasAtivas >= 3) {
+        throw new ForbiddenError(
+          "PLAN_LIMIT_REACHED: Usuários do plano FREE podem criar no máximo 3 contas. Faça upgrade para o plano PRO para criar contas ilimitadas."
+        );
+      }
+    }
+
     const newAccount = await prisma.conta.create({
       data: {
         userId: usuarioId,
@@ -66,6 +87,9 @@ export class ContaService {
         isActive: true,
       },
     });
+
+    // Invalida cache do painel
+    await revalidarCacheDashboard(usuarioId);
 
     return {
       ...newAccount,

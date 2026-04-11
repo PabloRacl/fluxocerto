@@ -65,7 +65,7 @@ export class VendaService {
         }
       });
 
-      await tx.account.update({
+      await tx.conta.update({
         where: { id: dados.contaId },
         data: { balance: { increment: dados.valorVenda } }
       });

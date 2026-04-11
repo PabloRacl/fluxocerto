@@ -99,7 +99,7 @@ export class AssinaturaService {
           }
         });
 
-        await tx.account.update({
+        await tx.conta.update({
           where: { id: dados.contaId },
           data: { balance: { decrement: valorCentavos } }
         });

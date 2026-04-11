@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -196,8 +196,8 @@ export default function CategoriesPage() {
   };
 
   // Ícones mapeados (Lucide React SVG)
-  const getIcon = (iconName: string | null) => {
-    const icons: Record<string, JSX.Element> = {
+  const getIcon = (iconName: string | null): React.ReactNode => {
+    const icons: Record<string, React.ReactNode> = {
       wallet: (
         <svg
           className="w-6 h-6"

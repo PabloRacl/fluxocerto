@@ -31,6 +31,11 @@ export function PluggyConnect({ onSuccess, onClose }: PluggyConnectProps) {
           throw new Error(data.error || "Erro ao gerar token de conexão");
         }
       } catch (err: any) {
+        if (err.message && err.message.includes("PREMIUM_FEATURE")) {
+          window.dispatchEvent(new Event("open-upgrade-modal"));
+          onClose();
+          return;
+        }
         setError(err.message);
       } finally {
         setLoading(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 
@@ -202,7 +202,7 @@ export default function EditCategoryPage() {
 
   // Ícone SVG helper
   const renderIcon = (iconId: string) => {
-    const icons: Record<string, JSX.Element> = {
+    const icons: Record<string, React.ReactNode> = {
       wallet: (
         <svg
           className="w-6 h-6"

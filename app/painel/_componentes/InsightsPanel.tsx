@@ -106,7 +106,7 @@ export function InsightsPanel({ userId, userLevel = 1 }: { userId: string; userL
     : "Atenção! Reveja alguns pontos.";
 
   return (
-    <div className="relative bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-slate-800/50 overflow-hidden">
+    <div data-tour="insights" className="relative bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-slate-800/50 overflow-hidden">
 
       {/* ─── CABEÇALHO COMPACTO: Mascote + Frase + Score ─── */}
       <div className="flex items-center gap-4 px-5 py-4 border-b border-white/5">

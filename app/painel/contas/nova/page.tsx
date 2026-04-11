@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -127,7 +127,7 @@ export default function NewAccountPage() {
 
   // Ícone SVG helper
   const renderIcon = (iconId: string) => {
-    const icons: Record<string, JSX.Element> = {
+    const icons: Record<string, React.ReactNode> = {
       wallet: (
         <svg
           className="w-6 h-6"

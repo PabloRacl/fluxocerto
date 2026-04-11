@@ -1,6 +1,7 @@
 import { prisma } from "@/biblioteca/prisma";
 import type { CriarTransacaoInput } from "@/validacoes/transacao.schema";
 import { auditService } from "./AuditService";
+import { revalidarCacheDashboard } from "@/biblioteca/cache-revalidation";
 
 /**
  * Filtros de listagem de transações.
@@ -189,6 +190,12 @@ export class TransacaoService {
 
       return transaction;
     });
+
+    try {
+      await revalidarCacheDashboard(usuarioId);
+    } catch (e) {
+      console.warn("revalidateTag failed ou rodando via worker", e);
+    }
 
     return newTransaction;
   }

@@ -25,6 +25,7 @@ model User {
   timezone          String              @default("America/Sao_Paulo")
   role              Role                @default(USER)
   plan              Plan                @default(FREE)
+  tourStatus        String              @default("PENDING")
   contas            Conta[]
   accounts          Account[]
   auditLogs         AuditLog[]

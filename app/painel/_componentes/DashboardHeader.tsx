@@ -53,18 +53,18 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
           {/* Logo + Usuário */}
           <div className="flex items-center gap-3 flex-shrink-0 w-full lg:w-auto">
             <BrandLogo size="md" />
-            <div className="hidden sm:block ml-1">
+            <Link href="/painel/contas" data-tour="menu-contas">
               <p className="text-xs text-slate-500 font-medium uppercase tracking-widest">
                 Bem-vindo, <span className="text-emerald-400 font-black">{user?.name?.split(" ")[0] || "Usuário"}</span>
               </p>
-            </div>
+            </Link>
           </div>
 
           {/* Oráculo Neural de Dicas */}
-          <div className="flex-1 w-full max-w-2xl mx-auto relative group">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 via-transparent to-emerald-500/20 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
+          <div className="flex-1 w-full max-w-xl mx-auto relative group" data-tour="mascote">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/10 via-transparent to-emerald-500/10 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
             
-            <div className="relative flex flex-col items-center bg-slate-900/40 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-3 sm:p-4 overflow-hidden shadow-2xl min-h-[70px] sm:min-h-[90px] justify-center">
+            <div className="relative flex flex-col items-center bg-slate-900/30 backdrop-blur-xl border border-white/5 rounded-2xl p-2 sm:p-3 overflow-hidden shadow-2xl min-h-[60px] sm:min-h-[75px] justify-center">
               
               {/* Brilho Neural Dinâmico de Fundo */}
               <motion.div 
@@ -104,10 +104,10 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
                         <div className="h-px flex-1 bg-gradient-to-r from-slate-700 to-transparent" />
                       </div>
                       
-                      <h3 className="text-sm font-bold text-white mb-0.5 tracking-tight truncate">
+                      <h3 className="text-sm sm:text-base font-black text-white mb-0 tracking-tight truncate">
                         {currentTip.title}
                       </h3>
-                      <p className="text-xs text-slate-400 font-medium leading-relaxed italic">
+                      <p className="text-xs sm:text-sm text-slate-300 font-medium leading-tight italic opacity-90">
                         "{currentTip.content}"
                       </p>
                     </div>
@@ -223,14 +223,14 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
 
               <div className="w-px h-8 bg-slate-800 mx-1" /> {/* Divisor Neural */}
 
-              {/* Configurações (Giro Cinético no Hover) */}
+            {/* Configurações (Giro Cinético no Hover) */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link href="/painel/configuracoes">
                     <motion.div
-                      whileHover={{ rotate: 180 }}
+                      whileHover={{ rotate: 180, scale: 1.1 }}
                       transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                      className="p-2.5 text-slate-400 hover:text-white bg-slate-900 border border-slate-800 rounded-xl transition-all hover:border-slate-700"
+                      className="p-2.5 text-slate-400 hover:text-white bg-slate-900/50 border border-white/5 rounded-xl transition-all hover:bg-slate-800 shadow-lg hover:shadow-white/5"
                     >
                       <SettingsIcon className="w-5 h-5" />
                     </motion.div>
@@ -238,31 +238,40 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-800 border-slate-700 text-white">Configurações</TooltipContent>
               </Tooltip>
-            
-            <button
-              onClick={onSignOut}
-              className="flex items-center gap-2 pr-4 pl-3 py-2.5 text-sm font-bold text-slate-400 hover:text-red-400 bg-slate-900 border border-slate-800 hover:border-red-500/30 rounded-xl transition-all group"
-            >
-              <LogOut className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              <span className="hidden sm:block">Sair</span>
-            </button>
 
-            {/* NEURO LAUNCHER TRIGGER */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => window.dispatchEvent(new CustomEvent("open-neuro-launcher"))}
-                  className="p-2.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] group"
-                >
-                  <Zap className="w-5 h-5 fill-emerald-500" />
-                </motion.button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-slate-800 border-slate-700 text-white">
-                Neuro Launcher (Ctrl + K)
-              </TooltipContent>
-            </Tooltip>
+              {/* NEURO LAUNCHER TRIGGER */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => window.dispatchEvent(new CustomEvent("open-neuro-launcher"))}
+                    className="p-2.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/20 group relative overflow-hidden"
+                  >
+                    <Zap className="w-5 h-5 fill-emerald-500" />
+                    <motion.div 
+                      animate={{ x: ['100%', '-100%'] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
+                    />
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 border-slate-700 text-white">
+                  Neuro Launcher (Ctrl + K)
+                </TooltipContent>
+              </Tooltip>
+            
+              <button
+                onClick={onSignOut}
+                className="relative flex items-center gap-2 pr-4 pl-3 py-2.5 text-sm font-black text-slate-400 hover:text-white transition-all group overflow-hidden rounded-xl border border-white/5 hover:border-red-500/50"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-red-600/0 via-red-600/0 to-red-600/0 group-hover:from-red-600/20 group-hover:to-red-900/20 transition-all duration-500" />
+                <LogOut className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1 text-slate-400 group-hover:text-red-400" />
+                <span className="hidden sm:block relative z-10 uppercase tracking-tighter">Sair</span>
+                
+                {/* Efeito Glow Neural no Sair */}
+                <div className="absolute -inset-1 bg-red-500/20 blur opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
             </TooltipProvider>
           </div>
 

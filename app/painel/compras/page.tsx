@@ -1566,9 +1566,10 @@ function ImportarNFModal({
   onClose: () => void;
   onSuccess: (data: any) => void;
 }) {
-  const [modo, setModo] = useState<"pdf" | "numero" | "qr">("pdf");
+  const [modo, setModo] = useState<"pdf" | "imagem" | "numero" | "qr">("pdf");
   const [numeroNF, setNumeroNF] = useState("");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [parsedData, setParsedData] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -1640,20 +1641,52 @@ function ImportarNFModal({
             (body.details ? `: ${body.details}` : "");
           throw new Error(`HTTP ${res.status}: ${errorMessage}`);
         }
-      } else if (modo === "pdf" && pdfFile) {
+      } else if ((modo === "pdf" && pdfFile) || (modo === "imagem" && imageFile)) {
         const formData = new FormData();
-        formData.append("pdf", pdfFile);
+        const file = modo === "pdf" ? pdfFile : imageFile;
+        const endpoint = modo === "pdf" ? "/api/compras/importar-pdf" : "/api/compras/importar-imagem";
+        const formKey = modo === "pdf" ? "pdf" : "image";
 
-        const res = await fetch("/api/compras/importar-pdf", {
+        formData.append(formKey, file!);
+
+        const res = await fetch(endpoint, {
           method: "POST",
           body: formData,
           credentials: "include",
         });
 
         if (res.ok) {
-          dadosExtraidos = await res.json();
+          const initData = await res.json();
+          // Polling mechanism
+          if (initData.jobId) {
+            let jobDone = false;
+            while (!jobDone) {
+              await new Promise((r) => setTimeout(r, 2000));
+              const pollRes = await fetch(`${endpoint}?jobId=${initData.jobId}`);
+              if (pollRes.ok) {
+                const jobState = await pollRes.json();
+                if (jobState.status === "done") {
+                  dadosExtraidos = jobState.data;
+                  jobDone = true;
+                } else if (jobState.status === "error") {
+                  throw new Error(jobState.error || "Falha no processo de OCR em background.");
+                }
+              } else {
+                throw new Error("Erro na comunicação do Job.");
+              }
+            }
+          } else {
+            dadosExtraidos = initData; // Fallback
+          }
         } else {
-          setError("Erro ao processar PDF");
+          const err = await res.json().catch(() => ({}));
+          // Dispara paywall se for bloqueio de Freemium
+          if (err.error && err.error.includes("PREMIUM_FEATURE")) {
+            window.dispatchEvent(new Event("open-upgrade-modal"));
+            onClose();
+            return;
+          }
+          setError(err.error || `Erro ao processar ${modo.toUpperCase()}`);
           setLoading(false);
           return;
         }
@@ -1801,13 +1834,19 @@ function ImportarNFModal({
             onClick={() => setModo("pdf")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 ${modo === "pdf" ? "bg-blue-600/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/5"}`}
           >
-            <FileText className="w-4 h-4" /> UPLOAD PDF
+            <FileText className="w-4 h-4" /> PDF
+          </button>
+          <button
+            onClick={() => setModo("imagem")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 ${modo === "imagem" ? "bg-blue-600/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/5"}`}
+          >
+            <Maximize2 className="w-4 h-4" /> FOTO
           </button>
           <button
             onClick={() => setModo("numero")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 ${modo === "numero" ? "bg-blue-600/90 text-white shadow-[0_0_20px_rgba(37,99,235,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/5"}`}
           >
-            <Zap className="w-4 h-4" /> CHAVE NF
+            <Zap className="w-4 h-4" /> CHAVE
           </button>
           <button
             onClick={() => {
@@ -1816,7 +1855,7 @@ function ImportarNFModal({
             }}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 ${modo === "qr" ? "bg-emerald-600/90 text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/5"}`}
           >
-            <Maximize2 className="w-4 h-4" /> SCANNER
+            <Maximize2 className="w-4 h-4" /> QR
           </button>
         </div>
 
@@ -1829,6 +1868,21 @@ function ImportarNFModal({
               type="file"
               accept=".pdf"
               onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-500"
+            />
+          </div>
+        )}
+
+        {modo === "imagem" && (
+          <div>
+            <label className="block text-sm text-slate-400 mb-2">
+              Selecione uma foto da Nota Fiscal (JPG/PNG)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
               className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-500"
             />
           </div>
@@ -1926,7 +1980,7 @@ function ImportarNFModal({
               <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar pb-2">
                 {parsedData.items.map((item: any, idx: number) => (
                   <motion.div
-                    key={idx}
+                    key={`item-import-${idx}-${item.name}`}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
@@ -2007,7 +2061,7 @@ function ImportarNFModal({
           <button
             id="btn-extrair-nf"
             onClick={parsedData ? handleConfirm : handleExtract}
-            disabled={loading || (modo === "pdf" && !pdfFile) || (modo === "numero" && !numeroNF) || (modo === "qr" && !numeroNF)}
+            disabled={loading || (modo === "pdf" && !pdfFile) || (modo === "imagem" && !imageFile) || (modo === "numero" && !numeroNF) || (modo === "qr" && !numeroNF)}
             className="px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-2xl disabled:opacity-50 shadow-lg shadow-blue-500/20 transition-all border border-white/10"
           >
             {loading ? (parsedData ? "PROCESSANDO..." : "EXTRAINDO...") : parsedData ? "CONFIRMAR IMPORTAÇÃO" : "EXTRAIR ITENS"}

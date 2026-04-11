@@ -1,4 +1,5 @@
 import { prisma } from "@/biblioteca/prisma";
+import { ForbiddenError } from "@/biblioteca/erros-customizados";
 
 /**
  * BankService - Hub de integração bancária via Pluggy.ai (Sandbox).
@@ -31,6 +32,18 @@ export class BankService {
    * Cria um widget de conexão (Connect Token).
    */
   async createConnectToken(userId: string) {
+    // Phase 1 - Freemium Gate
+    const usuario = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { plan: true },
+    });
+    
+    if (usuario?.plan === "FREE") {
+      throw new ForbiddenError(
+        "PREMIUM_FEATURE: Sincronização automática com Open Finance está disponível apenas nos planos PRO e ENTERPRISE."
+      );
+    }
+
     const apiKey = await this.getAccessToken();
     const response = await fetch(`${this.baseUrl}/connect_token`, {
       method: "POST",
@@ -49,6 +62,18 @@ export class BankService {
    * Sincroniza um Item (Conexão Bancária) e importa contas/transações.
    */
   async syncItem(usuarioId: string, itemId: string) {
+    // Phase 1 - Freemium Gate
+    const usuario = await prisma.user.findUnique({
+      where: { id: usuarioId },
+      select: { plan: true },
+    });
+    
+    if (usuario?.plan === "FREE") {
+      throw new ForbiddenError(
+        "PREMIUM_FEATURE: Sincronização automática com Open Finance está disponível apenas nos planos PRO e ENTERPRISE."
+      );
+    }
+
     const apiKey = await this.getAccessToken();
     
     // 1. Buscar detalhes do item

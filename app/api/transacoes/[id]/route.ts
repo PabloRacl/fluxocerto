@@ -175,7 +175,7 @@ export async function PUT(
           ? existingTransaction.amount
           : -existingTransaction.amount;
 
-      await tx.account.update({
+      await tx.conta.update({
         where: { id: existingTransaction.accountId },
         data: {
           balance: {
@@ -213,7 +213,7 @@ export async function PUT(
       // C. Aplicar Novo Impacto no Saldo
       const newBalanceChange = type === "INCOME" ? amount : -amount;
 
-      await tx.account.update({
+      await tx.conta.update({
         where: { id: accountId },
         data: {
           balance: {
@@ -289,7 +289,7 @@ export async function DELETE(
           ? existingTransaction.amount
           : -existingTransaction.amount;
 
-      await tx.account.update({
+      await tx.conta.update({
         where: { id: existingTransaction.accountId },
         data: {
           balance: {

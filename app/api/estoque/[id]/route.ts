@@ -8,7 +8,8 @@ import { estoqueService } from "@/servicos/EstoqueService";
 // GET - Detalhe do Item de Estoque
 // ============================================
 export const GET = withAuthRoute(async (request, user, { params }) => {
-  const item = await estoqueService.obterPorId(params!.id as string, user.id);
+  const { id } = await params;
+  const item = await estoqueService.obterPorId(id as string, user.id);
   return sucesso({ item });
 });
 
@@ -16,10 +17,11 @@ export const GET = withAuthRoute(async (request, user, { params }) => {
 // PUT - Atualizar Item de Estoque
 // ============================================
 export const PUT = withAuthRoute(async (request, user, { params }) => {
+  const { id } = await params;
   const body = await request.json();
   const dados = schemaAtualizarEstoque.parse(body);
 
-  const updated = await estoqueService.atualizar(params!.id as string, user.id, dados);
+  const updated = await estoqueService.atualizar(id as string, user.id, dados);
   return sucesso({ message: "Item atualizado", item: updated });
 });
 
@@ -27,6 +29,7 @@ export const PUT = withAuthRoute(async (request, user, { params }) => {
 // DELETE - Desativar Item de Estoque (Soft Delete)
 // ============================================
 export const DELETE = withAuthRoute(async (request, user, { params }) => {
-  await estoqueService.desativar(params!.id as string, user.id);
+  const { id } = await params;
+  await estoqueService.desativar(id as string, user.id);
   return sucesso({ message: "Item desativado" });
 });

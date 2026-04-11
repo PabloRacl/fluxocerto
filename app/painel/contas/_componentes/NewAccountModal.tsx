@@ -160,6 +160,11 @@ export default function NewAccountModal({
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.error && data.error.includes("PLAN_LIMIT_REACHED")) {
+          window.dispatchEvent(new Event("open-upgrade-modal"));
+          onClose();
+          return;
+        }
         throw new Error(data.error || "Erro ao criar conta");
       }
 

@@ -190,6 +190,11 @@ export function QuickActions({ onNewTransaction }: QuickActionsProps) {
                 >
                    <Link
                       href={action.href}
+                      data-tour={
+                        action.title === "Compras" ? "menu-compras" :
+                        action.title === "Metas" ? "menu-metas" :
+                        action.title === "Relatórios" ? "menu-relatorios" : undefined
+                      }
                       className={`block p-6 rounded-2xl bg-slate-900/40 backdrop-blur-xl border ${style.border} transition-all duration-500 hover:border-white/10 overflow-hidden relative`}
                    >
                       {/* 1. Shimmer Effect (Holograma) */}

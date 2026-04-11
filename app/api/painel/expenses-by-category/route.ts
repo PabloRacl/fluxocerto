@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
 import { tratarErro } from "@/biblioteca/tratar-erro";
 import { painelService } from "@/servicos/PainelService";
+import { unstable_cache } from "next/cache";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,11 +17,14 @@ export async function GET(request: NextRequest) {
       throw new Error("Datas de início e fim são obrigatórias");
     }
 
-    const expenses = await painelService.obterExpensesByCategory(
-      user.id,
-      startDate,
-      endDate
+    const getCachedExpenses = unstable_cache(
+      async (userId: string, start: string, end: string) => 
+        await painelService.obterExpensesByCategory(userId, start, end),
+      [`categorias-${user.id}-${startDate}-${endDate}`],
+      { tags: [`categorias-${user.id}`], revalidate: 3600 }
     );
+
+    const expenses = await getCachedExpenses(user.id, startDate, endDate);
 
     return NextResponse.json({ ok: true, data: expenses });
   } catch (error) {

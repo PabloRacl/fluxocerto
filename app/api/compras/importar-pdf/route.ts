@@ -1,14 +1,38 @@
 export const dynamic = "force-dynamic";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado";
 import { itemImportMappingService } from "@/servicos/ItemImportMappingService";
 import * as pdfParse from "pdf-parse";
+import { prisma } from "@/biblioteca/prisma";
+
+// Fila em memória para MVP (Em cluster multi-nodo usaríamos Redis/Upstash)
+const importJobs = new Map<string, any>();
+
+export async function GET(request: NextRequest) {
+  const jobId = request.nextUrl.searchParams.get("jobId");
+  if (!jobId || !importJobs.has(jobId)) {
+    return NextResponse.json({ error: "Job não encontrado" }, { status: 404 });
+  }
+  return NextResponse.json(importJobs.get(jobId));
+}
 
 export async function POST(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
     if (!user?.id) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    const usuario = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { plan: true },
+    });
+
+    if (usuario?.plan === "FREE") {
+      return NextResponse.json(
+        { error: "PREMIUM_FEATURE: A importação inteligente e processamento de NFe/PDF estão disponíveis apenas no plano PRO." },
+        { status: 403 }
+      );
     }
 
     const formData = await request.formData();
@@ -18,21 +42,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Arquivo PDF não encontrado" }, { status: 400 });
     }
 
-    // Ler o PDF
+    // Phase 2: Arquitetura Assíncrona - Retorna 202 imediatamente e processa OCR no background
+    const jobId = crypto.randomUUID();
+    importJobs.set(jobId, { status: "processing" });
+
     const buffer = Buffer.from(await pdfFile.arrayBuffer());
-    const data = await (pdfParse as any)(buffer);
-    const text = data.text;
+    const userId = user.id;
 
-    // Parsear o texto do PDF para extrair dados da NF
-    // Isso é uma implementação básica e pode precisar de ajustes dependendo do formato do PDF
-    const dadosExtraidos = parsearNotaFiscal(text);
-
-    const mappedItems = await itemImportMappingService.applyMappingsToItems(user.id, dadosExtraidos.items || []);
-
-    return NextResponse.json({
-      ...dadosExtraidos,
-      items: mappedItems,
+    after(async () => {
+      try {
+        const data = await (pdfParse as any)(buffer);
+        const text = data.text;
+        const dadosExtraidos = parsearNotaFiscal(text);
+        const mappedItems = await itemImportMappingService.applyMappingsToItems(userId, dadosExtraidos.items || []);
+        
+        importJobs.set(jobId, {
+          status: "done",
+          data: {
+            ...dadosExtraidos,
+            items: mappedItems,
+          }
+        });
+      } catch (err: any) {
+        importJobs.set(jobId, { status: "error", error: err.message });
+      }
     });
+
+    return NextResponse.json({ jobId, status: "processing" }, { status: 202 });
   } catch (error) {
     console.error("Erro ao processar PDF:", error);
     return NextResponse.json(
@@ -48,8 +84,8 @@ export async function POST(request: NextRequest) {
 function parsearNotaFiscal(text: string) {
   const linhas = text
     .split("\n")
-    .map((l) => l.trim())
-    .filter((l) => l);
+    .map((l: string) => l.trim())
+    .filter((l: string) => l);
 
   let description = "Compra importada de NF";
   let storeName = "";
@@ -69,9 +105,6 @@ function parsearNotaFiscal(text: string) {
       normalized = normalized.replace(/\./g, "").replace(/,/g, ".");
     } else if (hasComma) {
       normalized = normalized.replace(/\./g, "").replace(/,/g, ".");
-    } else {
-      // só ponto ou sem separador (padrão XML do SEFAZ usa ponto)
-      normalized = normalized;
     }
 
     const num = Number(normalized);
@@ -100,7 +133,6 @@ function parsearNotaFiscal(text: string) {
 
   const parseFullItemLine = (line: string) => {
     const normalized = line.replace(/\s+/g, " ").trim();
-
     const fullPattern = /^(?:\d+\s+)?(?:\d{8,15}\s+)?(.+?)\s+(\d+[.,]\d+)\s*(un|pc|kg|g|ml|l)?\s*x\s*(\d+[.,]\d+)\s+(\d+[.,]\d+)$/i;
     const fullMatch = normalized.match(fullPattern);
     if (fullMatch) {
@@ -112,7 +144,6 @@ function parsearNotaFiscal(text: string) {
         totalPrice: parseDecimal(fullMatch[5]),
       };
     }
-
     const noXPattern = /^(?:\d+\s+)?(?:\d{8,15}\s+)?(.+?)\s+(\d+[.,]\d+)\s*(un|pc|kg|g|ml|l)?\s+(\d+[.,]\d+)\s+(\d+[.,]\d+)$/i;
     const noXMatch = normalized.match(noXPattern);
     if (noXMatch) {
@@ -124,13 +155,11 @@ function parsearNotaFiscal(text: string) {
         totalPrice: parseDecimal(noXMatch[5]),
       };
     }
-
     return null;
   };
 
   const parseQtyLine = (line: string) => {
     const normalized = line.replace(/\s+/g, " ").trim();
-
     const qtyPattern = /^(\d+[.,]\d+)\s*(un|pc|kg|g|ml|l)?\s*x\s*(\d+[.,]\d+)\s+(\d+[.,]\d+)$/i;
     const qtyMatch = normalized.match(qtyPattern);
     if (qtyMatch) {
@@ -141,7 +170,6 @@ function parsearNotaFiscal(text: string) {
         totalPrice: parseDecimal(qtyMatch[4]),
       };
     }
-
     const qtyPatternNoX = /^(\d+[.,]\d+)\s*(un|pc|kg|g|ml|l)?\s+(\d+[.,]\d+)\s+(\d+[.,]\d+)$/i;
     const qtyNoXMatch = normalized.match(qtyPatternNoX);
     if (qtyNoXMatch) {
@@ -152,29 +180,24 @@ function parsearNotaFiscal(text: string) {
         totalPrice: parseDecimal(qtyNoXMatch[4]),
       };
     }
-
     return null;
   };
 
   let lastItemDescription: string | null = null;
-
   for (let i = 0; i < linhas.length; i++) {
     const linha = linhas[i].trim();
     if (!linha) continue;
-
     const lowerLine = linha.toLowerCase();
 
     if (lowerLine.includes("emitente") || lowerLine.includes("loja")) {
       storeName = linha.split(":")[1]?.trim() || linha;
       continue;
     }
-
     const dataMatch = linha.match(/(\d{2})\/(\d{2})\/(\d{4})/);
     if (dataMatch) {
       purchaseDate = `${dataMatch[3]}-${dataMatch[2]}-${dataMatch[1]}`;
       continue;
     }
-
     if (lowerLine.match(/valor total|total geral|total da nota|valor a pagar|valor pago/)) {
       const valorMatch = linha.match(/R\$\s*([\d.,]+)/);
       if (valorMatch) {
@@ -182,10 +205,7 @@ function parsearNotaFiscal(text: string) {
       }
       continue;
     }
-
-    if (isTotalLine(linha)) {
-      continue;
-    }
+    if (isTotalLine(linha)) continue;
 
     const itemFull = parseFullItemLine(linha);
     if (itemFull && itemFull.name && itemFull.unitPrice > 0) {
@@ -203,9 +223,7 @@ function parsearNotaFiscal(text: string) {
       lastItemDescription = null;
       continue;
     }
-
     if (qtyItem) {
-      // Keep for next line description
       lastItemDescription = null;
       continue;
     }
@@ -225,7 +243,6 @@ function parsearNotaFiscal(text: string) {
       }
     }
 
-    // Possível linha de descrição para item de dupla linha
     if (!/(?:r\$|total|subtotal|desc|valor|qtd|faturado|sacado)/i.test(linha)) {
       const candidateName = extractNameFromHeader(linha);
       if (candidateName && candidateName.length > 1 && candidateName.length < 120) {

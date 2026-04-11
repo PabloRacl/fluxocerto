@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { obterUsuarioAutenticado } from "./obter-usuario-autenticado";
 import { tratarErro } from "./tratar-erro";
 
-type RouteContext = { params?: Record<string, string | string[]> };
+type RouteContext = { params: Promise<Record<string, string | string[]>> };
 
 /**
  * Tipo da callback central da nossa API.

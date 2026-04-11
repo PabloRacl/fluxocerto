@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { X, PieChart, Check, Tag, Layers } from "lucide-react";
 import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
@@ -146,7 +146,7 @@ export default function NewCategoryModal({
 
   // Ícone SVG helper
   const renderIcon = (iconId: string) => {
-    const icons: Record<string, JSX.Element> = {
+    const icons: Record<string, React.ReactNode> = {
       wallet: (
         <svg
           className="w-6 h-6"

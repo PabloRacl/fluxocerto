@@ -1,6 +1,7 @@
 import { prisma } from "@/biblioteca/prisma";
 import type { CriarCompraInput } from "@/validacoes/compra.schema";
 import { itemImportMappingService } from "@/servicos/ItemImportMappingService";
+import { revalidarCacheDashboard } from "@/biblioteca/cache-revalidation";
 
 /**
  * Serviço de Compras — Orquestração complexa
@@ -140,7 +141,7 @@ export class CompraService {
         });
 
         // 4. Update Saldo (Diminuição Matemática)
-        await tx.account.update({
+        await tx.conta.update({
           where: { id: dados.accountId },
           data: { balance: { decrement: totalItens || totalAmount } },
         });
@@ -195,6 +196,9 @@ export class CompraService {
     if (dados.itemMappings?.length > 0) {
       await itemImportMappingService.upsertMany(usuarioId, dados.itemMappings);
     }
+
+    // Invalida cache do painel
+    await revalidarCacheDashboard(usuarioId);
 
     return result;
   }
