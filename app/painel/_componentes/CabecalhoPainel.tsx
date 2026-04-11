@@ -249,11 +249,7 @@ export function CabecalhoPainel({ user, onSignOut }: DashboardHeaderProps) {
                     className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-emerald-500/30 text-emerald-400 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/20 hover:border-emerald-500/50 group relative overflow-hidden"
                   >
                     <Zap className="w-4 h-4 fill-emerald-500" />
-                    <span className="text-sm font-semibold tracking-tight">Comando Neural</span>
-                    <div className="hidden sm:flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded-md bg-slate-800 border border-slate-700/50 text-[10px] text-slate-400 font-medium">
-                      <span className="text-[10px]">Ctrl</span>
-                      <span>K</span>
-                    </div>
+                    <span className="text-sm font-semibold tracking-tight">Acesso Rápido</span>
 
                     <motion.div 
                       animate={{ x: ['100%', '-100%'] }}
@@ -263,7 +259,7 @@ export function CabecalhoPainel({ user, onSignOut }: DashboardHeaderProps) {
                   </motion.button>
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-800 border-slate-700 text-white">
-                  Abra a Central de Comandos Inteligentes
+                  Acesso Rápido (Ctrl + K)
                 </TooltipContent>
               </Tooltip>
             
