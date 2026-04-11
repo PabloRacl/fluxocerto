@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/componentes/ui/button";
-import { X, Play, Compass, ChevronRight, CheckCircle } from "lucide-react";
+import { X, Play, Compass, ChevronRight, CheckCircle, Zap } from "lucide-react";
 
 type TourStep = {
   elementSelector: string;
@@ -12,7 +13,7 @@ type TourStep = {
 };
 
 const BASIC_STEPS: TourStep[] = [
-  { elementSelector: "body", title: "Fala, Mestre!", content: "O Dino tá na área (🐸). Este é o seu novo QG Financeiro. Prepare-se para dominar seu dinheiro com a visão de um estrategista!" },
+  { elementSelector: "body", title: "HUD Ativado", content: "O Dino tá na área! Este é o seu novo QG Financeiro. Prepare-se para dominar seu dinheiro com a visão de um estrategista!" },
   { elementSelector: "[data-tour='resumo']", title: "HUD de Saldo Real-Time", content: "Aqui o fluxo nunca para! Acompanhe seu patrimônio total e saúde do caixa em tempo real. Se os números subirem, o Dino pula de alegria!" },
   { elementSelector: "[data-tour='mascote']", title: "Protocolo Dino-Mentor", content: "Eu fico de olho em cada centavo. Se eu notar uma anomalia nos seus gastos ou uma oportunidade de poupar, eu te aviso na hora!" },
   { elementSelector: "[data-tour='menu-contas']", title: "Onde Manda a Grana", content: "No menu lateral, você gerencia suas 'bases de operação' (contas bancárias e cartões). Mantenha-as conectadas para o HUD brilhar!" },
@@ -63,7 +64,7 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
         if (element) {
           element.scrollIntoView({ behavior: "smooth", block: "center" });
           
-          // Pequeno delay para esperar o scroll terminar e pegar a posição correta
+          // Pequeno delay para esperar o scroll terminar e pegar a posição correta de forma mais suave
           setTimeout(() => {
             const rect = element.getBoundingClientRect();
             setTargetRect({
@@ -72,7 +73,7 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
               width: rect.width,
               height: rect.height,
             });
-          }, 300);
+          }, 450); // Ajudando os olhos do usuário a acompanhar o scroll com um tempo de pausa maior
         } else {
           setTargetRect(null);
         }
@@ -129,18 +130,42 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
             animate={{ scale: 1, y: 0 }}
             className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 p-4">
-              <button onClick={skipTour} className="text-slate-500 hover:text-white transition-colors">
-                <X className="w-5 h-5" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50" />
+            
+            <div className="absolute top-0 right-0 p-4 z-10">
+              <button onClick={skipTour} className="text-slate-500 hover:text-white transition-colors bg-slate-900/50 p-1 rounded-full">
+                <X className="w-6 h-6" />
               </button>
             </div>
             
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20 text-3xl">
-                🐸
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Fala, Mestre!</h2>
-              <p className="text-slate-400">Aqui é o Dino. Escolha como quer que eu te apresente a casa.</p>
+            <div className="text-center mb-8 relative">
+              <motion.div 
+                animate={{ y: [-8, 8, -8] }} 
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="relative w-32 h-32 mx-auto mb-6"
+              >
+                <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full animate-pulse" />
+                <div className="absolute inset-0 border-2 border-emerald-500/30 rounded-full border-dashed animate-[spin_10s_linear_infinite]" />
+                <Image 
+                  src="/mascote/sapo_feliz_dark.png" 
+                  alt="Dino HUD" 
+                  fill 
+                  className="object-contain drop-shadow-[0_0_20px_rgba(16,185,129,0.8)] filter brightness-110 saturate-150" 
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-emerald-200 mb-3 tracking-tight">
+                  Inicializando Sistema...
+                </h2>
+                <p className="text-slate-400 max-w-sm mx-auto text-sm leading-relaxed">
+                  Aqui é o <span className="text-emerald-400 font-bold">Dino</span>. Eu serei seu mentor financeiro. Escolha o protocolo de navegação para mapearmos a interface.
+                </p>
+              </motion.div>
             </div>
 
             <div className="grid gap-4">
