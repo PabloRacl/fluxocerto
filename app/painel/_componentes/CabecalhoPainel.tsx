@@ -53,7 +53,7 @@ export function CabecalhoPainel({ user, onSignOut }: DashboardHeaderProps) {
           {/* Logo + Usuário */}
           <div className="flex items-center gap-3 flex-shrink-0 w-full lg:w-auto">
             <LogoMarca size="md" />
-            <Link href="/painel/contas" data-tour="menu-contas">
+            <Link href="/painel/configuracoes" data-tour="header-perfil">
               <p className="text-xs text-slate-500 font-medium uppercase tracking-widest">
                 Bem-vindo, <span className="text-emerald-400 font-black">{user?.name?.split(" ")[0] || "Usuário"}</span>
               </p>

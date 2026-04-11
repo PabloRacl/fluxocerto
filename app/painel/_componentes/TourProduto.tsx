@@ -16,7 +16,7 @@ const BASIC_STEPS: TourStep[] = [
   { elementSelector: "body", title: "HUD Ativado", content: "O Dino tá na área! Este é o seu novo QG Financeiro. Prepare-se para dominar seu dinheiro com a visão de um estrategista!" },
   { elementSelector: "[data-tour='resumo']", title: "HUD de Saldo Real-Time", content: "Aqui o fluxo nunca para! Acompanhe seu patrimônio total e saúde do caixa em tempo real. Se os números subirem, o Dino pula de alegria!" },
   { elementSelector: "[data-tour='mascote']", title: "Protocolo Dino-Mentor", content: "Eu fico de olho em cada centavo. Se eu notar uma anomalia nos seus gastos ou uma oportunidade de poupar, eu te aviso na hora!" },
-  { elementSelector: "[data-tour='menu-contas']", title: "Onde Manda a Grana", content: "No menu lateral, você gerencia suas 'bases de operação' (contas bancárias e cartões). Mantenha-as conectadas para o HUD brilhar!" },
+  { elementSelector: "[data-tour='header-perfil']", title: "Configurações de Acesso", content: "Acessando seu nome, você vai direto para as suas configurações de conta, perfis e preferências. Sua identidade financeira fica sob sigilo máximo." },
 ];
 
 const DETAILED_STEPS: TourStep[] = [
