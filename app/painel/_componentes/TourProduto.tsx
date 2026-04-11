@@ -181,7 +181,7 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
         </motion.div>
       )}
 
-      {/* 2. Overlay de Escurecimento (Spotlight) */}
+      {/* 2. Overlay de Escurecimento (Spotlight Neural) */}
       {tourStarted && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -197,27 +197,52 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
                   <motion.rect
                     initial={false}
                     animate={{
-                      x: targetRect.left - 10,
-                      y: targetRect.top - 10,
-                      width: targetRect.width + 20,
-                      height: targetRect.height + 20,
+                      x: targetRect.left - 5,
+                      y: targetRect.top - 5,
+                      width: targetRect.width + 10,
+                      height: targetRect.height + 10,
                     }}
                     transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                    rx="12"
+                    rx="16"
                     fill="black"
                   />
                 )}
               </mask>
+              {/* Filtro de Brilho Neural */}
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
             </defs>
+            {/* O Fundo escuro real */}
             <rect
               x="0"
               y="0"
               width="100%"
               height="100%"
-              fill="rgba(0,0,0,0.8)"
+              fill="rgba(2, 6, 23, 0.95)"
               mask="url(#spotlight-mask)"
-              className="pointer-events-auto transition-colors duration-500"
+              className="pointer-events-auto"
             />
+            {/* O Anel de Brilho em volta do elemento */}
+            {targetRect && (
+              <motion.rect
+                initial={false}
+                animate={{
+                  x: targetRect.left - 5,
+                  y: targetRect.top - 5,
+                  width: targetRect.width + 10,
+                  height: targetRect.height + 10,
+                }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                rx="16"
+                fill="transparent"
+                stroke="rgba(16, 185, 129, 0.5)"
+                strokeWidth="2"
+                filter="url(#glow)"
+                className="pointer-events-none"
+              />
+            )}
           </svg>
         </motion.div>
       )}
