@@ -106,7 +106,7 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
           <div className="mt-auto w-full pt-6 border-t border-emerald-500/10">
             <div className="flex items-center gap-2 text-[10px] text-emerald-500/60 font-mono">
               <Command className="w-3 h-3" />
-              <span>SISTEMA NEURAL 2.0 // ESTÁVEL</span>
+              <span>🐸 Mestre Dino | Tudo em ordem!</span>
             </div>
           </div>
         </div>
@@ -119,7 +119,7 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
               <input 
                 autoFocus
                 className="w-full bg-transparent border-none text-xl text-white placeholder-slate-600 focus:ring-0 pl-10 font-bold"
-                placeholder="O que deseja fazer agora, humano?"
+                placeholder="O que vamos fazer hoje?"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />

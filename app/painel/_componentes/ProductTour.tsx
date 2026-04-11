@@ -12,21 +12,21 @@ type TourStep = {
 };
 
 const BASIC_STEPS: TourStep[] = [
-  { elementSelector: "body", title: "Bem-vindo ao FluxoCerto!", content: "Este é o seu Neuro HUD, o cérebro das suas finanças. Vamos dar uma olhada rápida." },
-  { elementSelector: "[data-tour='resumo']", title: "Painel de Controle", content: "Aqui você tem a visão macro do seu patrimônio, receitas e despesas em tempo real." },
-  { elementSelector: "[data-tour='mascote']", title: "Sua Assistente de IA", content: "Nossa IA analisa seus dados 24h por dia e fornece dicas contextuais aqui no topo." },
-  { elementSelector: "[data-tour='menu-contas']", title: "Bancos & Cartões", content: "Vá em Contas para gerenciar seus ativos e conectar instituições via Open Finance." },
+  { elementSelector: "body", title: "Bem-vindo ao FluxoCerto!", content: "Este é o seu painel de controle financeiro. Vamos fazer um tour super rápido pra você dominar a plataforma." },
+  { elementSelector: "[data-tour='resumo']", title: "Visão Macro", content: "Aqui no topo você confere o saldo do momento e a saúde geral do caixa. Tudo muda aqui conforme você lança suas contas." },
+  { elementSelector: "[data-tour='mascote']", title: "Seu Parceiro Especial", content: "O Mestre Dino (eu!) fico sempre na área de cima estudando seus gastos para jogar dicas de mestre e te salvar de dívidas chatas." },
+  { elementSelector: "[data-tour='menu-contas']", title: "Onde Manda a Grana", content: "Lá no menu lateral (Contas/Transações) você centraliza suas contas bancárias e registra suas movimentações pra atualizar os gráficos!" },
 ];
 
 const DETAILED_STEPS: TourStep[] = [
   ...BASIC_STEPS,
-  { elementSelector: "[data-tour='chart-evolucao']", title: "Evolução Temporal", content: "Acompanhe a curva do seu saldo nos últimos 6 meses. O segredo é manter o saldo (linha verde) sempre acima das despesas." },
-  { elementSelector: "[data-tour='chart-categorias']", title: "Análise de Gastos", content: "Veja exatamente para onde seu dinheiro está indo. Passe o mouse no centro para ver detalhes da categoria." },
-  { elementSelector: "[data-tour='chart-projecao']", title: "Predictive IA", content: "Nossa IA projeta seu saldo para os próximos 30, 90 ou 180 dias baseado nos seus hábitos de consumo." },
-  { elementSelector: "[data-tour='insights']", title: "Diagnóstico Neural", content: "Aqui listamos alertas críticos, oportunidades de economia e o seu Health Score financeiro." },
-  { elementSelector: "[data-tour='menu-compras']", title: "Módulo de Compras (OCR)", content: "Importe notas fiscais via PDF ou QR Code. Nossa IA preenche tudo e controla seu estoque automaticamente." },
-  { elementSelector: "[data-tour='menu-metas']", title: "Planos de Vida", content: "Crie metas para sua reserva de emergência ou conquistas. O sistema avisa se você está no caminho certo." },
-  { elementSelector: "[data-tour='menu-relatorios']", title: "Power Analytics", content: "Precisa de dados brutos? Exporte tudo em PDF ou CSV com filtros profissionais." },
+  { elementSelector: "[data-tour='chart-evolucao']", title: "Balanço do Mês", content: "Sabe a clássica ansiedade de 'Será que gastei mais do que ganhei?' Esse gráfico responde isso na hora, cruzando o que entrou com o que saiu." },
+  { elementSelector: "[data-tour='chart-categorias']", title: "Para onde o dinheiro voou?", content: "A famosa pizza das categorias. Passe o mouse para descobrir exatamente em que tipo de conta você anda gastando mais." },
+  { elementSelector: "[data-tour='chart-projecao']", title: "Sapo Futurista", content: "Se você mantiver os hábitos de hoje, como fica sua conta daqui 90 dias? Aqui a gente prevê o futuro pra não ter surpresas." },
+  { elementSelector: "[data-tour='insights']", title: "Diagnóstico e Saúde", content: "O Mestre Dino dá uma nota para a sua disciplina! Fique de olho também nos Alertas de contas que vencem hoje." },
+  { elementSelector: "[data-tour='menu-compras']", title: "Preguiça de Digitar?", content: "Use o módulo de Compras do menu para escanear QR Codes ou Notas Fiscais e a gente preenche e categoriza as comprinhas do supermercado automaticamente." },
+  { elementSelector: "[data-tour='menu-metas']", title: "Quais seus planos?", content: "Uma viagem? Trocar de moto? Criando uma meta, a gente te avisa de quanto você tem guardado e o quanto falta atingir." },
+  { elementSelector: "[data-tour='menu-relatorios']", title: "Relatórios Ninja", content: "Precisou puxar um resumo do ano inteiro só de despesas do carro? Em Relatórios você cruza filtros avançados e extrai direto em Excel/PDF." },
 ];
 
 interface ProductTourProps {
@@ -96,11 +96,11 @@ export function ProductTour({ initialStatus }: ProductTourProps) {
             </div>
             
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
-                <Compass className="w-8 h-8 text-emerald-400" />
+              <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20 text-3xl">
+                🐸
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Bem-vindo a bordo! 🚀</h2>
-              <p className="text-slate-400">Escolha como prefere explorar a plataforma.</p>
+              <h2 className="text-2xl font-bold text-white mb-2">Fala, Mestre!</h2>
+              <p className="text-slate-400">Aqui é o Dino. Escolha como quer que eu te apresente a casa.</p>
             </div>
 
             <div className="grid gap-4">

@@ -120,6 +120,13 @@ function ComprasTab() {
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
 
+  // Listener para o Neuro Launcher abrir o modal de importação remotamente
+  useEffect(() => {
+    const handleOpenImport = () => setShowImportModal(true);
+    window.addEventListener("open-import-nf", handleOpenImport);
+    return () => window.removeEventListener("open-import-nf", handleOpenImport);
+  }, []);
+
   const fetchCompras = useCallback(async () => {
     setLoading(true);
     try {

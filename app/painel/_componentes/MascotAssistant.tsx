@@ -6,6 +6,12 @@ import { X, Lock, CheckCircle2, TrendingUp, Trophy, Zap } from "lucide-react";
 import { NeuralMascot } from "./NeuralMascot";
 import { neuralVoice } from "@/biblioteca/NeuralVoiceService";
 import { mascotEvents, MascotEventPayload } from "@/biblioteca/MascotEvents";
+import useSWR from "swr";
+import { api } from "@/biblioteca/http-client";
+
+const fetcher = async (url: string) => {
+  return typeof window !== "undefined" ? api.get<any>(url) : null;
+};
 
 interface Tip {
   id: string;
@@ -27,27 +33,26 @@ const TIPS: Tip[] = [
   { id: "dica_fixos", text: "Seus custos fixos são o peso base do seu sistema. Tente mantê-los leves!", type: "STRATEGY" },
   { id: "dica_variaveis", text: "Gastos variáveis são como ruído no sistema. Minimize o desnecessário.", type: "BRAIN" },
   { id: "dica_poupanca", text: "Tente economizar pelo menos 10% do seu fluxo. Meu núcleo agradece a estabilidade.", type: "REWARD" },
-  { id: "dica_dividas", text: "Dívidas com juros altos são vírus no seu patrimônio. Elimine-as primeiro!", type: "STRATEGY" },
-  { id: "dica_hardware", text: "O melhor investimento é no seu próprio hardware cerebral. Aprenda algo novo hoje.", type: "BRAIN" },
-  { id: "dica_plano", text: "Um plano sem execução é apenas um erro de compilação. Coloque suas metas em prática!", type: "STRATEGY" },
-  { id: "dica_disciplina", text: "Consistência vence a intensidade em qualquer simulação financeira de longo prazo.", type: "BRAIN" },
-  { id: "dica_firmware", text: "Olhar seus relatórios mensalmente é como atualizar seu firmware de riqueza.", type: "STRATEGY" },
-  { id: "dica_metas", text: "Uma meta sem data é apenas um sonho em buffer. Defina prazos!", type: "STRATEGY" },
-  { id: "dica_benchmark", text: "Não compare seu início com o meio de outros. Seu único benchmark é você mesmo anteontem.", type: "BRAIN" },
-  { id: "dica_vazamentos", text: "Fique de olho nos impostos. Eles são vazamentos silenciosos no seu tanque de recursos.", type: "STRATEGY" },
-  { id: "dica_assinaturas", text: "Assinaturas não utilizadas são loops infinitos de gasto. Cancele o que não serve.", type: "BRAIN" },
-  { id: "dica_impulso", text: "Espere 24 horas antes de compras impulsivas. Seus sensores de lógica vão agradecer.", type: "REWARD" },
-  { id: "dica_noite", text: "Fim de ciclo detectado. Analise seus movimentos hoje e descanse seus circuitos.", type: "STRATEGY" },
-  { id: "dica_alfa_elite", text: "Desempenho excepcional! Você está operando em frequência de elite hoje.", type: "REWARD" },
-  { id: "dica_zero_gasto", text: "Detectando baixa eficiência... que tal um dia de gasto zero para resetar o sistema?", type: "BRAIN" },
-  { id: "dica_diversifica", text: "Não coloque todos os seus chips em uma única ramificação. Diversifique!", type: "STRATEGY" },
-  { id: "dica_juros", text: "Os juros compostos são a oitava maravilha da rede neural. Deixe o tempo trabalhar.", type: "BRAIN" },
-  { id: "dica_liberdade", text: "Riqueza é a liberdade de escolher como processar seu tempo.", type: "REWARD" },
-  { id: "dica_overclock", text: "Não deixe seu estilo de vida sofrer overclock só porque sua renda aumentou.", type: "STRATEGY" },
-  { id: "dica_paz", text: "Paz financeira não é ter muito, é não ter preocupações com o que tem.", type: "BRAIN" },
-  { id: "dica_sapinho", text: "Até eu, um sapo neural, sei que gastar com bobagem atrasa sua evolução!", type: "REWARD" },
-  { id: "dica_parceria", text: "Eu fui programado para proteger seu futuro. Vamos fazer isso juntos!", type: "REWARD" },
-  { id: "dica_cinco_anos", text: "Onde você quer que seu patrimônio esteja em 5 anos? Comece a processar isso agora.", type: "STRATEGY" }
+  { id: "dica_dividas", text: "Dívidas com juros altos são a água que ferve o sapo sem ele notar. Elimine-as primeiro!", type: "STRATEGY" },
+  { id: "dica_hardware", text: "O melhor investimento é no seu próprio aprendizado. Leia sobre finanças, vale ouro.", type: "BRAIN" },
+  { id: "dica_plano", text: "Um plano sem execução é só papel. Coloque suas metas em prática!", type: "STRATEGY" },
+  { id: "dica_disciplina", text: "Consistência vence a intensidade em qualquer plano financeiro de longo prazo.", type: "BRAIN" },
+  { id: "dica_firmware", text: "Olhar seus relatórios mensalmente é como alinhar o curso antes da viagem.", type: "STRATEGY" },
+  { id: "dica_metas", text: "Uma meta sem data é apenas um sonho jogado no vento. Defina prazos!", type: "STRATEGY" },
+  { id: "dica_benchmark", text: "Não compare seu início com o meio de outros. Seu único adversário é você mesmo anteontem.", type: "BRAIN" },
+  { id: "dica_vazamentos", text: "Assinaturas esquecidas são vazamentos silenciosos no seu dinheiro. Cancele o que não usa.", type: "STRATEGY" },
+  { id: "dica_impulso", text: "Espere 24 horas antes de compras impulsivas. O Mestre Dino garante: o bolso agradece.", type: "REWARD" },
+  { id: "dica_noite", text: "Fim do dia. Analise seus movimentos hoje e descanse. Amanhã tem mais!", type: "STRATEGY" },
+  { id: "dica_alfa_elite", text: "Desempenho excepcional! Você tá mandando muito bem na organização.", type: "REWARD" },
+  { id: "dica_zero_gasto", text: "Percebi uma baixa movimentação... que tal experimentar um 'dia de gasto zero' hoje?", type: "BRAIN" },
+  { id: "dica_diversifica", text: "Não guarde todos os ovos na mesma cesta. Diversificar é o segredo do sapo esperto!", type: "STRATEGY" },
+  { id: "dica_juros", text: "Os juros compostos são mágicos. Deixe o tempo trabalhar a favor do seu dinheiro.", type: "BRAIN" },
+  { id: "dica_liberdade", text: "Riqueza de verdade é a liberdade de escolher como você gasta o seu tempo.", type: "REWARD" },
+  { id: "dica_overclock", text: "Sua renda aumentou? Ótimo! Mas não aumente os gastos junto. Invista a diferença.", type: "STRATEGY" },
+  { id: "dica_paz", text: "Paz financeira não é ser trilionário, é dormir tranquilo sabendo que as contas fecham.", type: "BRAIN" },
+  { id: "dica_sapinho", text: "Olá! Eu sou o Mestre Dino 🐸, e tô aqui pra lembrar: pequeno ajuste hoje, grande diferença lá na frente.", type: "REWARD" },
+  { id: "dica_parceria", text: "Tô no seu canto. Toda vez que registrar um gasto, toda meta que alcançar — o Mestre Dino tá aqui torcendo!", type: "REWARD" },
+  { id: "dica_cinco_anos", text: "Onde você quer tá financeiramente daqui 5 anos? O passo de hoje leva pra esse lugar — ou não.", type: "STRATEGY" }
 ];
 
 export function MascotAssistant({ 
@@ -59,6 +64,9 @@ export function MascotAssistant({
   healthScore?: number;
   balance?: number;
 }) {
+  const { data: categoriasRes } = useSWR("/api/painel/expenses-by-category", fetcher);
+  const { data: dividasRes } = useSWR("/api/dividas", fetcher);
+
   const [currentTip, setCurrentTip] = useState<string | null>(null);
   const [isThinking, setIsThinking] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -114,27 +122,56 @@ export function MascotAssistant({
       setCurrentMood("THINKING");
 
       setTimeout(() => {
-        // 1. PRIORIDADE: SITUAÇÕES CRÍTICAS
-        if (balance < 0) {
-          selectedTip = { id: "status_estresse", text: "Detectado: Saldo em zona de estresse. Meus sensores sugerem uma infusão imediata de economia.", type: "STRATEGY" };
-        } else if (healthScore < 30) {
-          selectedTip = TIPS.find(t => t.id === "dica_zero_gasto") || null;
-        } else if (healthScore >= 95) {
-          selectedTip = TIPS.find(t => t.id === "dica_alfa_elite") || null;
-        } 
-        
-        // 2. CONTEXTO TEMPORAL (Se não houver crise)
-        if (!selectedTip) {
-          if (hour >= 5 && hour < 10) {
-             selectedTip = TIPS.find(t => t.id === "dica_hardware") || null; // Dica de "acordar" sistemas
-          } else if (hour >= 22 || hour < 5) {
-             selectedTip = TIPS.find(t => t.id === "dica_noite") || null;
-          }
+        // --- 0. SMART ENGINE (Dynamically generated tips without AI Cost) ---
+        // Pega a maior despesa (Top Categoria)
+        let topCategoryName = "";
+        let topCategoryValue = 0;
+        if (categoriasRes?.data && categoriasRes.data.length > 0) {
+           const sorted = [...categoriasRes.data].sort((a, b) => b.value - a.value);
+           if (sorted[0].value > 0) {
+              topCategoryName = sorted[0].name;
+              topCategoryValue = sorted[0].value;
+           }
         }
 
-        // 3. ALEATÓRIO (Fallback)
-        if (!selectedTip) {
-          selectedTip = TIPS[Math.floor(Math.random() * TIPS.length)];
+        // Procura dívidas perto do vencimento
+        let hasUrgentDebt = false;
+        if (dividasRes?.data && dividasRes.data.length > 0) {
+           hasUrgentDebt = dividasRes.data.some((d: any) => d.status === "PENDENTE");
+        }
+
+        // Sorteia para não ser chato repetindo a IA local sempre
+        const useSmartTip = Math.random() > 0.4;
+
+        if (useSmartTip && hasUrgentDebt && healthScore > 0) {
+            selectedTip = { id: "smart_debt", text: "🐸 O Mestre Dino botou o olho e viu: tem dívida pendente por aí! Melhor priorizar o pagamento pra não virar bola de neve.", type: "STRATEGY" };
+        } else if (useSmartTip && topCategoryName !== "" && healthScore > 0) {
+            selectedTip = { id: "smart_cat", text: `🐸 Analisei seus gastos e percebi: você tem gastado bastante com "${topCategoryName}". Vale a pena dar uma segurada?`, type: "BRAIN" };
+        } else {
+            // 1. PRIORIDADE: SITUAÇÕES CRÍTICAS E BOAS VINDAS
+            if (balance === 0 && healthScore === 0) {
+              selectedTip = { id: "status_novo", text: "Sua conta ainda não tem movimentações... Já adicionou sua primeira receita ou despesa? Comece por aí!", type: "REWARD" };
+            } else if (balance < 0) {
+              selectedTip = { id: "status_estresse", text: "Ei! Seu saldo está negativo. Não há motivo pra pânico, mas é hora de reduzir gastos.", type: "STRATEGY" };
+            } else if (healthScore > 0 && healthScore < 30) {
+              selectedTip = TIPS.find(t => t.id === "dica_zero_gasto") || null;
+            } else if (healthScore >= 95) {
+              selectedTip = TIPS.find(t => t.id === "dica_alfa_elite") || null;
+            } 
+            
+            // 2. CONTEXTO TEMPORAL (Se não houver crise)
+            if (!selectedTip) {
+              if (hour >= 5 && hour < 10) {
+                 selectedTip = TIPS.find(t => t.id === "dica_hardware") || null; // Dica de "acordar" sistemas
+              } else if (hour >= 22 || hour < 5) {
+                 selectedTip = TIPS.find(t => t.id === "dica_noite") || null;
+              }
+            }
+
+            // 3. ALEATÓRIO (Fallback)
+            if (!selectedTip) {
+              selectedTip = TIPS[Math.floor(Math.random() * TIPS.length)];
+            }
         }
 
         setCurrentTip(selectedTip.text);
@@ -159,9 +196,9 @@ export function MascotAssistant({
 
     // --- BOAS VINDAS (UMA VEZ POR LOGIN) ---
     const welcomeTimer = setTimeout(() => {
-       neuralVoice.speak("Bem-vindo de volta, Pablo! Seus sistemas financeiros estão prontos para análise.", "welcome",
+       neuralVoice.speak("Oi, seja bem-vindo de volta! Vamos ver como suas finanças estão hoje?", "welcome",
          () => {
-            setCurrentTip("Bem-vindo de volta, Pablo!");
+            setCurrentTip("Oi! O Mestre Dino chegou 🐸");
             setShow(true);
             setIsSpeaking(true);
          },
@@ -207,8 +244,8 @@ export function MascotAssistant({
                       <Zap className="w-4 h-4 text-emerald-400" />
                    </div>
                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Reflexão Neural</span>
-                      <span className="text-[8px] font-bold text-emerald-500/40 uppercase tracking-widest leading-none">Status: Sincronizado</span>
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">🐸 Mestre Dino diz</span>
+                      <span className="text-[8px] font-bold text-emerald-500/40 uppercase tracking-widest leading-none">Conselho do sapo</span>
                    </div>
                    {isSpeaking && (
                      <div className="flex items-center gap-0.5 ml-auto">
@@ -228,7 +265,7 @@ export function MascotAssistant({
                       exit={{ opacity: 0 }}
                       className="flex items-center gap-2 py-2"
                     >
-                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest animate-pulse">Processando_Datos...</div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest animate-pulse">Mestre Dino pensando... 🐸</div>
                       <div className="flex gap-1">
                         <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                         <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
@@ -249,8 +286,8 @@ export function MascotAssistant({
 
                <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-3">
                   <div className="flex flex-col">
-                    <span className="text-[9px] text-emerald-400 font-black tracking-[0.2em] uppercase">Mestre Sábio</span>
-                    <span className="text-[7px] text-slate-600 font-black uppercase">v2.0_Secure_Stream</span>
+                    <span className="text-[9px] text-emerald-400 font-black tracking-[0.2em] uppercase">Mestre Dino 🐸</span>
+                    <span className="text-[7px] text-slate-600 font-black uppercase">O sapo conselheiro</span>
                   </div>
                   <button 
                     onClick={() => setShow(false)}

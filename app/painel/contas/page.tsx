@@ -207,6 +207,13 @@ function AccountsPageContent() {
     }
   }, [searchParams, router]);
 
+  // Listener para Neuro Launcher abrir Pluggy remotamente
+  useEffect(() => {
+    const handleOpen = () => setShowPluggy(true);
+    window.addEventListener("open-pluggy-connect", handleOpen);
+    return () => window.removeEventListener("open-pluggy-connect", handleOpen);
+  }, []);
+
   // ============================================
   // HANDLERS
   // ============================================

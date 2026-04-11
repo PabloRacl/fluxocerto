@@ -14,16 +14,16 @@ interface MascotInventoryProps {
 }
 
 const ITEMS = [
-  { level: 5, icon: "🕶️", name: "Óculos de Operador", desc: "Visão analítica para detectar tendências escondidas." },
-  { level: 10, icon: "👔", name: "Gravata de CEO", desc: "A postura correta para lidar com grandes patrimônios." },
-  { level: 15, icon: "🏅", name: "Medalha de Honra", desc: "Reconhecimento por manter o fluxo positivo por 15 ciclos." },
-  { level: 20, icon: "⌚", name: "Relógio de Precisão", desc: "Nunca perca um vencimento com o cronômetro neural." },
-  { level: 25, icon: "🎩", name: "Cartola de Prestigio", desc: "Elegância máxima para quem domina os juros compostos." },
-  { level: 30, icon: "👑", name: "Coroa de Mestre", desc: "Soberania total sobre suas finanças e investimentos." },
-  { level: 35, icon: "💎", name: "Diamante de Riqueza", desc: "O auge da solidez financeira alcançado." },
-  { level: 40, icon: "🔥", name: "Aura Neural", desc: "Energia pura emanando do seu sucesso financeiro." },
-  { level: 45, icon: "💸", name: "Chuva de Liquidez", desc: "Recursos fluindo como nunca antes." },
-  { level: 50, icon: "🌟", name: "Estrela Guia", desc: "Você se tornou uma lenda no FluxoCerto." },
+  { level: 5, icon: "🕶️", name: "Óculos de Operador", desc: "Quem enxerga bem os números toma as melhores decisões. Vista esses!" },
+  { level: 10, icon: "👔", name: "Gravata de CEO", desc: "Você começa a pensar diferente quando as finanças estão em ordem. Esse acessório é prova disso." },
+  { level: 15, icon: "🏅", name: "Medalha de Consistência", desc: "15 níveis de compromisso com seu dinheiro. Isso não tem preço." },
+  { level: 20, icon: "⌚", name: "Relógio do Tempo Certo", desc: "Nunca mais perca um vencimento. O tempo também é recurso, o Dino sabe." },
+  { level: 25, icon: "🎩", name: "Cartola do Patrão", desc: "Quem domina juros compostos merece um look especial. Parabéns!" },
+  { level: 30, icon: "👑", name: "Coroa do Mestre Financeiro", desc: "Nível 30. Você sabe mais sobre dinheiro do que 90% das pessoas. De verdade." },
+  { level: 35, icon: "💎", name: "Diamante da Solidez", desc: "Seu patrimônio ficou mais forte do que pedra. Isso é resultado de escolhas consistentes." },
+  { level: 40, icon: "🔥", name: "Chama de Determinção", desc: "Nível 40: a maioria desiste muito antes. Você ficou. Isso diz tudo." },
+  { level: 45, icon: "💸", name: "Chuva de Abundância", desc: "Quando o hábito financeiro vira cultura, o dinheiro flui diferente." },
+  { level: 50, icon: "🌟", name: "Estrela Lendária", desc: "Nível 50. Você é uma referência no FluxoCerto. Obrigado por estar aqui." },
 ];
 
 export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps) {
@@ -48,7 +48,7 @@ export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps
          if (item) {
            mascotEvents.emit({
              type: 'CUSTOM',
-             message: `Análise concluída: Item de nível ${itemLevel} sincronizado com sucesso!`,
+             message: `Legal! Você equipou o item de nível ${itemLevel}. Tá ficando muito mais completo! 🐸`,
              mood: 'HAPPY'
            });
          }
@@ -63,8 +63,8 @@ export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps
     <AnimatedModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Inventário do Guardião"
-      subtitle="Sincronização de equipamentos e conquistas neurais"
+      title="Guardarão do Mestre Dino"
+      subtitle="Cada nível novo desbloqueia um acessório pro sapinho aprimorar. Sua jornada, seus troféus!"
       icon={<Trophy className="w-6 h-6 text-emerald-400" />}
       theme="emerald"
       maxWidth="lg"
@@ -104,7 +104,7 @@ export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps
               <span className="text-xs font-black text-white tracking-[0.2em] uppercase">Status: Nível {level}</span>
             </div>
             <p className="text-[11px] text-slate-500 max-w-[240px] mt-2 font-medium italic leading-relaxed">
-              "Cada upgrade em seu patrimônio desbloqueia novas capacidades no meu núcleo processador."
+              "Cada fase que você supera aqui fora, o Mestre Dino veste um item novo. A gente cresce junto! 🐸"
             </p>
           </div>
 

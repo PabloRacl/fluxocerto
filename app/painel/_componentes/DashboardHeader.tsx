@@ -64,7 +64,7 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
           <div className="flex-1 w-full max-w-xl mx-auto relative group" data-tour="mascote">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/10 via-transparent to-emerald-500/10 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
             
-            <div className="relative flex flex-col items-center bg-slate-900/30 backdrop-blur-xl border border-white/5 rounded-2xl p-2 sm:p-3 overflow-hidden shadow-2xl min-h-[60px] sm:min-h-[75px] justify-center">
+            <div className="relative flex items-center bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-2xl px-3 py-2 overflow-hidden shadow-2xl min-h-0 justify-center">
               
               {/* Brilho Neural Dinâmico de Fundo */}
               <motion.div 
@@ -86,20 +86,20 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="flex items-center gap-4"
+                    className="flex items-center gap-3"
                   >
                     {/* Ícone com Aura */}
                     <div className="relative flex-shrink-0">
                         <div className={`absolute inset-0 blur-lg opacity-40 animate-pulse ${currentTip.color.replace('text-', 'bg-')}`} />
-                        <div className={`relative p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 shadow-inner ${currentTip.color}`}>
+                        <div className={`relative p-2 rounded-xl bg-slate-950/60 border border-slate-800 shadow-inner ${currentTip.color}`}>
                             <TipIcon className="w-5 h-5" />
                         </div>
                     </div>
 
                     <div className="flex-1 min-w-0 pr-12">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-[10px] uppercase tracking-[0.2em] font-black opacity-50 ${currentTip.color}`}>
-                          Insight Neural
+                        <span className={`text-[10px] uppercase tracking-[0.2em] font-black opacity-60 ${currentTip.color}`}>
+                          🐸 Mestre Dino diz
                         </span>
                         <div className="h-px flex-1 bg-gradient-to-r from-slate-700 to-transparent" />
                       </div>
