@@ -27,7 +27,7 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
   const { data: summaryData } = useSWR(isOpen ? "/api/painel/resumo" : null, (url) => api.get<any>(url));
   
   // Tratar os dados ou cair no fallback seguro
-  const totalBalance = summaryData?.resumo?.balance || 0;
+  const totalBalance = summaryData?.totalBalance || 0;
   
   // Usaremos um mock refinado APENAS se a API não retornar boletos ou faturas, para manter a aura neuro, 
   // mas vamos condicionar isso ao retorno real
@@ -48,24 +48,18 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
     return () => document.removeEventListener("keydown", down);
   }, [isOpen, onClose]);
 
-  // Carregar alertas simulados ou reais no mount para a IA do launcher
+  // Carregar alertas reais
   useEffect(() => {
     if (isOpen) {
-      if (summaryData?.transacoes) {
-        // Logica para gerar alertas reais baseados nas transações pendentes ou atrasadas
-        const transacoesAtrasadas = summaryData.transacoes.filter((t: any) => t.isPaid === false && new Date(t.date) < new Date());
-        
-        if (transacoesAtrasadas.length > 0) {
-           setAlerts([{ id: 1, type: "OVERDUE", bank: "Aviso do Sistema", amount: transacoesAtrasadas.reduce((sum: number, t: any) => sum + t.amount, 0), dueDate: "Atrasado", critical: true }]);
-        } else {
-           setAlerts([{ id: 1, type: "LIMIT", bank: "Saúde Financeira", message: "Fluxo sob controle", critical: false }]);
-        }
+      if (summaryData && summaryData.healthStatus) {
+         // O Resumo já contém `healthStatus` ('NORMAL', 'CRITICO' ou 'INDISPONIVEL')
+         if (summaryData.healthScore && summaryData.healthScore < 50) {
+           setAlerts([{ id: 1, type: "HEALTH", bank: "Saúde Financeira", message: "Seu score de saúde financeira está baixo! Recomendamos analisar os gastos mensais.", critical: true }]);
+         } else {
+           setAlerts([{ id: 2, type: "LIMIT", bank: "Saúde Financeira", message: "Fluxo e Score saudáveis.", critical: false }]);
+         }
       } else {
-         // Fallback Visual até backend ter dados reais de contas
-         setAlerts([
-            { id: 1, type: "INVOICE", bank: "Nubank", amount: 154090, dueDate: "Amanhã", critical: true },
-            { id: 2, type: "LIMIT", bank: "Itaú", message: "Limite saudável (15%)", critical: false },
-         ]);
+         setAlerts([]); // Sem dados, arrumar array vazia
       }
     }
   }, [isOpen, summaryData]);
