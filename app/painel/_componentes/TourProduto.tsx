@@ -112,12 +112,10 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
     saveStatus("COMPLETED");
   };
 
-  // LOG de renderização
   console.log("TourProduto [RENDER]: status =", status, "tourStarted =", tourStarted, "targetRect =", !!targetRect);
 
   return (
-    <AnimatePresence>
-      {/* 1. Modal de Escolha Inicial */}
+    <AnimatePresence mode="popLayout">
       {!tourStarted && status === "PENDING" && (
         <motion.div
           key="modal-inicial"
@@ -182,7 +180,6 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
         </motion.div>
       )}
 
-      {/* 2. Overlay de Escurecimento (Spotlight Neural) */}
       {tourStarted && (
         <motion.div
           key="spotlight-overlay"
@@ -210,13 +207,11 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
                   />
                 )}
               </mask>
-              {/* Filtro de Brilho Neural */}
               <filter id="glow">
                 <feGaussianBlur stdDeviation="4" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
             </defs>
-            {/* O Fundo escuro real */}
             <rect
               x="0"
               y="0"
@@ -226,7 +221,6 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
               mask="url(#spotlight-mask)"
               className="pointer-events-auto"
             />
-            {/* O Anel de Brilho em volta do elemento */}
             {targetRect && (
               <motion.rect
                 initial={false}
@@ -249,7 +243,6 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
         </motion.div>
       )}
 
-      {/* 3. Tour Em Execução (Floating Card) */}
       {tourStarted && (
         <motion.div
            key="tour-floating-card"
@@ -257,7 +250,6 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
            animate={{ 
              opacity: 1, 
              scale: 1,
-             // Se houver um target, tenta posicionar o card perto, senão no canto
              y: targetRect ? 0 : 0 
            }}
            exit={{ opacity: 0, scale: 0.9 }}
@@ -268,7 +260,7 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
            }`}
            style={targetRect ? {
              top: targetRect.top + targetRect.height + 20 > window.innerHeight - 200
-               ? targetRect.top - 200 // Se não couber embaixo, coloca em cima
+               ? targetRect.top - 200
                : targetRect.top + targetRect.height + 20,
              left: Math.max(20, Math.min(window.innerWidth - 340, targetRect.left + (targetRect.width / 2) - 160))
            } : {}}
@@ -307,6 +299,5 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
         </motion.div>
       )}
     </AnimatePresence>
-
   );
 }
