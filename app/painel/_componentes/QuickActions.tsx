@@ -65,7 +65,7 @@ export function QuickActions({ onNewTransaction }: QuickActionsProps) {
       title: "Categorias",
       description: "Organize suas transações",
       icon: PieChart,
-      color: "purple",
+      color: "cyan",
       href: "/painel/categorias",
       customAction: () => router.push("/painel/categorias/nova"),
       tooltipTitle: "Categorias Personalizadas",
@@ -161,13 +161,12 @@ export function QuickActions({ onNewTransaction }: QuickActionsProps) {
   const colorStyles: Record<string, { bg: string; text: string; border: string; glow: string; glowLine: string }> = {
     emerald: { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20", glow: "bg-emerald-500", glowLine: "bg-emerald-500/50" },
     blue: { bg: "bg-blue-500/10", text: "text-blue-400", border: "border-blue-500/20", glow: "bg-blue-500", glowLine: "bg-blue-500/50" },
-    purple: { bg: "bg-purple-500/10", text: "text-purple-400", border: "border-purple-500/20", glow: "bg-purple-500", glowLine: "bg-purple-500/50" },
+    cyan: { bg: "bg-cyan-500/10", text: "text-cyan-400", border: "border-cyan-500/20", glow: "bg-cyan-500", glowLine: "bg-cyan-500/50" },
     red: { bg: "bg-red-500/10", text: "text-red-400", border: "border-red-500/20", glow: "bg-red-500", glowLine: "bg-red-500/50" },
     orange: { bg: "bg-orange-500/10", text: "text-orange-400", border: "border-orange-500/20", glow: "bg-orange-500", glowLine: "bg-orange-500/50" },
     amber: { bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20", glow: "bg-amber-500", glowLine: "bg-amber-500/50" },
     indigo: { bg: "bg-indigo-500/10", text: "text-indigo-400", border: "border-indigo-500/20", glow: "bg-indigo-500", glowLine: "bg-indigo-500/50" },
     slate: { bg: "bg-slate-500/10", text: "text-slate-300", border: "border-slate-500/20", glow: "bg-slate-500", glowLine: "bg-slate-500/50" },
-    cyan: { bg: "bg-cyan-500/10", text: "text-cyan-400", border: "border-cyan-500/20", glow: "bg-cyan-500", glowLine: "bg-cyan-500/50" },
     pink: { bg: "bg-pink-500/10", text: "text-pink-400", border: "border-pink-500/20", glow: "bg-pink-500", glowLine: "bg-pink-500/50" },
   };
 

@@ -128,7 +128,7 @@ export function InsightsPanel({ userId, userLevel = 1 }: { userId: string; userL
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Insights Automáticos</span>
           </div>
           <p className={`text-sm font-bold text-white italic truncate`}>
-            "{mascotPhrase}"
+            &quot;{mascotPhrase}&quot;
           </p>
         </div>
 

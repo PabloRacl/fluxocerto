@@ -82,7 +82,7 @@ export default function AdminDashboardPage() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-center md:text-left">
             <h1 className="text-3xl sm:text-4xl font-black text-white flex items-center gap-3 justify-center md:justify-start">
-              Controle <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">Global</span>
+              Controle <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-500">Global</span>
             </h1>
             <p className="text-sm font-medium text-slate-400 mt-2 max-w-lg">
               Painel de superusuário para gestão de identidades, alteração de planos e moderação do FluxoCerto.

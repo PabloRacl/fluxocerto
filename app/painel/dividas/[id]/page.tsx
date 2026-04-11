@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
@@ -82,17 +82,7 @@ export default function DetalhesDividaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/entrar");
-      return;
-    }
-    if (status === "authenticated" && id) {
-      fetchDetalhe();
-    }
-  }, [status, id]);
-
-  const fetchDetalhe = async () => {
+  const fetchDetalhe = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(`/api/dividas/${id}`, { credentials: "include" });
@@ -107,7 +97,17 @@ export default function DetalhesDividaPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/entrar");
+      return;
+    }
+    if (status === "authenticated" && id) {
+      fetchDetalhe();
+    }
+  }, [status, id, fetchDetalhe, router]);
 
   const handlePayInstallment = async (qtd: number = 1) => {
     if (!confirm(`Registrar pagamento de ${qtd} parcela(s)?`)) return;

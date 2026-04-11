@@ -23,8 +23,17 @@ Priority Order:
 import sys
 import subprocess
 import argparse
+import io
 from pathlib import Path
 from typing import List, Tuple, Optional
+
+# Force UTF-8 encoding for stdout/stderr to avoid UnicodeEncodeError on Windows
+if sys.platform == 'win32':
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+    except Exception:
+        pass # Fallback to default if wrapping fails
 
 # ANSI colors for terminal output
 class Colors:
@@ -38,9 +47,18 @@ class Colors:
     BOLD = '\033[1m'
 
 def print_header(text: str):
-    print(f"\n{Colors.BOLD}{Colors.CYAN}{'='*60}{Colors.ENDC}")
-    print(f"{Colors.BOLD}{Colors.CYAN}{text.center(60)}{Colors.ENDC}")
-    print(f"{Colors.BOLD}{Colors.CYAN}{'='*60}{Colors.ENDC}\n")
+    # Some terminals fail with emojis, we'll try to keep them but be safe
+    try:
+        print(f"\n{Colors.BOLD}{Colors.CYAN}{'='*60}{Colors.ENDC}")
+        print(f"{Colors.BOLD}{Colors.CYAN}{text.center(60)}{Colors.ENDC}")
+        print(f"{Colors.BOLD}{Colors.CYAN}{'='*60}{Colors.ENDC}\n")
+    except UnicodeEncodeError:
+        # Fallback without emojis if they still cause issues
+        text_no_emoji = text.encode('ascii', 'ignore').decode('ascii')
+        print(f"\n{'='*60}")
+        print(f"{text_no_emoji.center(60)}")
+        print(f"{'='*60}\n")
+
 
 def print_step(text: str):
     print(f"{Colors.BOLD}{Colors.BLUE}🔄 {text}{Colors.ENDC}")

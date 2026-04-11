@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
   Package, 
   AlertTriangle, 
@@ -41,11 +41,7 @@ export default function EstoquePage() {
   const [search, setSearch] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    fetchEstoque();
-  }, [tipo]);
-
-  const fetchEstoque = async () => {
+  const fetchEstoque = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(`/api/estoque?tipo=${tipo}`);
@@ -59,8 +55,11 @@ export default function EstoquePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tipo]);
 
+  useEffect(() => {
+    fetchEstoque();
+  }, [fetchEstoque]);
   const handleUpdateQuantity = async (id: string, newQty: number) => {
     if (newQty < 0) return;
     try {

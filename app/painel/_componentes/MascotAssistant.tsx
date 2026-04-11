@@ -220,7 +220,7 @@ export function MascotAssistant({
       clearTimeout(initialTimer);
       clearInterval(interval);
     };
-  }, [healthScore, balance]);
+  }, [healthScore, balance, categoriasRes?.data, dividasRes?.data]);
 
   return (
     <AnimatePresence>
@@ -279,7 +279,7 @@ export function MascotAssistant({
                       animate={{ opacity: 1, y: 0 }}
                       className="text-[13px] font-bold text-white italic leading-relaxed tracking-tight"
                     >
-                      "{currentTip}"
+                      &quot;{currentTip}&quot;
                     </motion.p>
                   )}
                 </AnimatePresence>

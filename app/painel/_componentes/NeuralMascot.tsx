@@ -93,7 +93,7 @@ export function NeuralMascot({
         <motion.div 
           animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5], rotate: -360 }}
           transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-[-40%] rounded-full blur-3xl pointer-events-none bg-gradient-to-tr from-purple-600 via-fuchsia-500 to-cyan-400"
+          className="absolute inset-[-40%] rounded-full blur-3xl pointer-events-none bg-gradient-to-tr from-cyan-600 via-fuchsia-500 to-cyan-400"
         />
       ) : level >= 40 ? (
         <motion.div 

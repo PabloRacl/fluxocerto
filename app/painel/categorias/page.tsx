@@ -54,18 +54,6 @@ export default function CategoriesPage() {
   const [parentCategories, setParentCategories] = useState<Category[]>([]);
 
   // Buscar categorias ao carregar a página
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/entrar");
-      return;
-    }
-
-    if (status === "authenticated") {
-      fetchCategories();
-      fetchParentCategories();
-    }
-  }, [status, router, filterType, showArchived]);
-
   const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
@@ -98,7 +86,7 @@ export default function CategoriesPage() {
   }, [filterType, showArchived]);
 
   // ✅ BUSCAR CATEGORIAS PRINCIPAIS PARA O MODAL
-  const fetchParentCategories = async () => {
+  const fetchParentCategories = useCallback(async () => {
     try {
       const res = await fetch("/api/categorias", { credentials: "include" });
       if (res.ok) {
@@ -113,7 +101,19 @@ export default function CategoriesPage() {
     } catch (err) {
       console.error("Erro ao buscar categorias pai:", err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/entrar");
+      return;
+    }
+
+    if (status === "authenticated") {
+      fetchCategories();
+      fetchParentCategories();
+    }
+  }, [status, router, fetchCategories, fetchParentCategories]);
 
   // ✅ ARQUIVAR/DESARQUIVAR CATEGORIA
   const handleArchive = async (

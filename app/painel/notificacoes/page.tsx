@@ -44,8 +44,8 @@ const TIPO_ICONS: Record<string, any> = {
   },
   RENOVACAO_ASSINATURA: {
     icon: RefreshCw,
-    color: "text-purple-400",
-    bg: "bg-purple-500/20",
+    color: "text-cyan-400",
+    bg: "bg-cyan-500/20",
   },
   PROGRESSO_META: {
     icon: Target,

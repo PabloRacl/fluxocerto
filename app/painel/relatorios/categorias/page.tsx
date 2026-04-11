@@ -38,7 +38,7 @@ const formatCurrency = (value: number) => {
 const CHART_COLORS = [
   "#10B981",
   "#3B82F6",
-  "#8B5CF6",
+  "#06B6D4",
   "#F59E0B",
   "#EF4444",
   "#EC4899",

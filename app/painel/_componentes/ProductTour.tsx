@@ -12,21 +12,21 @@ type TourStep = {
 };
 
 const BASIC_STEPS: TourStep[] = [
-  { elementSelector: "body", title: "Bem-vindo ao FluxoCerto!", content: "Este é o seu painel de controle financeiro. Vamos fazer um tour super rápido pra você dominar a plataforma." },
-  { elementSelector: "[data-tour='resumo']", title: "Visão Macro", content: "Aqui no topo você confere o saldo do momento e a saúde geral do caixa. Tudo muda aqui conforme você lança suas contas." },
-  { elementSelector: "[data-tour='mascote']", title: "Seu Parceiro Especial", content: "O Mestre Dino (eu!) fico sempre na área de cima estudando seus gastos para jogar dicas de mestre e te salvar de dívidas chatas." },
-  { elementSelector: "[data-tour='menu-contas']", title: "Onde Manda a Grana", content: "Lá no menu lateral (Contas/Transações) você centraliza suas contas bancárias e registra suas movimentações pra atualizar os gráficos!" },
+  { elementSelector: "body", title: "Fala, Mestre!", content: "O Dino tá na área (🐸). Este é o seu novo QG Financeiro. Prepare-se para dominar seu dinheiro com a visão de um estrategista!" },
+  { elementSelector: "[data-tour='resumo']", title: "HUD de Saldo Real-Time", content: "Aqui o fluxo nunca para! Acompanhe seu patrimônio total e saúde do caixa em tempo real. Se os números subirem, o Dino pula de alegria!" },
+  { elementSelector: "[data-tour='mascote']", title: "Protocolo Dino-Mentor", content: "Eu fico de olho em cada centavo. Se eu notar uma anomalia nos seus gastos ou uma oportunidade de poupar, eu te aviso na hora!" },
+  { elementSelector: "[data-tour='menu-contas']", title: "Onde Manda a Grana", content: "No menu lateral, você gerencia suas 'bases de operação' (contas bancárias e cartões). Mantenha-as conectadas para o HUD brilhar!" },
 ];
 
 const DETAILED_STEPS: TourStep[] = [
   ...BASIC_STEPS,
-  { elementSelector: "[data-tour='chart-evolucao']", title: "Balanço do Mês", content: "Sabe a clássica ansiedade de 'Será que gastei mais do que ganhei?' Esse gráfico responde isso na hora, cruzando o que entrou com o que saiu." },
-  { elementSelector: "[data-tour='chart-categorias']", title: "Para onde o dinheiro voou?", content: "A famosa pizza das categorias. Passe o mouse para descobrir exatamente em que tipo de conta você anda gastando mais." },
-  { elementSelector: "[data-tour='chart-projecao']", title: "Sapo Futurista", content: "Se você mantiver os hábitos de hoje, como fica sua conta daqui 90 dias? Aqui a gente prevê o futuro pra não ter surpresas." },
-  { elementSelector: "[data-tour='insights']", title: "Diagnóstico e Saúde", content: "O Mestre Dino dá uma nota para a sua disciplina! Fique de olho também nos Alertas de contas que vencem hoje." },
-  { elementSelector: "[data-tour='menu-compras']", title: "Preguiça de Digitar?", content: "Use o módulo de Compras do menu para escanear QR Codes ou Notas Fiscais e a gente preenche e categoriza as comprinhas do supermercado automaticamente." },
-  { elementSelector: "[data-tour='menu-metas']", title: "Quais seus planos?", content: "Uma viagem? Trocar de moto? Criando uma meta, a gente te avisa de quanto você tem guardado e o quanto falta atingir." },
-  { elementSelector: "[data-tour='menu-relatorios']", title: "Relatórios Ninja", content: "Precisou puxar um resumo do ano inteiro só de despesas do carro? Em Relatórios você cruza filtros avançados e extrai direto em Excel/PDF." },
+  { elementSelector: "[data-tour='chart-evolucao']", title: "Matriz de Evolução", content: "Sabe aquela dúvida se gastou mais do que devia? Esse gráfico cruza tudo e mostra se você está em ascensão ou se precisa de manobra de correção." },
+  { elementSelector: "[data-tour='chart-categorias']", title: "Raio-X de Gastos", content: "Passe o cursor por aqui e descubra qual categoria está 'vampirizando' seu saldo. Identificar é o primeiro passo para o controle total." },
+  { elementSelector: "[data-tour='chart-projecao']", title: "Previsão Futurista", content: "Com base no seu hábito atual, como estará sua conta daqui 90 dias? Eu calculo o futuro para você não ter surpresas desagradáveis." },
+  { elementSelector: "[data-tour='insights']", title: "Diagnóstico Neural", content: "Aqui você recebe minha nota final de disciplina. Também monitore os alertas de vencimentos para a multa não comer seu lucro!" },
+  { elementSelector: "[data-tour='menu-compras']", title: "Escaneamento de Compras", content: "Preguiça de digitar? Use minha visão térmica para ler QR Codes de notas fiscais e eu lanço tudo categorizado para você." },
+  { elementSelector: "[data-tour='menu-metas']", title: "Seus Sonhos no Alvo", content: "Viagem? Reserva? Trocar de máquina? Crie metas e eu te direi exatamente o quão perto você está de atingir cada objetivo." },
+  { elementSelector: "[data-tour='menu-relatorios']", title: "Relatórios de Elite", content: "Precisa de dados específicos para seu contador ou excel? Aqui você filtra como um ninja e exporta tudo em segundos." },
 ];
 
 interface ProductTourProps {
@@ -38,6 +38,10 @@ export function ProductTour({ initialStatus }: ProductTourProps) {
   const [tourType, setTourType] = useState<"BASIC" | "DETAILED" | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [tourStarted, setTourStarted] = useState(false);
+  const [targetRect, setTargetRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+
+  const steps = tourType === "BASIC" ? BASIC_STEPS : DETAILED_STEPS;
+  const currentDetails = steps[currentStep];
 
   useEffect(() => {
     console.log("ProductTour [DEBUG]: Status inicial:", initialStatus);
@@ -45,6 +49,45 @@ export function ProductTour({ initialStatus }: ProductTourProps) {
       setStatus(initialStatus);
     }
   }, [initialStatus]);
+
+  // Efeito para buscar e rastrear o elemento em foco
+  useEffect(() => {
+    if (tourStarted && currentDetails?.elementSelector) {
+      const updateRect = () => {
+        if (currentDetails.elementSelector === "body") {
+          setTargetRect(null); // Sem spotlight para o passo inicial global
+          return;
+        }
+
+        const element = document.querySelector(currentDetails.elementSelector);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          
+          // Pequeno delay para esperar o scroll terminar e pegar a posição correta
+          setTimeout(() => {
+            const rect = element.getBoundingClientRect();
+            setTargetRect({
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height,
+            });
+          }, 300);
+        } else {
+          setTargetRect(null);
+        }
+      };
+
+      updateRect();
+      window.addEventListener("resize", updateRect);
+      window.addEventListener("scroll", updateRect);
+      
+      return () => {
+        window.removeEventListener("resize", updateRect);
+        window.removeEventListener("scroll", updateRect);
+      };
+    }
+  }, [currentStep, tourStarted, currentDetails]);
 
   const saveStatus = async (newStatus: string) => {
     setStatus(newStatus);
@@ -65,14 +108,12 @@ export function ProductTour({ initialStatus }: ProductTourProps) {
 
   const endTour = () => {
     setTourStarted(false);
+    setTargetRect(null);
     saveStatus("COMPLETED");
   };
 
-  const steps = tourType === "BASIC" ? BASIC_STEPS : DETAILED_STEPS;
-  const currentDetails = steps[currentStep];
-
   // LOG de renderização
-  console.log("ProductTour [RENDER]: status =", status, "tourStarted =", tourStarted);
+  console.log("ProductTour [RENDER]: status =", status, "tourStarted =", tourStarted, "targetRect =", !!targetRect);
 
   return (
     <AnimatePresence>
@@ -140,13 +181,69 @@ export function ProductTour({ initialStatus }: ProductTourProps) {
         </motion.div>
       )}
 
-      {/* 2. Tour Em Execução (Bottom Right Card) */}
+      {/* 2. Overlay de Escurecimento (Spotlight) */}
       {tourStarted && (
         <motion.div
-           initial={{ opacity: 0, y: 50 }}
-           animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[9998] pointer-events-none"
+        >
+          <svg className="w-full h-full">
+            <defs>
+              <mask id="spotlight-mask">
+                <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                {targetRect && (
+                  <motion.rect
+                    initial={false}
+                    animate={{
+                      x: targetRect.left - 10,
+                      y: targetRect.top - 10,
+                      width: targetRect.width + 20,
+                      height: targetRect.height + 20,
+                    }}
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    rx="12"
+                    fill="black"
+                  />
+                )}
+              </mask>
+            </defs>
+            <rect
+              x="0"
+              y="0"
+              width="100%"
+              height="100%"
+              fill="rgba(0,0,0,0.8)"
+              mask="url(#spotlight-mask)"
+              className="pointer-events-auto transition-colors duration-500"
+            />
+          </svg>
+        </motion.div>
+      )}
+
+      {/* 3. Tour Em Execução (Floating Card) */}
+      {tourStarted && (
+        <motion.div
+           initial={{ opacity: 0, scale: 0.9 }}
+           animate={{ 
+             opacity: 1, 
+             scale: 1,
+             // Se houver um target, tenta posicionar o card perto, senão no canto
+             y: targetRect ? 0 : 0 
+           }}
            exit={{ opacity: 0, scale: 0.9 }}
-           className="fixed bottom-6 right-6 z-[9999] w-80 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-5"
+           className={`fixed z-[9999] w-80 bg-slate-900 border border-slate-700 shadow-2xl p-5 ${
+             targetRect 
+               ? "rounded-2xl" 
+               : "bottom-6 right-6 rounded-2xl"
+           }`}
+           style={targetRect ? {
+             top: targetRect.top + targetRect.height + 20 > window.innerHeight - 200
+               ? targetRect.top - 200 // Se não couber embaixo, coloca em cima
+               : targetRect.top + targetRect.height + 20,
+             left: Math.max(20, Math.min(window.innerWidth - 340, targetRect.left + (targetRect.width / 2) - 160))
+           } : {}}
         >
            <div className="flex justify-between items-start mb-3">
              <div className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
@@ -182,5 +279,6 @@ export function ProductTour({ initialStatus }: ProductTourProps) {
         </motion.div>
       )}
     </AnimatePresence>
+
   );
 }

@@ -104,7 +104,7 @@ export function MascotInventory({ isOpen, onClose, level }: MascotInventoryProps
               <span className="text-xs font-black text-white tracking-[0.2em] uppercase">Status: Nível {level}</span>
             </div>
             <p className="text-[11px] text-slate-500 max-w-[240px] mt-2 font-medium italic leading-relaxed">
-              "Cada fase que você supera aqui fora, o Mestre Dino veste um item novo. A gente cresce junto! 🐸"
+              &quot;Cada fase que você supera aqui fora, o Mestre Dino veste um item novo. A gente cresce junto! 🐸&quot;
             </p>
           </div>
 

@@ -136,7 +136,7 @@ export function ExpensesByCategoryChart({
             { name: "Alimentação", value: 150000, color: "#F59E0B", percentage: 30 },
             { name: "Moradia", value: 120000, color: "#3B82F6", percentage: 24 },
             { name: "Transporte", value: 80000, color: "#10B981", percentage: 16 },
-            { name: "Lazer", value: 50000, color: "#8B5CF6", percentage: 10 },
+            { name: "Lazer", value: 50000, color: "#06B6D4", percentage: 10 },
             { name: "Saúde", value: 40000, color: "#EF4444", percentage: 8 },
             { name: "Outros", value: 60000, color: "#EC4899", percentage: 12 },
           ].sort((a, b) => b.value - a.value),

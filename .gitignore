@@ -25,6 +25,33 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Dependencies
+node_modules
+.next
+.out
+
+# Environment
+.env
+.env.local
+.env*.local
+
+# IDE e Editor
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
 # Prisma
 .prisma
 
@@ -33,4 +60,8 @@ uploadthing/*
 
 # Coverage
 coverage
-.nyc_outputnul
+.nyc_output
+
+# Temporary Files
+scratch/
+deploy-plan.md

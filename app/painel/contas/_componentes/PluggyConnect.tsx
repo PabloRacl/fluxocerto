@@ -43,7 +43,7 @@ export function PluggyConnect({ onSuccess, onClose }: PluggyConnectProps) {
     }
 
     fetchToken();
-  }, []);
+  }, [onClose]);
 
   const initPluggy = () => {
     if (token && window.PluggyConnect) {

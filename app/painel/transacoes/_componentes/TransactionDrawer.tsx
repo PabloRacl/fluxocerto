@@ -254,7 +254,7 @@ export function TransactionDrawer({
     if (open && !hasLoadedData) {
       fetchAccountsAndCategories();
     }
-  }, [open]);
+  }, [open, hasLoadedData, fetchAccountsAndCategories]);
 
   // ============================================
   // RESETAR HASLOADED QUANDO FECHAR

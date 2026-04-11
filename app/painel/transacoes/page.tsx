@@ -364,36 +364,12 @@ function TransactionsPageContent() {
   }, [status]);
 
   // ============================================
-  // EFFECT PARA ABRIR DRAWER VIA URL
-  // ============================================
-  useEffect(() => {
-    if (searchParams.get("drawer") === "open") {
-      const type = searchParams.get("type") as "INCOME" | "EXPENSE" | undefined;
-      handleOpenCreate(type);
-      const url = new URL(window.location.href);
-      url.searchParams.delete("drawer");
-      url.searchParams.delete("type");
-      window.history.replaceState({}, "", url.toString());
-    }
-  }, [searchParams]);
-
-  // ============================================
-  // EFFECTS
-  // ============================================
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchTransactions();
-      fetchFilters();
-    }
-  }, [status, fetchTransactions, fetchFilters]);
-
-  // ============================================
   // HANDLERS DO MODAL FUTURISTA ✅ NOVO
   // ============================================
-  const handleOpenModal = (type?: "INCOME" | "EXPENSE") => {
+  const handleOpenModal = useCallback((type?: "INCOME" | "EXPENSE") => {
     setModalInitialType(type);
     setShowNewTransactionModal(true);
-  };
+  }, []);
 
   const handleModalClose = () => {
     setShowNewTransactionModal(false);
@@ -407,10 +383,31 @@ function TransactionsPageContent() {
   // ============================================
   // HANDLERS DO DRAWER (mantido como fallback)
   // ============================================
-  const handleOpenCreate = (type?: "INCOME" | "EXPENSE") => {
+  const handleOpenCreate = useCallback((type?: "INCOME" | "EXPENSE") => {
     // Agora sempre delega a criação para o novo modal
     handleOpenModal(type);
-  };
+  }, [handleOpenModal]);
+
+  useEffect(() => {
+    if (searchParams.get("drawer") === "open") {
+      const type = searchParams.get("type") as "INCOME" | "EXPENSE" | undefined;
+      handleOpenCreate(type);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("drawer");
+      url.searchParams.delete("type");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams, handleOpenCreate]);
+
+  // ============================================
+  // EFFECTS
+  // ============================================
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchTransactions();
+      fetchFilters();
+    }
+  }, [status, fetchTransactions, fetchFilters]);
 
   const handleOpenEdit = (transaction: Transaction) => {
     setDrawerMode("edit");

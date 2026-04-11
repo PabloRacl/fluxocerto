@@ -426,7 +426,7 @@ function RelatoriosPageContent() {
     "#10B981",
     "#059669",
     "#04957E",
-    "#8B5CF6",
+    "#06B6D4",
     "#6366F1",
     "#3B82F6",
     "#2563EB",
@@ -674,7 +674,7 @@ function RelatoriosPageContent() {
                 </span>
               )}
               {categoriaFiltro && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full">
                   {categorias.find((c) => c.id === categoriaFiltro)?.name ||
                     "Categoria"}
                   <button
@@ -842,10 +842,10 @@ function RelatoriosPageContent() {
                         </div>
 
                         <div className="p-5 bg-slate-950/60 rounded-2xl border border-white/5 italic text-slate-300 font-medium leading-relaxed">
-                            "{dados.resumo.saldo >= 0 
-                                ? `Ótimo trabalho, Pablo! Seu fluxo de ${formatarMoeda(dados.resumo.saldo)} é combustível puro para seus objetivos. Sua eficiência de gastos está operando em parâmetros ideais.` 
-                                : `Pablo, detectamos uma anomalia produtiva. Você operou em déficit de ${formatarMoeda(Math.abs(dados.resumo.saldo))}. Meus algoritmos sugerem revisão imediata das categorias de maior peso.`
-                            }"
+                            &quot;{dados.resumo.saldo >= 0 
+                                ? `Ótimo trabalho, ${session?.user?.name?.split(' ')[0] || "Mestre"}! Seu fluxo de ${formatarMoeda(dados.resumo.saldo)} é combustível puro para seus objetivos. Sua eficiência de gastos está operando em parâmetros ideais.` 
+                                : `${session?.user?.name?.split(' ')[0] || "Mestre"}, detectamos uma anomalia produtiva. Você operou em déficit de ${formatarMoeda(Math.abs(dados.resumo.saldo))}. Meus algoritmos sugerem revisão imediata das categorias de maior peso.`
+                            }&quot;
                         </div>
 
                         <div className="flex flex-wrap gap-4">

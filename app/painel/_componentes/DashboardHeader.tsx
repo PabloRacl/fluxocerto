@@ -108,7 +108,7 @@ export function DashboardHeader({ user, onSignOut }: DashboardHeaderProps) {
                         {currentTip.title}
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-300 font-medium leading-tight italic opacity-90">
-                        "{currentTip.content}"
+                        &quot;{currentTip.content}&quot;
                       </p>
                     </div>
                   </motion.div>

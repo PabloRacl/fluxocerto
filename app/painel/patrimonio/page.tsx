@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { PageHeader } from "@/app/painel/_componentes/PageHeader";
 import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { motion } from "framer-motion";
 import {
   TrendingUp,
   TrendingDown,
@@ -54,7 +55,7 @@ function formatCurrency(v: number): string {
 const CORES = [
   "#10B981",
   "#3B82F6",
-  "#8B5CF6",
+  "#06B6D4",
   "#F59E0B",
   "#EC4899",
   "#06B6D4",
@@ -101,278 +102,335 @@ export default function PatrimonioPage() {
     if (status === "authenticated") fetchData();
   }, [status, router, fetchData]);
 
-  if (status === "loading") {
-    return <NeuralLoading message="Mapeando Estrutura Patrimonial..." variant="full" />;
+  if (status === "loading" || (loading && !data)) {
+    return (
+      <NeuralLoading
+        message="Mapeando Estrutura Patrimonial..."
+        variant="full"
+      />
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <PageHeader
-        title="Gestão de Patrimônio"
-        description="Acompanhe a evolução de seus ativos e passivos em tempo real"
-        breadcrumbs={[{ label: "Patrimônio" }]}
-      >
-        <button
-          onClick={fetchData}
-          className="p-2 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:block"
-          title="Atualizar"
+    <div className="min-h-screen relative bg-slate-950 overflow-hidden">
+      {/* Glow Orbs Neural HUD */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="relative z-10">
+        <PageHeader
+          title="Gestão de Patrimônio"
+          description="Acompanhamento estratégico de ativos e passivos em tempo real"
+          breadcrumbs={[{ label: "Patrimônio" }]}
         >
-          <RefreshCw className="w-5 h-5" />
-        </button>
-      </PageHeader>
+          <button
+            onClick={fetchData}
+            className="p-2 text-slate-400 hover:text-emerald-400 transition-colors hidden sm:block"
+            title="Atualizar Sincronização"
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+          </button>
+        </PageHeader>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {loading && (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="animate-pulse bg-slate-800 rounded-xl h-32"
-              />
-            ))}
-          </div>
-        )}
-
-        {error && !loading && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 text-center">
-            <p className="text-red-400">{error}</p>
-          </div>
-        )}
-
-        {data && !loading && (
-          <>
-            {/* Cards de Resumo */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-6 bg-slate-900/50 rounded-xl border border-emerald-500/20">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-emerald-400" />
-                  </div>
-                  <span className="text-sm text-slate-400">
-                    Total de Ativos
-                  </span>
-                </div>
-                <p className="text-3xl font-bold text-emerald-400">
-                  {formatCurrency(data.totalAtivos)}
-                </p>
-              </div>
-
-              <div className="p-6 bg-slate-900/50 rounded-xl border border-red-500/20">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
-                    <TrendingDown className="w-5 h-5 text-red-400" />
-                  </div>
-                  <span className="text-sm text-slate-400">
-                    Total de Passivos
-                  </span>
-                </div>
-                <p className="text-3xl font-bold text-red-400">
-                  {formatCurrency(data.passivos.total)}
-                </p>
-              </div>
-
-              <div
-                className={`p-6 bg-slate-900/50 rounded-xl border ${data.patrimonioLiquido >= 0 ? "border-blue-500/20" : "border-red-500/20"}`}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center backdrop-blur-md">
+              <p className="text-red-400 font-medium">{error}</p>
+              <button
+                onClick={fetchData}
+                className="mt-4 text-sm text-slate-300 hover:text-white underline"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div
-                    className={`w-10 h-10 rounded-xl ${data.patrimonioLiquido >= 0 ? "bg-blue-500/20" : "bg-red-500/20"} flex items-center justify-center`}
+                Tentar reconectar
+              </button>
+            </div>
+          )}
+
+          {data && !loading && (
+            <>
+              {/* Cards de Resumo */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Ativos */}
+                <div className="p-6 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                    style={{ skewX: -20 }}
+                  />
+                  <div className="flex items-center gap-3 mb-3 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                      <TrendingUp className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">
+                      Total de Ativos
+                    </span>
+                  </div>
+                  <p
+                    className="text-3xl font-black text-emerald-400 relative z-10"
+                    style={{ textShadow: "0 0 20px rgba(16,185,129,0.2)" }}
                   >
-                    <Wallet
-                      className={`w-5 h-5 ${data.patrimonioLiquido >= 0 ? "text-blue-400" : "text-red-400"}`}
+                    {formatCurrency(data.totalAtivos)}
+                  </p>
+                  <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                    <motion.div
+                      className="h-full bg-emerald-500/50"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "0%" }}
+                      transition={{ duration: 0.6 }}
                     />
                   </div>
-                  <span className="text-sm text-slate-400">
-                    Patrimônio Líquido
-                  </span>
                 </div>
-                <p
-                  className={`text-3xl font-bold ${data.patrimonioLiquido >= 0 ? "text-blue-400" : "text-red-400"}`}
-                >
-                  {formatCurrency(data.patrimonioLiquido)}
-                </p>
-              </div>
-            </div>
 
-            {/* Alerta se passivos > ativos */}
-            {data.patrimonioLiquido < 0 && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                <p className="text-sm text-red-300">
-                  Seus passivos superam seus ativos. Foque em reduzir dívidas e
-                  aumentar sua reserva.
-                </p>
-              </div>
-            )}
-
-            {/* Composição dos Ativos */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Gráfico de Pizza */}
-              {data.composicao.length > 0 && (
-                <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6">
-                  <h3 className="text-lg font-semibold text-white mb-6">
-                    Composição dos Ativos
-                  </h3>
-                  <div className="flex flex-col md:flex-row items-center gap-6">
-                    <ResponsiveContainer width="100%" height={250}>
-                      <PieChart>
-                        <Pie
-                          data={data.composicao}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
-                          paddingAngle={2}
-                          dataKey="valor"
-                        >
-                          {data.composicao.map((_, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={CORES[index % CORES.length]}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "#0f172a",
-                            border: "1px solid #1e293b",
-                            borderRadius: "8px",
-                          }}
-                          formatter={(value: number) => [
-                            formatCurrency(value),
-                            "Valor",
-                          ]}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-
-                    <div className="flex-1 space-y-2 w-full">
-                      {data.composicao.map((comp, i) => {
-                        const Icon = ICONES_TIPO[comp.tipo] || Wallet;
-                        return (
-                          <div
-                            key={comp.tipo}
-                            className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg"
-                          >
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="w-3 h-3 rounded-full"
-                                style={{
-                                  backgroundColor: CORES[i % CORES.length],
-                                }}
-                              />
-                              <Icon className="w-4 h-4 text-slate-400" />
-                              <span className="text-sm text-slate-300">
-                                {comp.tipo}
-                              </span>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-medium text-white">
-                                {formatCurrency(comp.valor)}
-                              </p>
-                              <p className="text-xs text-slate-500">
-                                {comp.percentual}%
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
+                {/* Passivos */}
+                <div className="p-6 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                    style={{ skewX: -20 }}
+                  />
+                  <div className="flex items-center gap-3 mb-3 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                      <TrendingDown className="w-5 h-5 text-red-400" />
                     </div>
+                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">
+                      Total de Passivos
+                    </span>
                   </div>
+                  <p
+                    className="text-3xl font-black text-red-400 relative z-10"
+                    style={{ textShadow: "0 0 20px rgba(239,68,68,0.2)" }}
+                  >
+                    {formatCurrency(data.passivos.total)}
+                  </p>
+                  <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                    <motion.div
+                      className="h-full bg-red-500/50"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "0%" }}
+                      transition={{ duration: 0.6 }}
+                    />
+                  </div>
+                </div>
+
+                {/* Patrimônio Líquido */}
+                <div
+                  className={`p-6 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group ${data.patrimonioLiquido >= 0 ? "hover:border-blue-500/30" : "hover:border-red-500/30"}`}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                    style={{ skewX: -20 }}
+                  />
+                  <div className="flex items-center gap-3 mb-3 relative z-10">
+                    <div
+                      className={`w-10 h-10 rounded-xl ${data.patrimonioLiquido >= 0 ? "bg-blue-500/10 border-blue-500/20" : "bg-red-500/10 border-red-500/20"} border flex items-center justify-center`}
+                    >
+                      <Wallet
+                        className={`w-5 h-5 ${data.patrimonioLiquido >= 0 ? "text-blue-400" : "text-red-400"}`}
+                      />
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">
+                      Patrimônio Líquido
+                    </span>
+                  </div>
+                  <p
+                    className={`text-3xl font-black relative z-10 ${data.patrimonioLiquido >= 0 ? "text-blue-400" : "text-red-400"}`}
+                    style={{
+                      textShadow:
+                        data.patrimonioLiquido >= 0
+                          ? "0 0 20px rgba(59,130,246,0.2)"
+                          : "0 0 20px rgba(239,68,68,0.2)",
+                    }}
+                  >
+                    {formatCurrency(data.patrimonioLiquido)}
+                  </p>
+                  <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                    <motion.div
+                      className={`h-full ${data.patrimonioLiquido >= 0 ? "bg-blue-500/50" : "bg-red-500/50"}`}
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "0%" }}
+                      transition={{ duration: 0.6 }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Alerta se passivos > ativos */}
+              {data.patrimonioLiquido < 0 && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3">
+                  <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                  <p className="text-sm text-red-300">
+                    Seus passivos superam seus ativos. Foque em reduzir dívidas
+                    e aumentar sua reserva.
+                  </p>
                 </div>
               )}
 
-              {/* Detalhes dos Ativos */}
-              <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6">
-                <h3 className="text-lg font-semibold text-white mb-6">
-                  Detalhamento dos Ativos
-                </h3>
-                <div className="space-y-4">
-                  {data.ativos.map((ativo) => {
-                    const Icon = ICONES_TIPO[ativo.tipo] || Wallet;
-                    return (
-                      <div
-                        key={ativo.tipo}
-                        className="p-4 bg-slate-800/50 rounded-xl"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <Icon className="w-5 h-5 text-slate-400" />
-                            <span className="text-sm font-medium text-white">
-                              {ativo.tipo}
-                            </span>
-                          </div>
-                          <span className="text-sm font-bold text-emerald-400">
-                            {formatCurrency(ativo.total)}
-                          </span>
-                        </div>
-                        <div className="space-y-1">
-                          {ativo.contas.map((conta) => (
+              {/* Composição dos Ativos */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Gráfico de Pizza */}
+                {data.composicao.length > 0 && (
+                  <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6">
+                    <h3 className="text-lg font-semibold text-white mb-6">
+                      Composição dos Ativos
+                    </h3>
+                    <div className="flex flex-col md:flex-row items-center gap-6">
+                      <ResponsiveContainer width="100%" height={250}>
+                        <PieChart>
+                          <Pie
+                            data={data.composicao}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={2}
+                            dataKey="valor"
+                          >
+                            {data.composicao.map((_, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={CORES[index % CORES.length]}
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "#0f172a",
+                              border: "1px solid #1e293b",
+                              borderRadius: "8px",
+                            }}
+                            formatter={(value: number) => [
+                              formatCurrency(value),
+                              "Valor",
+                            ]}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+
+                      <div className="flex-1 space-y-2 w-full">
+                        {data.composicao.map((comp, i) => {
+                          const Icon = ICONES_TIPO[comp.tipo] || Wallet;
+                          return (
                             <div
-                              key={conta.id}
-                              className="flex items-center justify-between text-xs"
+                              key={comp.tipo}
+                              className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg"
                             >
                               <div className="flex items-center gap-2">
                                 <div
-                                  className="w-2 h-2 rounded-full"
-                                  style={{ backgroundColor: conta.color }}
+                                  className="w-3 h-3 rounded-full"
+                                  style={{
+                                    backgroundColor: CORES[i % CORES.length],
+                                  }}
                                 />
-                                <span className="text-slate-400">
-                                  {conta.icon} {conta.name}
+                                <Icon className="w-4 h-4 text-slate-400" />
+                                <span className="text-sm text-slate-300">
+                                  {comp.tipo}
                                 </span>
                               </div>
-                              <span className="text-slate-300">
-                                {formatCurrency(conta.balance)}
+                              <div className="text-right">
+                                <p className="text-sm font-medium text-white">
+                                  {formatCurrency(comp.valor)}
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  {comp.percentual}%
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Detalhes dos Ativos */}
+                <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6">
+                  <h3 className="text-lg font-semibold text-white mb-6">
+                    Detalhamento dos Ativos
+                  </h3>
+                  <div className="space-y-4">
+                    {data.ativos.map((ativo) => {
+                      const Icon = ICONES_TIPO[ativo.tipo] || Wallet;
+                      return (
+                        <div
+                          key={ativo.tipo}
+                          className="p-4 bg-slate-800/50 rounded-xl"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-5 h-5 text-slate-400" />
+                              <span className="text-sm font-medium text-white">
+                                {ativo.tipo}
                               </span>
                             </div>
-                          ))}
+                            <span className="text-sm font-bold text-emerald-400">
+                              {formatCurrency(ativo.total)}
+                            </span>
+                          </div>
+                          <div className="space-y-1">
+                            {ativo.contas.map((conta) => (
+                              <div
+                                key={conta.id}
+                                className="flex items-center justify-between text-xs"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className="w-2 h-2 rounded-full"
+                                    style={{ backgroundColor: conta.color }}
+                                  />
+                                  <span className="text-slate-400">
+                                    {conta.icon} {conta.name}
+                                  </span>
+                                </div>
+                                <span className="text-slate-300">
+                                  {formatCurrency(conta.balance)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Detalhes dos Passivos */}
-            <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6">
-              <h3 className="text-lg font-semibold text-white mb-6">
-                Passivos
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-800/50 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CreditCard className="w-5 h-5 text-red-400" />
-                    <span className="text-sm text-slate-400">
-                      Dívidas Pendentes
-                    </span>
+              {/* Detalhes dos Passivos */}
+              <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 p-6">
+                <h3 className="text-lg font-semibold text-white mb-6">
+                  Passivos
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 bg-slate-800/50 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CreditCard className="w-5 h-5 text-red-400" />
+                      <span className="text-sm text-slate-400">
+                        Dívidas Pendentes
+                      </span>
+                    </div>
+                    <p className="text-xl font-bold text-red-400">
+                      {formatCurrency(data.passivos.dividas.total)}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {data.passivos.dividas.quantidade} dívida(s) ativa(s)
+                    </p>
                   </div>
-                  <p className="text-xl font-bold text-red-400">
-                    {formatCurrency(data.passivos.dividas.total)}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {data.passivos.dividas.quantidade} dívida(s) ativa(s)
-                  </p>
-                </div>
-                <div className="p-4 bg-slate-800/50 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CreditCard className="w-5 h-5 text-orange-400" />
-                    <span className="text-sm text-slate-400">
-                      Faturas de Cartão
-                    </span>
+                  <div className="p-4 bg-slate-800/50 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CreditCard className="w-5 h-5 text-orange-400" />
+                      <span className="text-sm text-slate-400">
+                        Faturas de Cartão
+                      </span>
+                    </div>
+                    <p className="text-xl font-bold text-orange-400">
+                      {formatCurrency(data.passivos.faturasCartao.total)}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {data.passivos.faturasCartao.quantidade} cartão(ões)
+                    </p>
                   </div>
-                  <p className="text-xl font-bold text-orange-400">
-                    {formatCurrency(data.passivos.faturasCartao.total)}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {data.passivos.faturasCartao.quantidade} cartão(ões)
-                  </p>
                 </div>
               </div>
-            </div>
-          </>
-        )}
-      </main>
+            </>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

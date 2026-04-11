@@ -8,7 +8,31 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "FluxoCerto - Controle Financeiro Inteligente",
-  description: "Controle suas finanças, compras e dívidas em um só lugar.",
+  description: "A plataforma definitiva para controle de finanças, gestão de estoque atacarejo e planejamento de dívidas com inteligência neural.",
+  keywords: ["finanças", "controle financeiro", "gestão de estoque", "atacarejo", "planejamento financeiro", "mestre dino"],
+  authors: [{ name: "FluxoCerto Team" }],
+  openGraph: {
+    title: "FluxoCerto - Inteligência Financeira",
+    description: "A plataforma definitiva para controle de finanças e gestão de estoque.",
+    url: "https://fluxocerto.com",
+    siteName: "FluxoCerto",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "FluxoCerto Dashboard",
+      },
+    ],
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FluxoCerto",
+    description: "Controle financeiro inteligente.",
+    images: ["/og-image.png"],
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

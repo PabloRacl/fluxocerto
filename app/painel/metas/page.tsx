@@ -373,13 +373,13 @@ export default function MetasPage() {
                   <div className="p-5 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group sm:col-span-2 lg:col-span-1">
                     {/* Laser Scan Animation */}
                     <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
                       style={{ skewX: -20 }}
                     />
 
                     <div className="flex items-center gap-3 mb-4 relative z-10">
-                      <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.15)] group-hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all">
-                        <DollarSign className="w-5 h-5 text-purple-400" />
+                      <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.15)] group-hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all">
+                        <DollarSign className="w-5 h-5 text-cyan-400" />
                       </div>
                       <span className="text-[10px] uppercase tracking-widest font-black text-slate-500">Patrimônio Alvo</span>
                     </div>
@@ -393,7 +393,7 @@ export default function MetasPage() {
                     {/* Glow Line Bottom */}
                     <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
                        <motion.div 
-                         className="h-full bg-purple-500/50"
+                         className="h-full bg-cyan-500/50"
                          initial={{ x: "-100%" }}
                          whileHover={{ x: "0%" }}
                          transition={{ duration: 0.6 }}
@@ -422,7 +422,7 @@ export default function MetasPage() {
               />
               <div className="mt-4 text-center relative z-10">
                 <span className="text-[10px] uppercase font-black text-emerald-400 tracking-widest mb-1 block">Mentor Focado</span>
-                <p className="text-xs text-slate-300 italic">"Cada depósito é um tijolo na sua fortaleza financeira. Força, Gafanhoto!"</p>
+                <p className="text-xs text-slate-300 italic">&quot;Cada depósito é um tijolo na sua fortaleza financeira. Força, Gafanhoto!&quot;</p>
               </div>
             </div>
           </div>
@@ -507,7 +507,7 @@ export default function MetasPage() {
                               "#10B981",
                               "#F59E0B",
                               "#3B82F6",
-                              "#8B5CF6",
+                              "#06B6D4",
                               "#EF4444",
                             ][i % 5],
                             left: `${Math.random() * 100}%`,
@@ -928,7 +928,7 @@ function NovaMetaModal({
               {[
                 "#10B981",
                 "#3B82F6",
-                "#8B5CF6",
+                "#06B6D4",
                 "#F59E0B",
                 "#EF4444",
                 "#EC4899",

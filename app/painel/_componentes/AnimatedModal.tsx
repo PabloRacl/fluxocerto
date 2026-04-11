@@ -11,7 +11,7 @@ interface AnimatedModalProps {
   subtitle?: string;
   icon?: ReactNode;
   children: ReactNode;
-  theme?: "emerald" | "red" | "blue" | "amber" | "teal" | "purple" | "slate";
+  theme?: "emerald" | "red" | "blue" | "amber" | "teal" | "cyan" | "slate";
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
 }
 
@@ -77,13 +77,13 @@ export function AnimatedModal({
           borderHover: "hover:border-amber-500/50",
           borderFocus: "focus:border-amber-500 focus:ring-amber-500/20",
         };
-      case "purple":
+      case "cyan":
         return {
-          bgGradient: "from-purple-500/10 via-fuchsia-500/10 to-slate-900/10",
-          iconBg: "bg-gradient-to-br from-purple-500 to-fuchsia-600 shadow-purple-500/30",
-          textGradient: "from-purple-400 to-fuchsia-400",
-          borderHover: "hover:border-purple-500/50",
-          borderFocus: "focus:border-purple-500 focus:ring-purple-500/20",
+          bgGradient: "from-cyan-500/10 via-fuchsia-500/10 to-slate-900/10",
+          iconBg: "bg-gradient-to-br from-cyan-500 to-fuchsia-600 shadow-cyan-500/30",
+          textGradient: "from-cyan-400 to-fuchsia-400",
+          borderHover: "hover:border-cyan-500/50",
+          borderFocus: "focus:border-cyan-500 focus:ring-cyan-500/20",
         };
       case "teal":
         return {

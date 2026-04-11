@@ -15,7 +15,7 @@ import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
 // Cores disponíveis (mesmo padrão do NewAccountModal)
 const AVAILABLE_COLORS = [
   "#047857", "#10B981", "#059669", "#04957E",
-  "#8B5CF6", "#6366F1", "#3B82F6", "#2563EB",
+  "#06B6D4", "#6366F1", "#3B82F6", "#2563EB",
   "#F59E0B", "#D97706", "#DC2626", "#EF4444",
   "#EC4899", "#DB2777", "#14B8A6", "#0D9488",
 ];
