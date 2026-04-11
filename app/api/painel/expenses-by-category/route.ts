@@ -13,18 +13,22 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
-    if (!startDate || !endDate) {
-      throw new Error("Datas de início e fim são obrigatórias");
-    }
+    // Fallback inteligente para o mês atual caso os parâmetros não venham na requisição inicial
+    const dataAtual = new Date();
+    const defaultStart = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1).toISOString();
+    const defaultEnd = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
+
+    const finalStartDate = startDate || defaultStart;
+    const finalEndDate = endDate || defaultEnd;
 
     const getCachedExpenses = unstable_cache(
       async (userId: string, start: string, end: string) => 
         await painelService.obterExpensesByCategory(userId, start, end),
-      [`categorias-${user.id}-${startDate}-${endDate}`],
+      [`categorias-${user.id}-${finalStartDate}-${finalEndDate}`],
       { tags: [`categorias-${user.id}`], revalidate: 3600 }
     );
 
-    const expenses = await getCachedExpenses(user.id, startDate, endDate);
+    const expenses = await getCachedExpenses(user.id, finalStartDate, finalEndDate);
 
     return NextResponse.json({ ok: true, data: expenses });
   } catch (error) {

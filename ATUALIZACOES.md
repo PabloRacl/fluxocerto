@@ -14,6 +14,7 @@
 - **Animações (Framer Motion)**: Utilização agressiva mas elegante em Cards, `NeuralLoading`, efeitos de scanner em gráficos e popups do Mascote e Conquistas.
 - **Limpeza de Comentários**: Remoção de comentários técnicos gerados artificialmente no código (blocos imensos com `===`) por comentários orgânicos em português, padrão humano.
 - **Tradução Arquitetural Profunda**: Refatoração em massa das pastas e componentes críticos. Todos os arquivos de componentes UI em inglês (ex: `SummaryCards`, `DashboardHeader`) foram convertidos e renomeados localmente para PT-BR (ex: `CartoesResumo`, `CabecalhoPainel`). Rotas protegidas e de convenção de framework do Next.js mantiveram sintaxe de origem.
+- **Resiliência de API (Fallback de Datas)**: Correção do Erro 500 na API `expenses-by-category` através da implementação de um fallback inteligente para o mês atual. Isso evita que o dashboard quebre caso o frontend não envie parâmetros de data na carga inicial.
 
 #### 🔧 Backend, APIs e Estabilidade
 - **Autenticação (NextAuth.js)**: Implementação e correção total do Login Híbrido: Credenciais nativas (E-mail/Senha) + Provedores Sociais (Google, Facebook, LinkedIn) convivendo na mesma tabela de referências através do `PrismaAdapter`.
