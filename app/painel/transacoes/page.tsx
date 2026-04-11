@@ -5,9 +5,9 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { Skeleton } from "@/componentes/ui/skeleton";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
 import { ptBR } from "date-fns/locale";
-import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { CarregamentoNeural } from "@/app/painel/_componentes/CarregamentoNeural";
 import {
   ArrowUpDown,
   Search,
@@ -36,9 +36,9 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 // ✅ IMPORT DO NOVO MODAL FUTURISTA
-import NewTransactionModal from "./_componentes/NewTransactionModal";
+import ModalNovaTransacao from "./_componentes/ModalNovaTransacao";
 // Mantém o Drawer caso queira usar como fallback
-import { TransactionDrawer } from "./_componentes/TransactionDrawer";
+import { GavetaTransacao } from "./_componentes/GavetaTransacao";
 import {
   Tooltip,
   TooltipContent,
@@ -525,7 +525,7 @@ function TransactionsPageContent() {
   // renderizar: LOADING
   // ============================================
   if (status === "loading") {
-    return <NeuralLoading message="Processando Matriz de Transações..." variant="full" />;
+    return <CarregamentoNeural message="Processando Matriz de Transações..." variant="full" />;
   }
 
   // ============================================
@@ -543,7 +543,7 @@ function TransactionsPageContent() {
     <TooltipProvider>
       <div className="min-h-screen bg-slate-950">
         {/* ✅ HEADER PADRONIZADO COM O NOVO BREADCRUMB */}
-        <PageHeader
+        <CabecalhoPagina
           title="Transações e Movimentações"
           description="Monitore seu fluxo de caixa e categorize suas receitas e despesas"
           breadcrumbs={[{ label: "Transações" }]}
@@ -601,7 +601,7 @@ function TransactionsPageContent() {
               <p>Cadastrar nova transação</p>
             </TooltipContent>
           </Tooltip>
-        </PageHeader>
+        </CabecalhoPagina>
         
         {/* Conteúdo Principal */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -1142,7 +1142,7 @@ function TransactionsPageContent() {
 
         {/* ✅ MODAL FUTURISTA */}
         {showNewTransactionModal && (
-          <NewTransactionModal
+          <ModalNovaTransacao
             isOpen={showNewTransactionModal}
             onClose={handleModalClose}
             onSuccess={handleModalSuccess}
@@ -1153,7 +1153,7 @@ function TransactionsPageContent() {
         )}
 
         {/* Drawer mantido como fallback (pode remover se não quiser usar) */}
-        <TransactionDrawer
+        <GavetaTransacao
           open={isDrawerOpen}
           onOpenChange={handleDrawerClose}
           transaction={editingTransaction}
@@ -1168,7 +1168,7 @@ function TransactionsPageContent() {
 // componente principal (com boundary)
 export default function TransactionsPage() {
   return (
-    <Suspense fallback={<NeuralLoading message="Acessando DataStream de Transações..." variant="full" />}>
+    <Suspense fallback={<CarregamentoNeural message="Acessando DataStream de Transações..." variant="full" />}>
       <TransactionsPageContent />
     </Suspense>
   );

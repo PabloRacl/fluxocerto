@@ -6,22 +6,22 @@ import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { RefreshCw } from "lucide-react";
 import { api } from "@/biblioteca/http-client";
-import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { CarregamentoNeural } from "@/app/painel/_componentes/CarregamentoNeural";
 import { motion, Variants } from "framer-motion";
 
 // Componentes Desacoplados (UI limpa)
-import { DashboardHeader } from "@/app/painel/_componentes/DashboardHeader";
-import { SummaryCards } from "@/app/painel/_componentes/SummaryCards";
-import { QuickActions } from "@/app/painel/_componentes/QuickActions";
+import { CabecalhoPainel } from "@/app/painel/_componentes/CabecalhoPainel";
+import { CartoesResumo } from "@/app/painel/_componentes/CartoesResumo";
+import { AcoesRapidas } from "@/app/painel/_componentes/AcoesRapidas";
 
 // Gráficos e Painéis Especializados
-import { BalanceEvolutionChart } from "@/app/painel/_componentes/BalanceEvolutionChart";
-import { ExpensesByCategoryChart } from "@/app/painel/_componentes/ExpensesByCategoryChart";
-import { BalanceForecastChart } from "@/app/painel/_componentes/BalanceForecastChart";
-import { InsightsPanel } from "@/app/painel/_componentes/InsightsPanel";
-import { FloatingGamification } from "@/app/painel/_componentes/FloatingGamification";
-import { MascotNotification } from "@/app/painel/_componentes/MascotNotification";
-import { MascotAssistant } from "@/app/painel/_componentes/MascotAssistant";
+import { GraficoEvolucaoSaldo } from "@/app/painel/_componentes/GraficoEvolucaoSaldo";
+import { GraficoDespesasPorCategoria } from "@/app/painel/_componentes/GraficoDespesasPorCategoria";
+import { GraficoProjecaoSaldo } from "@/app/painel/_componentes/GraficoProjecaoSaldo";
+import { PainelInsights } from "@/app/painel/_componentes/PainelInsights";
+import { GamificacaoFlutuante } from "@/app/painel/_componentes/GamificacaoFlutuante";
+import { NotificacaoMascote } from "@/app/painel/_componentes/NotificacaoMascote";
+import { MascoteAssistente } from "@/app/painel/_componentes/MascoteAssistente";
 
 // variantes de animação (p9 - efeito quebra-cabeça)
 const containerVariants: Variants = {
@@ -112,7 +112,7 @@ export default function DashboardPage() {
   const userLevel = gamificacaoData?.data?.nivel?.nivel || 1;
 
   if (status === "loading") {
-    return <NeuralLoading message="Sincronizando Insights Neurais..." variant="full" />;
+    return <CarregamentoNeural message="Sincronizando Insights Neurais..." variant="full" />;
   }
 
   if (status === "unauthenticated") {
@@ -124,7 +124,7 @@ export default function DashboardPage() {
     <div ref={containerRef} className="min-h-screen bg-slate-950 overflow-hidden relative">
       
       {/* Sistema Global de Notificação de Conquistas (Sapo Financeiro) */}
-      <MascotNotification data={gamificacaoData} />
+      <NotificacaoMascote data={gamificacaoData} />
 
       {/* Background Glow Dinâmico */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -138,7 +138,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      <DashboardHeader user={data?.user} onSignOut={handleSignOut} />
+      <CabecalhoPainel user={data?.user} onSignOut={handleSignOut} />
 
       <motion.main 
         className="relative z-10 px-4 py-6 sm:p-8"
@@ -149,34 +149,34 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto">
           
           <motion.div variants={itemVariants}>
-            <SummaryCards summary={summary} loading={loading} userLevel={userLevel} />
+            <CartoesResumo summary={summary} loading={loading} userLevel={userLevel} />
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 items-stretch">
             <motion.div variants={itemVariants} className="h-full">
-              <BalanceEvolutionChart userId={data?.user?.email || ""} />
+              <GraficoEvolucaoSaldo userId={data?.user?.email || ""} />
             </motion.div>
             <motion.div variants={itemVariants} className="h-full">
-              <ExpensesByCategoryChart userId={data?.user?.email || ""} />
+              <GraficoDespesasPorCategoria userId={data?.user?.email || ""} />
             </motion.div>
           </div>
 
           <motion.div variants={itemVariants} className="max-w-7xl mx-auto mb-8 text-center">
-            <BalanceForecastChart userId={data?.user?.email || ""} />
+            <GraficoProjecaoSaldo userId={data?.user?.email || ""} />
           </motion.div>
 
           <motion.div variants={itemVariants} className="mb-8">
-            <InsightsPanel userId={data?.user?.email || ""} userLevel={userLevel} />
+            <PainelInsights userId={data?.user?.email || ""} userLevel={userLevel} />
           </motion.div>
 
           {/* Widget Flutuante de Gamificação (P7) */}
-          <FloatingGamification />
+          <GamificacaoFlutuante />
 
           {/* Atalhos Rápidos Renderizados Modularmente */}
-          <QuickActions onNewTransaction={() => router.push("/painel/transacoes?drawer=open")} />
+          <AcoesRapidas onNewTransaction={() => router.push("/painel/transacoes?drawer=open")} />
           
           {/* Assistente Mascot Neural (Mestre Sábio) */}
-          <MascotAssistant 
+          <MascoteAssistente 
             userLevel={userLevel} 
             healthScore={summary.healthScore}
             balance={summary.totalBalance}

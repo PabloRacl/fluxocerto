@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { NeuroLauncher } from "./_componentes/NeuroLauncher";
-import { OnboardingWizard } from "./_componentes/OnboardingWizard";
-import { UpgradeModal } from "./_componentes/UpgradeModal";
-import { ProductTour } from "./_componentes/ProductTour";
+import { AssistenteBoasVindas } from "./_componentes/AssistenteBoasVindas";
+import { ModalUpgrade } from "./_componentes/ModalUpgrade";
+import { TourProduto } from "./_componentes/TourProduto";
 import useSWR from "swr";
 import { api } from "@/biblioteca/http-client";
 
@@ -30,9 +30,9 @@ export default function PainelLayout({
   return (
     <>
       <NeuroLauncher isOpen={isLauncherOpen} onClose={() => setIsLauncherOpen(false)} />
-      <OnboardingWizard />
-      <UpgradeModal />
-      {finalTourStatus !== "LOADING" && <ProductTour initialStatus={finalTourStatus} />}
+      <AssistenteBoasVindas />
+      <ModalUpgrade />
+      {finalTourStatus !== "LOADING" && <TourProduto initialStatus={finalTourStatus} />}
       {children}
     </>
   );

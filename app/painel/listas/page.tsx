@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { ModalAnimado } from "@/app/painel/_componentes/ModalAnimado";
 import { ShoppingCart, Plus, Trash2, Check, X, RefreshCw } from "lucide-react";
 
 interface ListaItem {
@@ -174,7 +174,7 @@ export default function ListasComprasPage() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      <PageHeader
+      <CabecalhoPagina
         title="Listas de Compras"
         subtitle="Organize suas compras"
         onRefresh={fetchListas}
@@ -349,7 +349,7 @@ export default function ListasComprasPage() {
         )}
 
         {showNewModal && (
-          <AnimatedModal
+          <ModalAnimado
             isOpen={showNewModal}
             onClose={() => setShowNewModal(false)}
             title="Nova Lista de Compras"
@@ -379,7 +379,7 @@ export default function ListasComprasPage() {
                 </button>
               </div>
               </div>
-          </AnimatedModal>
+          </ModalAnimado>
         )}
       </main>
     </div>

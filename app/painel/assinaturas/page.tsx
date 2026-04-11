@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
-import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { CarregamentoNeural } from "@/app/painel/_componentes/CarregamentoNeural";
+import { ModalAnimado } from "@/app/painel/_componentes/ModalAnimado";
 import {
   Tooltip,
   TooltipContent,
@@ -157,13 +157,13 @@ export default function AssinaturasPage() {
   };
 
   if (status === "loading") {
-    return <NeuralLoading message="Validando Ciclos de Assinaturas..." variant="full" />;
+    return <CarregamentoNeural message="Validando Ciclos de Assinaturas..." variant="full" />;
   }
 
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-        <PageHeader
+        <CabecalhoPagina
           title="Assinaturas de Serviços"
           description="Controle seus gastos recorrentes e evite cobranças indesejadas"
           breadcrumbs={[{ label: "Assinaturas" }]}
@@ -210,7 +210,7 @@ export default function AssinaturasPage() {
             <Plus className="w-4 h-4" />
             <span className="hidden sm:block">Nova Assinatura</span>
           </button>
-        </PageHeader>
+        </CabecalhoPagina>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           {/* Resumo */}
@@ -279,7 +279,7 @@ export default function AssinaturasPage() {
           )}
 
           {loading && (
-            <NeuralLoading message="Sincronizando Assinaturas..." variant="card" />
+            <CarregamentoNeural message="Sincronizando Assinaturas..." variant="card" />
           )}
 
           {!loading && !error && assinaturas.length === 0 && (
@@ -590,7 +590,7 @@ function NovaAssinaturaModal({
   ];
 
   return (
-    <AnimatedModal
+    <ModalAnimado
       isOpen={true}
       onClose={onClose}
       title="Nova Assinatura"
@@ -741,6 +741,6 @@ function NovaAssinaturaModal({
             </button>
           </div>
         </form>
-    </AnimatedModal>
+    </ModalAnimado>
   );
 }

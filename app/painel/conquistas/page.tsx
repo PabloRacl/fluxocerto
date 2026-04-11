@@ -2,9 +2,9 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { DashboardHeader } from "@/app/painel/_componentes/DashboardHeader";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { GamificacaoPanel } from "@/app/painel/_componentes/GamificacaoPanel";
+import { CabecalhoPainel } from "@/app/painel/_componentes/CabecalhoPainel";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { PainelGamificacao } from "@/app/painel/_componentes/PainelGamificacao";
 import { Trophy } from "lucide-react";
 
 export default function ConquistasPage() {
@@ -15,7 +15,7 @@ export default function ConquistasPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <DashboardHeader 
+      <CabecalhoPainel 
         user={session.user} 
         onSignOut={async () => {
           await fetch("/api/auth/signout", { method: "POST" });
@@ -24,13 +24,13 @@ export default function ConquistasPage() {
       />
       
       <main className="p-8 max-w-7xl mx-auto">
-        <PageHeader
+        <CabecalhoPagina
           title="Minhas Conquistas"
           description="Acompanhe seu nível, metas e medalhas conquistadas."
         />
 
         <div className="mt-8">
-          <GamificacaoPanel userId={session.user.id as string} />
+          <PainelGamificacao userId={session.user.id as string} />
         </div>
       </main>
     </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
 import {
   TooltipProvider,
 } from "@/componentes/ui/tooltip";
@@ -124,7 +124,7 @@ export default function DetalhesDividaPage() {
   if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-        <PageHeader title="Carregando..." subtitle="" onBack={() => router.push("/painel/dividas")} />
+        <CabecalhoPagina title="Carregando..." subtitle="" onBack={() => router.push("/painel/dividas")} />
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-4">
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-64 w-full" />
@@ -136,7 +136,7 @@ export default function DetalhesDividaPage() {
   if (error || !divida) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-        <PageHeader title="Erro" subtitle="" onBack={() => router.push("/painel/dividas")} />
+        <CabecalhoPagina title="Erro" subtitle="" onBack={() => router.push("/painel/dividas")} />
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 text-center">
             <p className="text-red-400">{error || "Dívida não encontrada"}</p>
@@ -151,7 +151,7 @@ export default function DetalhesDividaPage() {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-        <PageHeader
+        <CabecalhoPagina
           title={divida.name}
           subtitle={divida.creditor ? `Credor: ${divida.creditor}` : "Detalhes da dívida"}
           onBack={() => router.push("/painel/dividas")}

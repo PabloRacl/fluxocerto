@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
-import { BrandLogo } from "@/app/_componentes/BrandLogo";
+import { LogoMarca } from "@/app/_componentes/LogoMarca";
 
 // Ícones Sociais (Removidos no Lucide 1.0)
 const Facebook = (props: any) => (
@@ -128,7 +128,7 @@ export default function RegisterPage() {
       <div className="relative w-full max-w-md bg-slate-900/80 backdrop-blur-md rounded-3xl border border-emerald-500/30 shadow-2xl p-8 space-y-6">
         {/* Logo */}
         <div className="text-center mb-4">
-          <BrandLogo size="lg" className="justify-center mb-4" />
+          <LogoMarca size="lg" className="justify-center mb-4" />
           <p className="text-slate-400">Crie sua conta gratuita</p>
         </div>
 

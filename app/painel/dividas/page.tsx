@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
-import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
-import { MascotAssistant } from "@/app/painel/_componentes/MascotAssistant";
-import EditDebtModal from "./_componentes/EditDebtModal";
-import AmortizeDebtModal from "./_componentes/AmortizeDebtModal";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { CarregamentoNeural } from "@/app/painel/_componentes/CarregamentoNeural";
+import { ModalAnimado } from "@/app/painel/_componentes/ModalAnimado";
+import { MascoteAssistente } from "@/app/painel/_componentes/MascoteAssistente";
+import ModalEditarDivida from "./_componentes/ModalEditarDivida";
+import ModalAmortizarDivida from "./_componentes/ModalAmortizarDivida";
 import {
   Tooltip,
   TooltipContent,
@@ -213,13 +213,13 @@ export default function DividasPage() {
   // renderizar
   // ============================================
   if (status === "loading") {
-    return <NeuralLoading message="Analisando Fluxo de Débitos..." variant="full" />;
+    return <CarregamentoNeural message="Analisando Fluxo de Débitos..." variant="full" />;
   }
 
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-        <PageHeader
+        <CabecalhoPagina
           title="Dívidas e Financiamentos"
           description="Gerencie seus débitos com barra de progresso e amortização SAC/PRICE"
           breadcrumbs={[{ label: "Dívidas Parceladas" }]}
@@ -276,7 +276,7 @@ export default function DividasPage() {
             <Plus className="w-4 h-4" />
             <span className="hidden sm:block">Nova Dívida</span>
           </button>
-        </PageHeader>
+        </CabecalhoPagina>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           {/* Cards de Resumo — Neuro HUD */}
@@ -607,7 +607,7 @@ export default function DividasPage() {
             </div>
           )}
           {/* Assistente Neural — Mestre Sábio */}
-          <MascotAssistant />
+          <MascoteAssistente />
         </main>
 
         {showNewModal && (
@@ -621,7 +621,7 @@ export default function DividasPage() {
         )}
 
         {/* Modal Editar Dívida */}
-        <EditDebtModal
+        <ModalEditarDivida
           isOpen={showEditModal}
           onClose={() => {
             setShowEditModal(false);
@@ -630,7 +630,7 @@ export default function DividasPage() {
           }}
           debt={selectedDebt}
         />
-        <AmortizeDebtModal
+        <ModalAmortizarDivida
           isOpen={showAmortizeModal}
           onClose={() => {
             setShowAmortizeModal(false);
@@ -789,7 +789,7 @@ function NovaDividaModal({
     "w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm";
 
   return (
-    <AnimatedModal
+    <ModalAnimado
       isOpen={true}
       onClose={onClose}
       title="Nova Dívida"
@@ -1063,6 +1063,6 @@ function NovaDividaModal({
             </button>
           </div>
         </form>
-    </AnimatedModal>
+    </ModalAnimado>
   );
 }

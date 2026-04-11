@@ -24,9 +24,9 @@ import {
   Lightbulb,
   Zap,
 } from "lucide-react";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
-import { NeuralMascot } from "@/app/painel/_componentes/NeuralMascot";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { CarregamentoNeural } from "@/app/painel/_componentes/CarregamentoNeural";
+import { MascoteNeural } from "@/app/painel/_componentes/MascoteNeural";
 import { neuralVoice } from "@/biblioteca/NeuralVoiceService";
 import {
   BarChart,
@@ -392,7 +392,7 @@ function RelatoriosPageContent() {
   // RENDERIZAÇÃO CONDICIONAL
   // ============================================
   if (status === "loading") {
-    return <NeuralLoading message="Gerando Matriz de Relatórios..." variant="full" />;
+    return <CarregamentoNeural message="Gerando Matriz de Relatórios..." variant="full" />;
   }
 
   if (status === "unauthenticated") {
@@ -437,7 +437,7 @@ function RelatoriosPageContent() {
   // ============================================
   return (
     <div className="min-h-screen bg-slate-950">
-      <PageHeader
+      <CabecalhoPagina
         title="Relatórios e Análises"
         description="Analise seu desempenho financeiro com dados detalhados"
         breadcrumbs={[{ label: "Relatórios" }]}
@@ -474,7 +474,7 @@ function RelatoriosPageContent() {
         >
           <RefreshCcw className="w-5 h-5" />
         </button>
-      </PageHeader>
+      </CabecalhoPagina>
 
       {activeTab === "gerencial" ? (
         <>
@@ -823,7 +823,7 @@ function RelatoriosPageContent() {
                 
                 <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
                     <div className="p-4 bg-slate-900/60 rounded-full border border-white/5 shadow-2xl group-hover:scale-105 transition-transform duration-500">
-                        <NeuralMascot size="lg" mood={dados.resumo.saldo >= 0 ? "HAPPY" : "WORRIED"} level={40} showScan={true} />
+                        <MascoteNeural size="lg" mood={dados.resumo.saldo >= 0 ? "HAPPY" : "WORRIED"} level={40} showScan={true} />
                     </div>
 
                     <div className="flex-1 space-y-4">
@@ -872,7 +872,7 @@ function RelatoriosPageContent() {
 
             {loading ? (
               <div className="h-64 flex items-center justify-center">
-                <NeuralLoading message="Sincronizando Séries Temporais..." variant="card" />
+                <CarregamentoNeural message="Sincronizando Séries Temporais..." variant="card" />
               </div>
             ) : dadosGraficoBarras.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
@@ -968,7 +968,7 @@ function RelatoriosPageContent() {
 
             {loading ? (
               <div className="h-64 flex items-center justify-center">
-                <NeuralLoading message="Processando Mix de Categorias..." variant="card" />
+                <CarregamentoNeural message="Processando Mix de Categorias..." variant="card" />
               </div>
             ) : dadosGraficoPizza.length > 0 ? (
               <div className="flex flex-col md:flex-row items-center gap-6 relative z-10 w-full h-[300px]">
@@ -1182,7 +1182,7 @@ function RelatoriosPageContent() {
 // componente principal (com boundary)
 export default function RelatoriosPage() {
   return (
-    <Suspense fallback={<NeuralLoading message="Sincronizando Matriz de Dados..." variant="full" />}>
+    <Suspense fallback={<CarregamentoNeural message="Sincronizando Matriz de Dados..." variant="full" />}>
       <RelatoriosPageContent />
     </Suspense>
   );

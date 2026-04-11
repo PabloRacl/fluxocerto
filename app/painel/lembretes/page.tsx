@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { ModalAnimado } from "@/app/painel/_componentes/ModalAnimado";
 import { Bell, Plus, Trash2, Check, RefreshCw, Eye, X } from "lucide-react";
 
 const TIPO_LABELS: Record<string, string> = {
@@ -117,7 +117,7 @@ export default function LembretesPage() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      <PageHeader
+      <CabecalhoPagina
         title="Lembretes"
         description="Gerencie seus lembretes financeiros"
         breadcrumbs={[{ label: "Lembretes" }]}
@@ -145,7 +145,7 @@ export default function LembretesPage() {
           <Plus className="w-4 h-4" />
           <span className="hidden sm:block">Novo Lembrete</span>
         </button>
-      </PageHeader>
+      </CabecalhoPagina>
       <main className="max-w-3xl mx-auto px-4 py-8">
 
         {loading ? (
@@ -206,7 +206,7 @@ export default function LembretesPage() {
         )}
 
         {showModal && (
-          <AnimatedModal
+          <ModalAnimado
             isOpen={showModal}
             onClose={() => setShowModal(false)}
             title="Novo Lembrete"
@@ -269,7 +269,7 @@ export default function LembretesPage() {
                   Criar
                 </button>
               </div>
-          </AnimatedModal>
+          </ModalAnimado>
         )}
       </main>
     </div>

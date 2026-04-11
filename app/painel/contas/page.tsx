@@ -52,12 +52,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/componentes/ui/tooltip";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { CarregamentoNeural } from "@/app/painel/_componentes/CarregamentoNeural";
 // ✅ IMPORT DOS MODAIS FUTURISTAS
-import NewAccountModal from "./_componentes/NewAccountModal";
-import EditAccountModal from "./_componentes/EditAccountModal";
-import { PluggyConnect } from "./_componentes/PluggyConnect";
+import ModalNovaConta from "./_componentes/ModalNovaConta";
+import ModalEditarConta from "./_componentes/ModalEditarConta";
+import { ConexaoPluggy } from "./_componentes/ConexaoPluggy";
 import { useSearchParams } from "next/navigation";
 
 // formatador de moeda (brl)
@@ -298,7 +298,7 @@ function AccountsPageContent() {
   // renderizar: LOADING
   // ============================================
   if (status === "loading") {
-    return <NeuralLoading message="Sincronizando Nódulos de Contas..." variant="full" />;
+    return <CarregamentoNeural message="Sincronizando Nódulos de Contas..." variant="full" />;
   }
 
   // ============================================
@@ -316,7 +316,7 @@ function AccountsPageContent() {
     <TooltipProvider>
       <div className="min-h-screen bg-slate-950">
         {/* Header Componentizado com Breadcrumbs Automáticos */}
-        <PageHeader 
+        <CabecalhoPagina 
           title="Contas Bancárias" 
           description="Gerencie suas contas bancárias e cartões"
           breadcrumbs={[ { label: "Contas Bancárias" } ]}
@@ -388,7 +388,7 @@ function AccountsPageContent() {
               <p>Cadastrar nova conta bancária</p>
             </TooltipContent>
           </Tooltip>
-        </PageHeader>
+        </CabecalhoPagina>
 
         {/* Conteúdo Principal */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -708,7 +708,7 @@ function AccountsPageContent() {
           )}
         </main>
 
-        <NewAccountModal
+        <ModalNovaConta
           isOpen={showNewAccountModal}
           onClose={() => {
             setShowNewAccountModal(false);
@@ -717,7 +717,7 @@ function AccountsPageContent() {
         />
 
         {/* ✅ MODAL FUTURISTA PARA EDITAR CONTA */}
-        <EditAccountModal
+        <ModalEditarConta
           isOpen={showEditModal}
           onClose={() => {
             setShowEditModal(false);
@@ -734,7 +734,7 @@ function AccountsPageContent() {
 // componente principal (com boundary)
 export default function AccountsPage() {
   return (
-    <Suspense fallback={<NeuralLoading message="Acessando Nótulos Bancários..." variant="full" />}>
+    <Suspense fallback={<CarregamentoNeural message="Acessando Nótulos Bancários..." variant="full" />}>
       <AccountsPageContent />
     </Suspense>
   );

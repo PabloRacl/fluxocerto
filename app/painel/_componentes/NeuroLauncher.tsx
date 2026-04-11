@@ -8,7 +8,7 @@ import {
   Sparkles, ShieldCheck, AlertCircle,
   Command, ChevronRight, Import, PlusCircle
 } from "lucide-react";
-import { NeuralMascot } from "./NeuralMascot";
+import { MascoteNeural } from "./MascoteNeural";
 import { useRouter } from "next/navigation";
 
 interface NeuroLauncherProps {
@@ -75,7 +75,7 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
       >
         {/* Lado Esquerdo: HUD Financeiro (Neuro-HUD Style) */}
         <div className="w-full md:w-80 bg-slate-900/80 border-r border-emerald-500/20 p-6 flex flex-col items-center">
-          <NeuralMascot size="lg" mood="HAPPY" className="mb-6" />
+          <MascoteNeural size="lg" mood="HAPPY" className="mb-6" />
           
           <div className="w-full space-y-6">
             <div className="space-y-1">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
 import { Calculator, DollarSign, TrendingUp, BarChart, Percent } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -65,7 +65,7 @@ export default function CalculadoraFinanceira() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200">
-      <PageHeader
+      <CabecalhoPagina
         title="Calculadoras Financeiras"
         subtitle="Simule rendimentos e projete suas amortizações de dívidas"
         onBack={() => router.push("/painel")}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BrandLogo } from "@/app/_componentes/BrandLogo";
+import { LogoMarca } from "@/app/_componentes/LogoMarca";
 import { Lock, Eye, EyeOff, ShieldCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -139,7 +139,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
       <div className="relative w-full max-w-md bg-slate-900/80 backdrop-blur-md rounded-3xl border border-blue-500/30 shadow-2xl p-8 space-y-6">
         <div className="text-center">
-          <BrandLogo size="lg" className="justify-center mb-4" />
+          <LogoMarca size="lg" className="justify-center mb-4" />
           <h2 className="text-xl font-bold text-white">Sincronização de Senha</h2>
           <p className="text-slate-400 text-sm mt-2 font-medium">Insira sua nova chave de acesso neural.</p>
         </div>

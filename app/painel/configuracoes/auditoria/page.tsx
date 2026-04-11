@@ -11,7 +11,7 @@ import {
   ChevronUp,
   Fingerprint
 } from "lucide-react";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -59,7 +59,7 @@ export default function AuditoriaPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 p-4 md:p-8">
-      <PageHeader 
+      <CabecalhoPagina 
         title="Auditoria & Transparência"
         subtitle="Rastro completo de alterações no seu sistema FluxoCerto"
         onBack={() => router.push("/painel/configuracoes")}

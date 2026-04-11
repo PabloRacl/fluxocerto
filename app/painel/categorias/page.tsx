@@ -4,10 +4,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
 import { Archive, RefreshCw, Trash2, PieChart, Plus } from "lucide-react";
 // ✅ IMPORT DO NOVO MODAL FUTURISTA
-import NewCategoryModal from "./_componentes/NewCategoryModal";
+import ModalNovaCategoria from "./_componentes/ModalNovaCategoria";
 import {
   Tooltip,
   TooltipContent,
@@ -370,7 +370,7 @@ export default function CategoriesPage() {
         </div>
 
         {/* ✅ HEADER PADRONIZADO */}
-        <PageHeader
+        <CabecalhoPagina
           title="Categorias"
           description="Organize suas receitas e despesas"
           breadcrumbs={[{ label: "Categorias" }]}
@@ -418,7 +418,7 @@ export default function CategoriesPage() {
             <Plus className="w-4 h-4" />
             <span className="hidden sm:block">Nova Categoria</span>
           </button>
-        </PageHeader>
+        </CabecalhoPagina>
 
         {/* Conteúdo Principal */}
         <main className="relative z-10 p-8">
@@ -767,7 +767,7 @@ export default function CategoriesPage() {
         </main>
 
         {/* ✅ MODAL FUTURISTA PARA NOVA CATEGORIA */}
-        <NewCategoryModal
+        <ModalNovaCategoria
           isOpen={showNewCategoryModal}
           onClose={handleModalClose}
           onSuccess={handleModalSuccess}

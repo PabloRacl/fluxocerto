@@ -16,7 +16,7 @@ import {
   MoreVertical,
   History
 } from "lucide-react";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -81,7 +81,7 @@ export default function EstoquePage() {
 
   return (
     <div className="min-h-screen bg-slate-950 p-4 md:p-8">
-      <PageHeader 
+      <CabecalhoPagina 
         title="Despensa & Suprimentos"
         subtitle="Controle inteligente de estoque para economia no Atacarejo"
         onNew={() => {}} // Abriria o modal

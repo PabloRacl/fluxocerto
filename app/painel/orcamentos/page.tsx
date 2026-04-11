@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
 import { PiggyBank, AlertTriangle, RefreshCw, Save } from "lucide-react";
 
 function formatCurrency(v: number) {
@@ -101,7 +101,7 @@ export default function OrcamentosPage() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      <PageHeader
+      <CabecalhoPagina
         title="Orçamentos"
         description="Defina limites mensais de gastos"
         breadcrumbs={[{ label: "Orçamentos" }]}
@@ -113,7 +113,7 @@ export default function OrcamentosPage() {
         >
           <RefreshCw className="w-5 h-5" />
         </button>
-      </PageHeader>
+      </CabecalhoPagina>
       <main className="max-w-3xl mx-auto px-4 py-8">
         {/* Filtros */}
         <div className="flex gap-4 mb-8">

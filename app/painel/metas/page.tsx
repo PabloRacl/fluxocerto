@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
-import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { CarregamentoNeural } from "@/app/painel/_componentes/CarregamentoNeural";
+import { ModalAnimado } from "@/app/painel/_componentes/ModalAnimado";
 import {
   Tooltip,
   TooltipContent,
@@ -29,7 +29,7 @@ import {
   ShieldCheck,
   Activity
 } from "lucide-react";
-import { NeuralMascot } from "@/app/painel/_componentes/NeuralMascot";
+import { MascoteNeural } from "@/app/painel/_componentes/MascoteNeural";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Resumo {
@@ -206,7 +206,7 @@ export default function MetasPage() {
   };
 
   if (status === "loading") {
-    return <NeuralLoading message="Calculando Projeção de Metas..." variant="full" />;
+    return <CarregamentoNeural message="Calculando Projeção de Metas..." variant="full" />;
   }
 
   return (
@@ -217,7 +217,7 @@ export default function MetasPage() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="relative z-10">
-          <PageHeader
+          <CabecalhoPagina
             title="Metas de Patrimônio"
             description="Transforme sonhos em realidade com o poder dos juros compostos"
             breadcrumbs={[{ label: "Metas e Objetivos" }]}
@@ -264,7 +264,7 @@ export default function MetasPage() {
               <Plus className="w-4 h-4" />
               <span className="hidden sm:block">Nova Meta</span>
             </button>
-          </PageHeader>
+          </CabecalhoPagina>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           {/* Header Dashboard & Mascot Side-by-Side */}
@@ -415,7 +415,7 @@ export default function MetasPage() {
             {/* Lado Direito: Neural Mascot Panel */}
             <div className="w-full lg:w-[280px] shrink-0 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl p-6 relative overflow-hidden flex flex-col items-center justify-center group">
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-emerald-500/5 pointer-events-none" />
-              <NeuralMascot 
+              <MascoteNeural 
                 size="lg" 
                 level={userLevel} 
                 className="hover:scale-105 transition-transform duration-500 relative z-10 drop-shadow-2xl" 
@@ -428,7 +428,7 @@ export default function MetasPage() {
           </div>
 
           {loading && (
-            <NeuralLoading message="Sincronizando Metas..." variant="card" />
+            <CarregamentoNeural message="Sincronizando Metas..." variant="card" />
           )}
 
           {!loading && !error && metas.length === 0 && (
@@ -697,7 +697,7 @@ function DepositoModal({
   };
 
   return (
-    <AnimatedModal
+    <ModalAnimado
       isOpen={true}
       onClose={onClose}
       title={`Injetar Fluxo: ${meta.nome}`}
@@ -752,7 +752,7 @@ function DepositoModal({
           </button>
         </div>
       </form>
-    </AnimatedModal>
+    </ModalAnimado>
   );
 }
 
@@ -821,7 +821,7 @@ function NovaMetaModal({
     "w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm";
 
   return (
-    <AnimatedModal
+    <ModalAnimado
       isOpen={true}
       onClose={onClose}
       title="🎯 Nova Meta Financeira"
@@ -958,6 +958,6 @@ function NovaMetaModal({
             </button>
           </div>
         </form>
-    </AnimatedModal>
+    </ModalAnimado>
   );
 }

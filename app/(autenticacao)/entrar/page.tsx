@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Loader2, AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
-import { BrandLogo } from "@/app/_componentes/BrandLogo";
+import { LogoMarca } from "@/app/_componentes/LogoMarca";
 
 // Ícones Sociais (Removidos no Lucide 1.0)
 const Facebook = (props: any) => (
@@ -103,7 +103,7 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-md z-10">
         <div className="text-center mb-8">
-          <BrandLogo size="lg" className="justify-center mb-4" />
+          <LogoMarca size="lg" className="justify-center mb-4" />
           <p className="text-slate-400 mt-2">
             Entre para controlar suas finanças
           </p>

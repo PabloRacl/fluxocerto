@@ -6,7 +6,7 @@ import { Users, Trash2, ShieldAlert, ChevronLeft, Search, Info, X } from "lucide
 import { motion } from "framer-motion";
 import { api } from "@/biblioteca/http-client";
 import Link from "next/link";
-import { BrandLogo } from "@/app/_componentes/BrandLogo";
+import { LogoMarca } from "@/app/_componentes/LogoMarca";
 
 const fetcher = (url: string) => api.get<any[]>(url);
 
@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
             >
               <ChevronLeft className="w-5 h-5 text-slate-400 group-hover:text-indigo-400 transition-colors" />
             </Link>
-            <BrandLogo size="md" />
+            <LogoMarca size="md" />
           </div>
           <div className="px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30">
             <span className="text-xs font-black text-indigo-400 tracking-widest uppercase">Admin Terminal</span>

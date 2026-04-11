@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
-import { MascotAssistant } from "@/app/painel/_componentes/MascotAssistant";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { ModalAnimado } from "@/app/painel/_componentes/ModalAnimado";
+import { MascoteAssistente } from "@/app/painel/_componentes/MascoteAssistente";
 import {
   ShoppingBag,
   Store,
@@ -29,7 +29,7 @@ import {
   Maximize2,
   Zap,
 } from "lucide-react";
-import { ScannerQRCode } from "@/app/painel/_componentes/ScannerQRCode";
+import { LeitorQRCode } from "@/app/painel/_componentes/LeitorQRCode";
 import { motion, AnimatePresence } from "framer-motion";
 
 function formatCurrency(v: number) {
@@ -71,12 +71,12 @@ export default function ComprasPage() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      <PageHeader
+      <CabecalhoPagina
         title="Compras"
         description="Mercado, feira e lista de compras"
         breadcrumbs={[ { label: "Compras" } ]}
       >
-      </PageHeader>
+      </CabecalhoPagina>
 
       {/* Abas */}
       <div className="max-w-5xl mx-auto px-4 pt-4">
@@ -104,7 +104,7 @@ export default function ComprasPage() {
       </div>
 
       {/* Assistente Neural — Mestre Sábio */}
-      <MascotAssistant />
+      <MascoteAssistente />
     </div>
   );
 }
@@ -1325,7 +1325,7 @@ function NovaCompraModal({
     "w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm";
 
   return (
-    <AnimatedModal
+    <ModalAnimado
       isOpen={true}
       onClose={onClose}
       title="Nova Compra"
@@ -1551,7 +1551,7 @@ function NovaCompraModal({
             </button>
           </div>
         </form>
-    </AnimatedModal>
+    </ModalAnimado>
   );
 }
 
@@ -1816,7 +1816,7 @@ function ImportarNFModal({
   };
 
   return (
-    <AnimatedModal
+    <ModalAnimado
       isOpen={true}
       onClose={onClose}
       title="Importar Nota Fiscal"
@@ -1921,7 +1921,7 @@ function ImportarNFModal({
           </div>
         )}
 
-        <ScannerQRCode
+        <LeitorQRCode
           isOpen={isScannerOpen}
           onClose={() => setIsScannerOpen(false)}
           onScanSuccess={(text) => {
@@ -2065,6 +2065,6 @@ function ImportarNFModal({
           </button>
         </div>
       </div>
-    </AnimatedModal>
+    </ModalAnimado>
   );
 }

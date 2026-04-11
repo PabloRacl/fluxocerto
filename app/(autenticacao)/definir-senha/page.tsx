@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Loader2, AlertCircle, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
-import { BrandLogo } from "@/app/_componentes/BrandLogo";
+import { LogoMarca } from "@/app/_componentes/LogoMarca";
 
 function DefinirSenhaForm() {
   const router = useRouter();
@@ -82,7 +82,7 @@ function DefinirSenhaForm() {
   return (
     <div className="relative w-full max-w-md z-10">
       <div className="text-center mb-8">
-        <BrandLogo size="lg" className="justify-center mb-4" />
+        <LogoMarca size="lg" className="justify-center mb-4" />
         <h1 className="text-2xl font-bold text-white mb-2">Defina sua senha</h1>
         <p className="text-slate-400">
           Identificamos sua conta via social. Defina uma senha para acessar também por e-mail.

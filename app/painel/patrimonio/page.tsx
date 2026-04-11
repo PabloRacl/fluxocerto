@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { CarregamentoNeural } from "@/app/painel/_componentes/CarregamentoNeural";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { motion } from "framer-motion";
 import {
@@ -104,7 +104,7 @@ export default function PatrimonioPage() {
 
   if (status === "loading" || (loading && !data)) {
     return (
-      <NeuralLoading
+      <CarregamentoNeural
         message="Mapeando Estrutura Patrimonial..."
         variant="full"
       />
@@ -118,7 +118,7 @@ export default function PatrimonioPage() {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative z-10">
-        <PageHeader
+        <CabecalhoPagina
           title="Gestão de Patrimônio"
           description="Acompanhamento estratégico de ativos e passivos em tempo real"
           breadcrumbs={[{ label: "Patrimônio" }]}
@@ -130,7 +130,7 @@ export default function PatrimonioPage() {
           >
             <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
           </button>
-        </PageHeader>
+        </CabecalhoPagina>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           {error && (

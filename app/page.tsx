@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Wallet, TrendingDown, ShoppingCart, CalendarClock, Leaf } from "lucide-react";
-import { BrandLogo } from "@/app/_componentes/BrandLogo";
+import { LogoMarca } from "@/app/_componentes/LogoMarca";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Componente para Folhas Flutuantes (Orgânico)
@@ -157,7 +157,7 @@ export default function Home() {
 
       {/* Header */}
       <header className="relative z-10 w-full px-6 py-4 flex justify-between items-center bg-slate-950/20 backdrop-blur-sm">
-        <BrandLogo size="md" />
+        <LogoMarca size="md" />
         <div className="flex gap-3">
           <Link
             href="/entrar"
@@ -179,7 +179,7 @@ export default function Home() {
         <div className="max-w-4xl w-full text-center space-y-6">
           {/* Logo Central Pulsante */}
           <div className="inline-flex items-center justify-center relative">
-             <BrandLogo size="xl" showText={false} />
+             <LogoMarca size="xl" showText={false} />
           </div>
 
           {/* Title */}

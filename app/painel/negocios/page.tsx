@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { CarregamentoNeural } from "@/app/painel/_componentes/CarregamentoNeural";
 import { motion, AnimatePresence } from "framer-motion";
 
 const fetcher = (url: string) =>
@@ -31,7 +31,7 @@ export default function NegociosPage() {
 
   if (isLoading) {
     return (
-      <NeuralLoading
+      <CarregamentoNeural
         message="Sincronizando Business Intelligence..."
         variant="full"
       />
@@ -54,7 +54,7 @@ export default function NegociosPage() {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative z-10">
-        <PageHeader
+        <CabecalhoPagina
           title="Business Intelligence"
           description="Gestão avançada de vendas e lucratividade estratégica (MEI)"
           breadcrumbs={[{ label: "Negócios" }]}
@@ -75,7 +75,7 @@ export default function NegociosPage() {
               <span>Nova Venda</span>
             </button>
           </div>
-        </PageHeader>
+        </CabecalhoPagina>
 
         <main className="max-w-7xl mx-auto px-6 py-8">
           {/* Cards de Performance MEI */}
@@ -245,7 +245,7 @@ export default function NegociosPage() {
               {/* Mascot Panel */}
               <div className="bg-slate-950/40 backdrop-blur-2xl border border-white/5 rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden group shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-500/5 pointer-events-none" />
-                <NeuralMascot
+                <MascoteNeural
                   size="lg"
                   className="hover:scale-105 transition-transform duration-500 drop-shadow-2xl mb-4"
                 />
@@ -350,8 +350,8 @@ function BizCard({
 // ----------------------------------------------------
 // MODAL: REGISTRAR NOVA VENDA (INTERNAL COMPONENT)
 // ----------------------------------------------------
-import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
-import { NeuralMascot } from "@/app/painel/_componentes/NeuralMascot";
+import { ModalAnimado } from "@/app/painel/_componentes/ModalAnimado";
+import { MascoteNeural } from "@/app/painel/_componentes/MascoteNeural";
 
 function NovaVendaModal({
   onClose,
@@ -411,7 +411,7 @@ function NovaVendaModal({
   };
 
   return (
-    <AnimatedModal
+    <ModalAnimado
       isOpen={true}
       onClose={onClose}
       title="Nova Transação Comercial"
@@ -524,6 +524,6 @@ function NovaVendaModal({
           </button>
         </div>
       </form>
-    </AnimatedModal>
+    </ModalAnimado>
   );
 }

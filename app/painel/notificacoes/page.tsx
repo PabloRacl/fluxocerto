@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
-import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
+import { CarregamentoNeural } from "@/app/painel/_componentes/CarregamentoNeural";
 import { api } from "@/biblioteca/http-client";
 import {
   Bell,
@@ -131,12 +131,12 @@ export default function NotificacoesPage() {
   };
 
   if (status === "loading") {
-    return <NeuralLoading message="Escaneando Central de Alertas..." variant="full" />;
+    return <CarregamentoNeural message="Escaneando Central de Alertas..." variant="full" />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <PageHeader
+      <CabecalhoPagina
         title="Notificações"
         subtitle={naoLidas > 0 ? `${naoLidas} não lida(s)` : "Tudo em dia!"}
         onRefresh={fetchNotificacoes}
@@ -173,7 +173,7 @@ export default function NotificacoesPage() {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading && (
-          <NeuralLoading message="Sincronizando Alertas..." variant="card" />
+          <CarregamentoNeural message="Sincronizando Alertas..." variant="card" />
         )}
 
         {!loading && notificacoes.length === 0 && (

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { PageHeader } from "@/app/painel/_componentes/PageHeader";
+import { CabecalhoPagina } from "@/app/painel/_componentes/CabecalhoPagina";
 import { Settings, Save, RefreshCw, ShieldCheck, ChevronRight, Trash2, Database, AlertCircle, LogOut, Skull } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -125,7 +125,7 @@ export default function ConfiguracoesPage() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      <PageHeader
+      <CabecalhoPagina
         title="Configurações"
         description="Personalize sua experiência"
         breadcrumbs={[{ label: "Configurações" }]}
@@ -137,7 +137,7 @@ export default function ConfiguracoesPage() {
         >
           <RefreshCw className="w-5 h-5" />
         </button>
-      </PageHeader>
+      </CabecalhoPagina>
       <main className="max-w-2xl mx-auto px-4 py-8">
         {loading ? (
           <div className="flex justify-center py-12">
