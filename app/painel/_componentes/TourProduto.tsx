@@ -51,7 +51,18 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
     }
   }, [initialStatus]);
 
-  // Efeito para buscar e rastrear o elemento em foco
+  // Efeito 1: Apenas rolar a página suavemente quando o passo muda
+  useEffect(() => {
+    if (tourStarted && currentDetails?.elementSelector && currentDetails.elementSelector !== "body") {
+      const element = document.querySelector(currentDetails.elementSelector);
+      if (element) {
+         // Executa a rolagem
+         element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [currentStep, tourStarted, currentDetails]);
+
+  // Efeito 2: Rastrear passivamente a caixa para o spotlight brilhar sem disparar loop de scroll
   useEffect(() => {
     if (tourStarted && currentDetails?.elementSelector) {
       const updateRect = () => {
@@ -62,28 +73,26 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
 
         const element = document.querySelector(currentDetails.elementSelector);
         if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "center" });
-          
-          // Pequeno delay para esperar o scroll terminar e pegar a posição correta de forma mais suave
-          setTimeout(() => {
-            const rect = element.getBoundingClientRect();
-            setTargetRect({
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              height: rect.height,
-            });
-          }, 450); // Ajudando os olhos do usuário a acompanhar o scroll com um tempo de pausa maior
+          const rect = element.getBoundingClientRect();
+          setTargetRect({
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+          });
         } else {
           setTargetRect(null);
         }
       };
 
-      updateRect();
-      window.addEventListener("resize", updateRect);
-      window.addEventListener("scroll", updateRect);
+      // Pequeno timeout depois que muda o passo para permitir o scrollIntoView chegar no ponto
+      const timer = setTimeout(updateRect, 450);
+
+      window.addEventListener("resize", updateRect, { passive: true });
+      window.addEventListener("scroll", updateRect, { passive: true });
       
       return () => {
+        clearTimeout(timer);
         window.removeEventListener("resize", updateRect);
         window.removeEventListener("scroll", updateRect);
       };
@@ -140,17 +149,18 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
             
             <div className="text-center mb-8 relative">
               <motion.div 
-                animate={{ y: [-8, 8, -8] }} 
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ translateY: ["-8px", "8px", "-8px"] }} 
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 className="relative w-32 h-32 mx-auto mb-6"
               >
                 <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full animate-pulse" />
-                <div className="absolute inset-0 border-2 border-emerald-500/30 rounded-full border-dashed animate-[spin_10s_linear_infinite]" />
+                <div className="absolute inset-0 border-2 border-emerald-500/30 rounded-full border-dashed animate-[spin_8s_linear_infinite]" />
                 <Image 
                   src="/mascote/sapo_feliz_dark.png" 
                   alt="Dino HUD" 
                   fill 
-                  className="object-contain drop-shadow-[0_0_20px_rgba(16,185,129,0.8)] filter brightness-110 saturate-150" 
+                  priority
+                  className="object-contain drop-shadow-[0_0_15px_rgba(16,185,129,0.5)] filter brightness-110 saturate-150" 
                 />
               </motion.div>
 
@@ -232,19 +242,15 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
                   />
                 )}
               </mask>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="4" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
             </defs>
             <rect
               x="0"
               y="0"
               width="100%"
               height="100%"
-              fill="rgba(2, 6, 23, 0.95)"
+              fill="rgba(2, 6, 23, 0.90)"
               mask="url(#spotlight-mask)"
-              className="pointer-events-auto"
+              className="pointer-events-auto transition-colors duration-1000"
             />
             {targetRect && (
               <motion.rect
@@ -258,9 +264,8 @@ export function TourProduto({ initialStatus }: ProductTourProps) {
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
                 rx="16"
                 fill="transparent"
-                stroke="rgba(16, 185, 129, 0.5)"
+                stroke="rgba(16, 185, 129, 0.8)"
                 strokeWidth="2"
-                filter="url(#glow)"
                 className="pointer-events-none"
               />
             )}
