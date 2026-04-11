@@ -6,9 +6,7 @@ import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
 import { schemaCriarConta } from "@/validacoes/conta.schema";
 import { contaService } from "@/servicos/ContaService";
 
-// ============================================
-// GET - Listar todas as contas do usuário
-// ============================================
+// get - listar todas as contas do usuário
 export async function GET(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
@@ -22,9 +20,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ============================================
-// POST - Criar nova conta
-// ============================================
+// post - criar nova conta
 export async function POST(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();

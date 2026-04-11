@@ -4,9 +4,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/biblioteca/prisma";
 import { authOptions } from "@/biblioteca/autenticacao";
 
-// ============================================
-// POST - Restaurar Conta Arquivada
-// ============================================
+// post - restaurar conta arquivada
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

@@ -4,9 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/biblioteca/autenticacao";
 import { prisma } from "@/biblioteca/prisma";
 
-// ============================================
-// PUT: Atualizar conta
-// ============================================
+// put: atualizar conta
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -95,9 +93,7 @@ export async function PUT(
   }
 }
 
-// ============================================
-// DELETE: Arquivar conta (Soft Delete)
-// ============================================
+// delete: arquivar conta (soft delete)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -174,9 +170,7 @@ export async function DELETE(
   }
 }
 
-// ============================================
-// GET: Buscar conta específica
-// ============================================
+// get: buscar conta específica
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

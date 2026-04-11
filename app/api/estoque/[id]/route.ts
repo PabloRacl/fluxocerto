@@ -4,18 +4,14 @@ import { withAuthRoute } from "@/biblioteca/route-wrapper";
 import { schemaAtualizarEstoque } from "@/validacoes/estoque.schema";
 import { estoqueService } from "@/servicos/EstoqueService";
 
-// ============================================
-// GET - Detalhe do Item de Estoque
-// ============================================
+// get - detalhe do item de estoque
 export const GET = withAuthRoute(async (request, user, { params }) => {
   const { id } = await params;
   const item = await estoqueService.obterPorId(id as string, user.id);
   return sucesso({ item });
 });
 
-// ============================================
-// PUT - Atualizar Item de Estoque
-// ============================================
+// put - atualizar item de estoque
 export const PUT = withAuthRoute(async (request, user, { params }) => {
   const { id } = await params;
   const body = await request.json();
@@ -25,9 +21,7 @@ export const PUT = withAuthRoute(async (request, user, { params }) => {
   return sucesso({ message: "Item atualizado", item: updated });
 });
 
-// ============================================
-// DELETE - Desativar Item de Estoque (Soft Delete)
-// ============================================
+// delete - desativar item de estoque (soft delete)
 export const DELETE = withAuthRoute(async (request, user, { params }) => {
   const { id } = await params;
   await estoqueService.desativar(id as string, user.id);

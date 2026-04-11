@@ -17,9 +17,7 @@ import {
   Percent,
 } from "lucide-react";
 
-// ============================================
-// TIPOS
-// ============================================
+// tipos
 interface Parcela {
   numero: number;
   prestacao: number;
@@ -49,9 +47,7 @@ interface DebtDetail {
   category: { id: string; name: string; color: string };
 }
 
-// ============================================
-// HELPERS
-// ============================================
+// auxiliares
 function formatCurrency(v: number): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v / 100);
 }
@@ -60,16 +56,12 @@ function formatDate(d: string): string {
   return new Date(d).toLocaleDateString("pt-BR");
 }
 
-// ============================================
-// SKELETON
-// ============================================
+// skeleton
 function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse bg-slate-800 rounded-xl ${className}`} />;
 }
 
-// ============================================
-// PÁGINA DE DETALHE
-// ============================================
+// página de detalhe
 export default function DetalhesDividaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();

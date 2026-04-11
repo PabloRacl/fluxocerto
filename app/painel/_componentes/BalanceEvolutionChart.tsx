@@ -23,9 +23,7 @@ import {
 import { api } from "@/biblioteca/http-client";
 import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
 
-// ============================================
-// TIPOS
-// ============================================
+// tipos
 interface ChartData {
   month: string;
   balance: number;
@@ -37,9 +35,7 @@ interface BalanceEvolutionChartProps {
   userId: string;
 }
 
-// ============================================
-// FORMATADORES
-// ============================================
+// formatadores
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -53,9 +49,7 @@ const formatMonth = (month: string) => {
   return date.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
 };
 
-// ============================================
-// COMPONENTE PRINCIPAL
-// ============================================
+// componente principal
 export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
   const [data, setData] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,14 +161,14 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
   );
 
   // ============================================
-  // RENDER: LOADING
+  // renderizar: LOADING
   // ============================================
   if (loading) {
     return <NeuralLoading message="Processando Evolução Temporal..." variant="card" />;
   }
 
   // ============================================
-  // RENDER: ERROR
+  // renderizar: ERROR
   // ============================================
   if (error && data.length === 0) {
     return (
@@ -255,7 +249,7 @@ export function BalanceEvolutionChart({ userId }: BalanceEvolutionChartProps) {
   };
 
   // ============================================
-  // RENDER: PRINCIPAL
+  // renderizar: PRINCIPAL
   // ============================================
   return (
     <div data-tour="chart-evolucao" className="relative bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-slate-800/50 p-6 shadow-2xl h-full flex flex-col group overflow-hidden">

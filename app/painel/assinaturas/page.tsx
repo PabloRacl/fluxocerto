@@ -449,9 +449,7 @@ export default function AssinaturasPage() {
   );
 }
 
-// ============================================
-// MODAL NOVA ASSINATURA
-// ============================================
+// modal nova assinatura
 function NovaAssinaturaModal({
   onClose,
   onSuccess,

@@ -23,9 +23,7 @@ import { FloatingGamification } from "@/app/painel/_componentes/FloatingGamifica
 import { MascotNotification } from "@/app/painel/_componentes/MascotNotification";
 import { MascotAssistant } from "@/app/painel/_componentes/MascotAssistant";
 
-// ============================================
-// VARIANTES DE ANIMAÇÃO (P9 - EFEITO QUEBRA-CABEÇA)
-// ============================================
+// variantes de animação (p9 - efeito quebra-cabeça)
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {

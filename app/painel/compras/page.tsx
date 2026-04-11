@@ -109,9 +109,7 @@ export default function ComprasPage() {
   );
 }
 
-// ============================================
-// ABA COMPRAS
-// ============================================
+// aba compras
 function ComprasTab() {
   const [compras, setCompras] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -370,9 +368,7 @@ function ComprasTab() {
   );
 }
 
-// ============================================
-// ABA LISTAS
-// ============================================
+// aba listas
 function ListasTab() {
   const [listas, setListas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -718,9 +714,7 @@ function ListasTab() {
   );
 }
 
-// ============================================
-// ABA ESTOQUE - COMPLETA COM CATÁLOGO, CONSUMO E CÂMERA
-// ============================================
+// aba estoque - completa com catálogo, consumo e câmera
 function EstoqueTab() {
   const [estoque, setEstoque] = useState<any[]>([]);
   const [resumo, setResumo] = useState<any>(null);
@@ -1160,9 +1154,7 @@ function EstoqueTab() {
   );
 }
 
-// ============================================
-// MODAL NOVA COMPRA (mantido do original)
-// ============================================
+// modal nova compra (mantido do original)
 interface ItemForm {
   name: string;
   quantity: string;
@@ -1563,9 +1555,7 @@ function NovaCompraModal({
   );
 }
 
-// ============================================
-// MODAL IMPORTAR NF
-// ============================================
+// modal importar nf
 function ImportarNFModal({
   onClose,
   onSuccess,

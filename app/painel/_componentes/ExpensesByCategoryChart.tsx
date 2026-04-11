@@ -21,9 +21,7 @@ import { NeuralLoading } from "@/app/painel/_componentes/NeuralLoading";
 import { AnimatedModal } from "@/app/painel/_componentes/AnimatedModal";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ============================================
-// TIPOS
-// ============================================
+// tipos
 interface ChartData {
   name: string;
   value: number;
@@ -44,9 +42,7 @@ interface ExpensesByCategoryChartProps {
   userId: string;
 }
 
-// ============================================
-// FORMATADORES
-// ============================================
+// formatadores
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -58,9 +54,7 @@ const formatPercentage = (value: number) => {
   return `${value.toFixed(1)}%`;
 };
 
-// ============================================
-// CORES
-// ============================================
+// cores
 const CHART_COLORS = [
   "#EF4444", "#F43F5E", "#E11D48", "#FB7185",
   "#F97316", "#EA580C", "#FB923C", "#FDBA74",
@@ -87,7 +81,7 @@ export function ExpensesByCategoryChart({
   const [showAllModal, setShowAllModal] = useState(false);
 
   // ============================================
-  // BUSCAR DADOS
+  // buscar dados
   // ============================================
   useEffect(() => {
     const fetchExpensesData = async () => {
@@ -156,7 +150,7 @@ export function ExpensesByCategoryChart({
   const hasMore = data.length > 5;
 
   // ============================================
-  // TOOLTIP
+  // tooltip
   // ============================================
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -202,7 +196,7 @@ export function ExpensesByCategoryChart({
   };
 
   // ============================================
-  // LEGENDA
+  // legenda
   // ============================================
   const CustomLegend = ({ payload }: any) => {
     return (
@@ -244,14 +238,14 @@ export function ExpensesByCategoryChart({
   };
 
   // ============================================
-  // LOADING
+  // loading
   // ============================================
   if (loading) {
     return <NeuralLoading message="Categorizando Fluxo de Gastos..." variant="card" />;
   }
 
   // ============================================
-  // ERROR E EMPTY STATE
+  // error e empty state
   // ============================================
   if (error && data.length === 0) {
     return (
@@ -306,7 +300,7 @@ export function ExpensesByCategoryChart({
   }
 
   // ============================================
-  // RENDER PRINCIPAL
+  // renderizar PRINCIPAL
   // ============================================
   return (
     <div data-tour="chart-categorias" className="relative bg-slate-950/40 backdrop-blur-2xl rounded-3xl border border-slate-800/50 p-6 shadow-2xl h-full flex flex-col group overflow-hidden">

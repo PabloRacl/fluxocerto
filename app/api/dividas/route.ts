@@ -6,9 +6,7 @@ import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
 import { schemaCriarDivida } from "@/validacoes/divida.schema";
 import { dividaService } from "@/servicos/DividaService";
 
-// ============================================
-// GET - Listar Dívidas do Usuário
-// ============================================
+// get - listar dívidas do usuário
 export async function GET(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
@@ -25,9 +23,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ============================================
-// POST - Criar Nova Dívida
-// ============================================
+// post - criar nova dívida
 export async function POST(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();

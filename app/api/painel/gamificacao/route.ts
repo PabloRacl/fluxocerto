@@ -5,9 +5,7 @@ import { tratarErro } from "@/biblioteca/tratar-erro";
 import { painelService } from "@/servicos/PainelService";
 import { unstable_cache } from "next/cache";
 
-// ============================================
-// GET - Gamificação e Medalhas
-// ============================================
+// get - gamificação e medalhas
 export async function GET() {
   try {
     const user = await obterUsuarioAutenticado();

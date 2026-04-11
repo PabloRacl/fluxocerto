@@ -6,9 +6,7 @@ import { sucesso } from "@/biblioteca/resposta-api";
 import { schemaAtualizarConfiguracao } from "@/validacoes/configuracao.schema";
 import { configuracaoService } from "@/servicos/ConfiguracaoService";
 
-// ============================================
-// GET - Obter configurações do usuário
-// ============================================
+// get - obter configurações do usuário
 export async function GET() {
   try {
     const user = await obterUsuarioAutenticado();
@@ -20,9 +18,7 @@ export async function GET() {
   }
 }
 
-// ============================================
-// PUT - Atualizar Configurações Parciais
-// ============================================
+// put - atualizar configurações parciais
 export async function PUT(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();

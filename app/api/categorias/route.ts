@@ -6,9 +6,7 @@ import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
 import { schemaCriarCategoria } from "@/validacoes/categoria.schema";
 import { categoriaService } from "@/servicos/CategoriaService";
 
-// ============================================
-// GET - Listar Categorias do Usuário
-// ============================================
+// get - listar categorias do usuário
 export async function GET(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
@@ -26,9 +24,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ============================================
-// POST - Criar Nova Categoria
-// ============================================
+// post - criar nova categoria
 export async function POST(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();

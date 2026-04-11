@@ -297,7 +297,7 @@ export default function NegociosPage() {
 }
 
 // ----------------------------------------------------
-// CARD DE BUSINESS INTELLIGENCE
+// card de business intelligence
 // ----------------------------------------------------
 function BizCard({
   title,

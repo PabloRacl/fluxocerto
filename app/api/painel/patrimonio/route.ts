@@ -4,9 +4,7 @@ import { obterUsuarioAutenticado } from "@/biblioteca/obter-usuario-autenticado"
 import { tratarErro } from "@/biblioteca/tratar-erro";
 import { painelService } from "@/servicos/PainelService";
 
-// ============================================
-// GET - Patrimônio Líquido
-// ============================================
+// get - patrimônio líquido
 export async function GET() {
   try {
     const user = await obterUsuarioAutenticado();

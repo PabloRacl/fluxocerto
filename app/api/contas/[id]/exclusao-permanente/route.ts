@@ -4,9 +4,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/biblioteca/prisma";
 import { authOptions } from "@/biblioteca/autenticacao";
 
-// ============================================
-// DELETE - Exclusão Permanente de Conta
-// ============================================
+// delete - exclusão permanente de conta
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

@@ -43,9 +43,7 @@ import {
 } from "recharts";
 import { HistoricoRelatorios } from "./_componentes/HistoricoRelatorios";
 
-// ============================================
-// TIPOS E INTERFACES
-// ============================================
+// tipos e interfaces
 interface Periodo {
   mes: number;
   ano: number;
@@ -127,9 +125,7 @@ type PeriodoPreset =
   | "CUSTOM";
 type TipoFiltro = "ALL" | "INCOME" | "EXPENSE";
 
-// ============================================
-// CONTEÚDO DA PÁGINA (WRAPPER PARA SUSPENSE)
-// ============================================
+// conteúdo da página (wrapper para suspense)
 function RelatoriosPageContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -185,7 +181,7 @@ function RelatoriosPageContent() {
   }, []);
 
   // ============================================
-  // BUSCAR CONTAS E CATEGORIAS PARA FILTROS
+  // buscar contas e categorias para filtros
   // ============================================
   const buscarFiltrosAuxiliares = useCallback(async () => {
     if (status !== "authenticated") return;
@@ -294,7 +290,7 @@ function RelatoriosPageContent() {
   ]);
 
   // ============================================
-  // EFFECTS
+  // efeitos
   // ============================================
   useEffect(() => {
     buscarFiltrosAuxiliares();
@@ -320,7 +316,7 @@ function RelatoriosPageContent() {
   }, [searchParams]);
 
   // ============================================
-  // HANDLERS DE NAVEGAÇÃO E FILTROS
+  // handlers DE NAVEGAÇÃO E FILTROS
   // ============================================
   const handleMesAnterior = () => {
     if (mesAtual === 1) {
@@ -1183,9 +1179,7 @@ function RelatoriosPageContent() {
   );
 }
 
-// ============================================
-// COMPONENTE PRINCIPAL (COM BOUNDARY)
-// ============================================
+// componente principal (com boundary)
 export default function RelatoriosPage() {
   return (
     <Suspense fallback={<NeuralLoading message="Sincronizando Matriz de Dados..." variant="full" />}>

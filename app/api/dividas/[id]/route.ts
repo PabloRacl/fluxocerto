@@ -4,9 +4,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/biblioteca/prisma";
 import { authOptions } from "@/biblioteca/autenticacao";
 
-// ============================================
-// GET - Detalhe da Dívida
-// ============================================
+// get - detalhe da dívida
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -53,7 +51,7 @@ export async function GET(
         }
         amortizacao = prestacao - juros;
       } else {
-        // FIXED
+        // fixed
         prestacao = debt.installmentValue;
         amortizacao = prestacao - juros;
       }
@@ -91,9 +89,7 @@ export async function GET(
   }
 }
 
-// ============================================
-// PUT - Atualizar Dívida
-// ============================================
+// put - atualizar dívida
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -140,9 +136,7 @@ export async function PUT(
   }
 }
 
-// ============================================
-// PATCH - Atualizar Parcialmente a Dívida (Frontend Edit)
-// ============================================
+// patch - atualizar parcialmente a dívida (frontend edit)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -192,9 +186,7 @@ export async function PATCH(
   }
 }
 
-// ============================================
-// DELETE - Soft Delete da Dívida
-// ============================================
+// delete - soft delete da dívida
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

@@ -46,9 +46,7 @@ import {
   TooltipTrigger,
 } from "@/componentes/ui/tooltip";
 
-// ============================================
-// TIPOS E INTERFACES
-// ============================================
+// tipos e interfaces
 interface Transaction {
   id: string;
   description: string;
@@ -116,12 +114,10 @@ interface Category {
   type: "INCOME" | "EXPENSE";
 }
 
-// ============================================
-// CONTEÚDO DA PÁGINA (WRAPPER PARA SUSPENSE)
-// ============================================
+// conteúdo da página (wrapper para suspense)
 function TransactionsPageContent() {
   // ============================================
-  // ESTADOS
+  // estados
   // ============================================
   const { status } = useSession();
   const router = useRouter();
@@ -186,7 +182,7 @@ function TransactionsPageContent() {
     useState<Transaction | null>(null);
 
   // ============================================
-  // FORMATADORES
+  // formatadores
   // ============================================
   const formatCurrency = (valueInCents: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -204,7 +200,7 @@ function TransactionsPageContent() {
   };
 
   // ============================================
-  // BADGES DE STATUS
+  // badges de status
   // ============================================
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -319,7 +315,7 @@ function TransactionsPageContent() {
   ]);
 
   // ============================================
-  // CALCULAR RESUMO FINANCEIRO
+  // calcular resumo financeiro
   // ============================================
   const calculateSummary = (transactions: Transaction[]) => {
     const income = transactions
@@ -338,7 +334,7 @@ function TransactionsPageContent() {
   };
 
   // ============================================
-  // BUSCAR CONTAS E CATEGORIAS
+  // buscar contas e categorias
   // ============================================
   const fetchFilters = useCallback(async () => {
     if (status !== "authenticated") return;
@@ -364,7 +360,7 @@ function TransactionsPageContent() {
   }, [status]);
 
   // ============================================
-  // HANDLERS DO MODAL FUTURISTA ✅ NOVO
+  // handlers DO MODAL FUTURISTA ✅ NOVO
   // ============================================
   const handleOpenModal = useCallback((type?: "INCOME" | "EXPENSE") => {
     setModalInitialType(type);
@@ -381,7 +377,7 @@ function TransactionsPageContent() {
   };
 
   // ============================================
-  // HANDLERS DO DRAWER (mantido como fallback)
+  // handlers DO DRAWER (mantido como fallback)
   // ============================================
   const handleOpenCreate = useCallback((type?: "INCOME" | "EXPENSE") => {
     // Agora sempre delega a criação para o novo modal
@@ -400,7 +396,7 @@ function TransactionsPageContent() {
   }, [searchParams, handleOpenCreate]);
 
   // ============================================
-  // EFFECTS
+  // efeitos
   // ============================================
   useEffect(() => {
     if (status === "authenticated") {
@@ -426,7 +422,7 @@ function TransactionsPageContent() {
   };
 
   // ============================================
-  // HANDLERS DE AÇÃO
+  // handlers DE AÇÃO
   // ============================================
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -526,14 +522,14 @@ function TransactionsPageContent() {
   };
 
   // ============================================
-  // RENDER: LOADING
+  // renderizar: LOADING
   // ============================================
   if (status === "loading") {
     return <NeuralLoading message="Processando Matriz de Transações..." variant="full" />;
   }
 
   // ============================================
-  // RENDER: NÃO AUTENTICADO
+  // renderizar: NÃO AUTENTICADO
   // ============================================
   if (status === "unauthenticated") {
     router.push("/entrar");
@@ -541,7 +537,7 @@ function TransactionsPageContent() {
   }
 
   // ============================================
-  // RENDER: PRINCIPAL
+  // renderizar: PRINCIPAL
   // ============================================
   return (
     <TooltipProvider>
@@ -1169,9 +1165,7 @@ function TransactionsPageContent() {
   );
 }
 
-// ============================================
-// COMPONENTE PRINCIPAL (COM BOUNDARY)
-// ============================================
+// componente principal (com boundary)
 export default function TransactionsPage() {
   return (
     <Suspense fallback={<NeuralLoading message="Acessando DataStream de Transações..." variant="full" />}>

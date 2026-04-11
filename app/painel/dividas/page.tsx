@@ -34,9 +34,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-// ============================================
-// TIPOS
-// ============================================
+// tipos
 interface Debt {
   id: string;
   name: string;
@@ -73,9 +71,7 @@ interface Resumo {
   totalQuitadas: number;
 }
 
-// ============================================
-// HELPERS
-// ============================================
+// auxiliares
 function formatCurrency(valueInCents: number): string {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -93,18 +89,14 @@ function getProgressColor(percent: number): string {
   return "from-red-500 to-red-400";
 }
 
-// ============================================
-// SKELETON
-// ============================================
+// skeleton
 function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div className={`animate-pulse bg-slate-800 rounded-xl ${className}`} />
   );
 }
 
-// ============================================
-// COMPONENTE PRINCIPAL
-// ============================================
+// componente principal
 export default function DividasPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -122,7 +114,7 @@ export default function DividasPage() {
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
 
   // ============================================
-  // FETCH
+  // fetch
   // ============================================
   const fetchDividas = useCallback(async () => {
     try {
@@ -159,7 +151,7 @@ export default function DividasPage() {
   }, [status, router, fetchDividas]);
 
   // ============================================
-  // HANDLERS
+  // handlers
   // ============================================
   const handleArchive = async (id: string) => {
     if (!confirm("Enviar esta dívida para a lixeira?")) return;
@@ -218,7 +210,7 @@ export default function DividasPage() {
   };
 
   // ============================================
-  // RENDER
+  // renderizar
   // ============================================
   if (status === "loading") {
     return <NeuralLoading message="Analisando Fluxo de Débitos..." variant="full" />;
@@ -652,9 +644,7 @@ export default function DividasPage() {
   );
 }
 
-// ============================================
-// MODAL DE NOVA DÍVIDA
-// ============================================
+// modal de nova dívida
 function NovaDividaModal({
   onClose,
   onSuccess,

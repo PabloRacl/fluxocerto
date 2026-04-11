@@ -36,9 +36,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-// ============================================
-// TIPOS E INTERFACES
-// ============================================
+// tipos e interfaces
 interface Account {
   id: string;
   name: string;
@@ -84,9 +82,7 @@ interface TransactionDrawerProps {
   onSuccess: () => void;
 }
 
-// ============================================
-// FORMATADOR DE MOEDA
-// ============================================
+// formatador de moeda
 const formatCurrency = (valueInCents: number) => {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -99,9 +95,7 @@ const parseCurrencyToCents = (value: string): number => {
   return parseInt(digits) || 0;
 };
 
-// ============================================
-// COMPONENTE PRINCIPAL
-// ============================================
+// componente principal
 export function TransactionDrawer({
   open,
   onOpenChange,
@@ -110,7 +104,7 @@ export function TransactionDrawer({
   onSuccess,
 }: TransactionDrawerProps) {
   // ============================================
-  // ESTADOS
+  // estados
   // ============================================
   const router = useRouter();
 
@@ -146,7 +140,7 @@ export function TransactionDrawer({
   const [customCategory, setCustomCategory] = useState("");
 
   // ============================================
-  // BUSCAR CONTAS E CATEGORIAS
+  // buscar contas e categorias
   // ============================================
   const fetchAccountsAndCategories = useCallback(async () => {
     if (!open || hasLoadedData) return;
@@ -257,7 +251,7 @@ export function TransactionDrawer({
   }, [open, hasLoadedData, fetchAccountsAndCategories]);
 
   // ============================================
-  // RESETAR HASLOADED QUANDO FECHAR
+  // resetar hasloaded quando fechar
   // ============================================
   useEffect(() => {
     if (!open) {
@@ -297,7 +291,7 @@ export function TransactionDrawer({
   };
 
   // ============================================
-  // HANDLERS
+  // handlers
   // ============================================
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -473,14 +467,14 @@ export function TransactionDrawer({
   };
 
   // ============================================
-  // FILTRAR CATEGORIAS POR TIPO
+  // filtrar categorias por tipo
   // ============================================
   const filteredCategories = categories.filter(
     (cat) => cat.type === formData.type,
   );
 
   // ============================================
-  // RENDER
+  // renderizar
   // ============================================
   return (
     <AnimatedModal

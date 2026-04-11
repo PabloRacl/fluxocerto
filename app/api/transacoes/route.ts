@@ -6,9 +6,7 @@ import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
 import { schemaCriarTransacao } from "@/validacoes/transacao.schema";
 import { transacaoService } from "@/servicos/TransacaoService";
 
-// ============================================
-// GET - Listar Transações do Usuário
-// ============================================
+// get - listar transações do usuário
 export async function GET(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
@@ -33,9 +31,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ============================================
-// POST - Criar Nova Transação
-// ============================================
+// post - criar nova transação
 export async function POST(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();

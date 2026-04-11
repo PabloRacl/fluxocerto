@@ -674,9 +674,7 @@ export default function MetasPage() {
   );
 }
 
-// ============================================
-// MODAL DE DEPÓSITO (INJETAR FLUXO)
-// ============================================
+// modal de depósito (injetar fluxo)
 function DepositoModal({
   meta,
   onClose,
@@ -758,9 +756,7 @@ function DepositoModal({
   );
 }
 
-// ============================================
-// MODAL NOVA META
-// ============================================
+// modal nova meta
 function NovaMetaModal({
   onClose,
   onSuccess,

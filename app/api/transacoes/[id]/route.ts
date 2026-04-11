@@ -4,9 +4,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/biblioteca/prisma";
 import { authOptions } from "@/biblioteca/autenticacao";
 
-// ============================================
-// GET - Buscar Transação Específica
-// ============================================
+// get - buscar transação específica
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -65,9 +63,7 @@ export async function GET(
   }
 }
 
-// ============================================
-// PUT - Atualizar Transação
-// ============================================
+// put - atualizar transação
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -242,9 +238,7 @@ export async function PUT(
   }
 }
 
-// ============================================
-// DELETE - Arquivar Transação (Soft Delete)
-// ============================================
+// delete - arquivar transação (soft delete)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

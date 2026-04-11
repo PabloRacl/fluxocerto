@@ -60,9 +60,7 @@ import EditAccountModal from "./_componentes/EditAccountModal";
 import { PluggyConnect } from "./_componentes/PluggyConnect";
 import { useSearchParams } from "next/navigation";
 
-// ============================================
-// FORMATADOR DE MOEDA (BRL)
-// ============================================
+// formatador de moeda (brl)
 const formatCurrency = (valueInCents: number) => {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -70,9 +68,7 @@ const formatCurrency = (valueInCents: number) => {
   }).format(valueInCents / 100);
 };
 
-// ============================================
-// MAPEAMENTO DE ÍCONES
-// ============================================
+// mapeamento de ícones
 const getIcon = (iconName: string | null) => {
   const icons: Record<string, any> = {
     wallet: Wallet,
@@ -109,9 +105,7 @@ const getIcon = (iconName: string | null) => {
   return <Icon className="w-6 h-6" />;
 };
 
-// ============================================
-// CONTEÚDO DA PÁGINA (WRAPPER PARA SUSPENSE)
-// ============================================
+// conteúdo da página (wrapper para suspense)
 function AccountsPageContent() {
   const { status, data } = useSession();
   const router = useRouter();
@@ -189,7 +183,7 @@ function AccountsPageContent() {
   }, [status]);
 
   // ============================================
-  // EFFECT
+  // effect
   // ============================================
   useEffect(() => {
     if (status === "authenticated") {
@@ -215,7 +209,7 @@ function AccountsPageContent() {
   }, []);
 
   // ============================================
-  // HANDLERS
+  // handlers
   // ============================================
   const handleArchive = async (accountId: string) => {
     if (!confirm("Tem certeza que deseja arquivar esta conta?")) return;
@@ -301,14 +295,14 @@ function AccountsPageContent() {
   };
 
   // ============================================
-  // RENDER: LOADING
+  // renderizar: LOADING
   // ============================================
   if (status === "loading") {
     return <NeuralLoading message="Sincronizando Nódulos de Contas..." variant="full" />;
   }
 
   // ============================================
-  // RENDER: NÃO AUTENTICADO
+  // renderizar: NÃO AUTENTICADO
   // ============================================
   if (status === "unauthenticated") {
     router.push("/entrar");
@@ -316,7 +310,7 @@ function AccountsPageContent() {
   }
 
   // ============================================
-  // RENDER: PRINCIPAL
+  // renderizar: PRINCIPAL
   // ============================================
   return (
     <TooltipProvider>
@@ -737,9 +731,7 @@ function AccountsPageContent() {
   );
 }
 
-// ============================================
-// COMPONENTE PRINCIPAL (COM BOUNDARY)
-// ============================================
+// componente principal (com boundary)
 export default function AccountsPage() {
   return (
     <Suspense fallback={<NeuralLoading message="Acessando Nótulos Bancários..." variant="full" />}>

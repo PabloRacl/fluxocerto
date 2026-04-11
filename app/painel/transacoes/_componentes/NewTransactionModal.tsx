@@ -507,7 +507,7 @@ export default function NewTransactionModal({
   );
 }
 
-// Helper para formatar moeda
+// auxiliar para formatar moeda
 const formatCurrency = (valueInCents: number) => {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",

@@ -6,9 +6,7 @@ import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
 import { schemaCriarLembrete } from "@/validacoes/notificacao-lembrete.schema";
 import { notificacaoService } from "@/servicos/NotificacaoLembreteService";
 
-// ============================================
-// GET - Listar Lembretes Explícitos
-// ============================================
+// get - listar lembretes explícitos
 export async function GET(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
@@ -24,9 +22,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ============================================
-// POST - Criar Lembrete / Alerta
-// ============================================
+// post - criar lembrete / alerta
 export async function POST(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();

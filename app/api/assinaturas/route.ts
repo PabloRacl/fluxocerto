@@ -7,9 +7,7 @@ import { assinaturaService } from "@/servicos/AssinaturaService";
 
 export const dynamic = "force-dynamic";
 
-// ============================================
-// GET - Listar Assinaturas do Usuário
-// ============================================
+// get - listar assinaturas do usuário
 export async function GET(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
@@ -26,9 +24,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ============================================
-// POST - Criar Nova Assinatura
-// ============================================
+// post - criar nova assinatura
 export async function POST(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();

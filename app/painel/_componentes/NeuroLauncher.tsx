@@ -42,7 +42,7 @@ export function NeuroLauncher({ isOpen, onClose }: NeuroLauncherProps) {
   // Carregar dados de resumo (simulado por enquanto, ligar ao backend depois)
   useEffect(() => {
     if (isOpen) {
-      // Fetch data from /api/dashboard/summary or direct prisma if server component (but this is client)
+      // buscar dados from /api/dashboard/summary or direct prisma if server component (but this is client)
       setSummary({
         totalBalance: 4250000, // R$ 42.500,00
         alerts: [

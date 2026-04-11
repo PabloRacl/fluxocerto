@@ -6,9 +6,7 @@ import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
 import { schemaCriarCompra } from "@/validacoes/compra.schema";
 import { compraService } from "@/servicos/CompraService";
 
-// ============================================
-// GET - Listar Compras do Usuário
-// ============================================
+// get - listar compras do usuário
 export async function GET(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
@@ -26,9 +24,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ============================================
-// POST - Criar Nova Compra Lote / Master Root
-// ============================================
+// post - criar nova compra lote / master root
 export async function POST(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();

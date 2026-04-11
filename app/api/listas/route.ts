@@ -6,9 +6,7 @@ import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
 import { schemaCriarLista } from "@/validacoes/lista.schema";
 import { listaService } from "@/servicos/ListaService";
 
-// ============================================
-// GET - Listar Listas de Compras
-// ============================================
+// get - listar listas de compras
 export async function GET(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
@@ -20,9 +18,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ============================================
-// POST - Criar Nova Lista e Itens
-// ============================================
+// post - criar nova lista e itens
 export async function POST(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();

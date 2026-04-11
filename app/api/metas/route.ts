@@ -6,9 +6,7 @@ import { sucesso, criadoComSucesso } from "@/biblioteca/resposta-api";
 import { schemaCriarMeta } from "@/validacoes/meta.schema";
 import { metaService } from "@/servicos/MetaService";
 
-// ============================================
-// GET - Listar Metas do Usuário
-// ============================================
+// get - listar metas do usuário
 export async function GET(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
@@ -23,9 +21,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ============================================
-// POST - Criar Nova Meta
-// ============================================
+// post - criar nova meta
 export async function POST(request: NextRequest) {
   try {
     const user = await obterUsuarioAutenticado();
