@@ -41,6 +41,7 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
   const router = useRouter();
 
   const actions = [
+    // --- Linha 1: Operações Diárias ---
     {
       title: "Transações",
       description: "Gerencie receitas e despesas",
@@ -50,6 +51,7 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
       customAction: onNewTransaction,
       tooltipTitle: "Gerenciador de Transações",
       tooltipDesc: "Crie, edite e acompanhe todas as suas receitas e despesas com filtros avançados.",
+      subText: "Entradas e Saídas",
     },
     {
       title: "Contas Bancárias",
@@ -60,6 +62,42 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
       customAction: () => router.push("/painel/contas/nova"),
       tooltipTitle: "Contas Bancárias",
       tooltipDesc: "Cadastre contas bancárias e cartões de crédito. Acompanhe saldos, faturas, limites e alertas.",
+      subText: "Saldos e Cartões",
+    },
+    {
+      title: "Compras",
+      description: "Mercado, feira e lista de compras",
+      icon: ShoppingBag,
+      color: "orange",
+      href: "/painel/compras",
+      customAction: () => router.push("/painel/compras/nova"),
+      tooltipTitle: "Controle de Compras",
+      tooltipDesc: "Registre compras de mercado. Controle estoque, compare preços e monte listas inteligentes.",
+      subText: "Controle de estoque e preços",
+    },
+
+    // --- Linha 2: Guardiões do Caixa ---
+    {
+      title: "Orçamentos",
+      description: "Defina limites mensais de gastos",
+      icon: PiggyBank,
+      color: "pink",
+      href: "/painel/orcamentos",
+      customAction: () => router.push("/painel/orcamentos"),
+      tooltipTitle: "Orçamentos",
+      tooltipDesc: "Defina limites mensais com alertas configuráveis e barra de progresso.",
+      subText: "Tetos de Gasto Mensal",
+    },
+    {
+      title: "Assinaturas",
+      description: "Controle gastos recorrentes",
+      icon: Zap,
+      color: "cyan",
+      href: "/painel/assinaturas",
+      customAction: () => router.push("/painel/assinaturas/nova"),
+      tooltipTitle: "Gerenciador de Assinaturas",
+      tooltipDesc: "Acompanhe suas assinaturas recorrentes com alertas de renovação mensais.",
+      subText: "Vencimentos Recorrentes",
     },
     {
       title: "Categorias",
@@ -70,6 +108,20 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
       customAction: () => router.push("/painel/categorias/nova"),
       tooltipTitle: "Categorias Personalizadas",
       tooltipDesc: "Crie e organize categorias para classificar suas receitas e despesas.",
+      subText: "Gestão Inteligente",
+    },
+
+    // --- Linha 3: Construção e Otimização ---
+    {
+      title: "Metas",
+      description: "Objetivos e reservas financeiras",
+      icon: Target,
+      color: "amber",
+      href: "/painel/metas",
+      customAction: () => router.push("/painel/metas/nova"),
+      tooltipTitle: "Metas Financeiras",
+      tooltipDesc: "Defina objetivos como reserva de emergência. Acompanhe a projeção de atingimento.",
+      subText: "Progresso e projeção",
     },
     {
       title: "Dívidas",
@@ -83,27 +135,18 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
       subText: "Amortização SAC, PRICE e Fixa",
     },
     {
-      title: "Compras",
-      description: "Mercado, feira e lista de compras",
-      icon: ShoppingBag,
-      color: "orange",
-      href: "/painel/compras",
-      customAction: () => router.push("/painel/compras/nova"),
-      tooltipTitle: "Controle de Compras",
-      tooltipDesc: "Registre compras de mercado. Controle estoque, compare preços e monte listas inteligentes.",
-      subText: "Controle de estoque e preços",
+      title: "Patrimônio",
+      description: "Ativos - Passivos = Patrimônio",
+      icon: WalletIcon,
+      color: "emerald",
+      href: "/painel/patrimonio",
+      customAction: () => router.push("/painel/patrimonio/novo"),
+      tooltipTitle: "Patrimônio Líquido",
+      tooltipDesc: "Visualize seus ativos menos passivos com breakdown por tipo de conta.",
+      subText: "Inventário de Riqueza",
     },
-    {
-      title: "Metas",
-      description: "Objetivos e reservas financeiras",
-      icon: Target,
-      color: "amber",
-      href: "/painel/metas",
-      customAction: () => router.push("/painel/metas/nova"),
-      tooltipTitle: "Metas Financeiras",
-      tooltipDesc: "Defina objetivos como reserva de emergência. Acompanhe a projeção de atingimento.",
-      subText: "Progresso e projeção",
-    },
+
+    // --- Linha 4: Analytics e Calculadoras ---
     {
       title: "Relatórios",
       description: "Analise seus dados financeiros",
@@ -114,6 +157,7 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
       tooltipTitle: "Relatórios e Análises",
       tooltipDesc: "Acesse relatórios mensais, por categoria e exporte dados em PDF/CSV.",
       actionLabel: "Gerar PDF/CSV",
+      subText: "Exportação Analítica",
     },
     {
       title: "Calculadora",
@@ -124,37 +168,7 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
       badge: "Enterprise",
       tooltipTitle: "Calculadora Financeira",
       tooltipDesc: "Simule juros compostos e visualize tabelas de amortização SAC, PRICE e Fixa.",
-    },
-
-    {
-      title: "Assinaturas",
-      description: "Controle gastos recorrentes",
-      icon: Zap,
-      color: "cyan",
-      href: "/painel/assinaturas",
-      customAction: () => router.push("/painel/assinaturas/nova"),
-      tooltipTitle: "Gerenciador de Assinaturas",
-      tooltipDesc: "Acompanhe suas assinaturas recorrentes com alertas de renovação mensais.",
-    },
-    {
-      title: "Patrimônio",
-      description: "Ativos - Passivos = Patrimônio",
-      icon: WalletIcon,
-      color: "emerald",
-      href: "/painel/patrimonio",
-      customAction: () => router.push("/painel/patrimonio/novo"),
-      tooltipTitle: "Patrimônio Líquido",
-      tooltipDesc: "Visualize seus ativos menos passivos com breakdown por tipo de conta.",
-    },
-    {
-      title: "Orçamentos",
-      description: "Defina limites mensais de gastos",
-      icon: PiggyBank,
-      color: "pink",
-      href: "/painel/orcamentos",
-      customAction: () => router.push("/painel/orcamentos"),
-      tooltipTitle: "Orçamentos",
-      tooltipDesc: "Defina limites mensais com alertas configuráveis e barra de progresso.",
+      subText: "Cálculos Isolados",
     },
   ];
 
@@ -172,7 +186,7 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
 
   return (
     <TooltipProvider>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 mb-12">
         {actions.map((action, i) => {
           const style = colorStyles[action.color] || colorStyles.emerald;
           const IconComp = action.icon;
@@ -187,10 +201,10 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
                   whileHover={{ y: -5, scale: 1.02 }}
                   className="group relative"
                 >
-                   <Link
-                      href={action.href}
-                      data-tour={`menu-${action.title.toLowerCase().replace(" ", "-").replace("á", "a").replace("í", "i").replace("ó", "o")}`}
-                      className={`block p-6 rounded-2xl bg-slate-900/40 backdrop-blur-xl border ${style.border} transition-all duration-500 hover:border-white/10 overflow-hidden relative`}
+                   <div
+                      onClick={() => router.push(action.href)}
+                      data-tour={`menu-${action.href.split('/').pop()}`}
+                      className={`block p-4 md:p-5 rounded-2xl bg-slate-900/40 backdrop-blur-xl border ${style.border} transition-all duration-500 hover:border-white/10 overflow-hidden relative cursor-pointer`}
                    >
                       {/* 1. Shimmer Effect (Holograma) */}
                       <motion.div 
@@ -199,11 +213,11 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
                       />
 
                       {/* 2. Brilho de Fundo Dinâmico */}
-                      <div className={`absolute -right-8 -top-8 w-32 h-32 blur-[40px] opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none ${style.glow}`} />
+                      <div className={`absolute -right-8 -top-8 w-24 h-24 md:w-32 md:h-32 blur-[40px] opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none ${style.glow}`} />
 
                       {/* Badge "Enterprise" ou Outros */}
                       {action.badge && (
-                        <div className={`absolute top-4 right-4 px-2 py-0.5 text-[10px] font-black uppercase tracking-tighter rounded-full bg-slate-950/80 border ${style.border} ${style.text} shadow-[0_0_10px_rgba(0,0,0,0.5)]`}>
+                        <div className={`absolute top-3 right-3 md:top-4 md:right-4 px-2 py-0.5 text-[9px] md:text-[10px] font-black uppercase tracking-tighter rounded-full bg-slate-950/80 border ${style.border} ${style.text} shadow-[0_0_10px_rgba(0,0,0,0.5)]`}>
                           {action.badge}
                         </div>
                       )}
@@ -216,38 +230,38 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
                             e.stopPropagation();
                             action.customAction!();
                           }}
-                          className={`absolute top-4 right-4 p-2 rounded-lg bg-slate-950/40 border border-white/5 text-slate-500 hover:text-white hover:border-white/20 transition-all z-10 shadow-lg`}
+                          className={`absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 rounded-lg bg-slate-950/40 border border-white/5 text-slate-500 hover:text-white hover:border-white/20 transition-all z-[99] shadow-lg`}
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-4 h-4 md:w-5 md:h-5 pointer-events-none" />
                         </button>
                       )}
 
                       {/* Cabeçalho do Card (Ícone Neural + Título) */}
-                      <div className="flex items-center gap-4 mb-4 relative z-10">
-                        <div className={`p-3 rounded-2xl bg-slate-950/60 border border-white/5 ${style.text}`}>
-                          <IconComp className="w-6 h-6" />
+                      <div className="flex items-center gap-3 md:gap-4 mb-3 relative z-10 w-[85%]">
+                        <div className={`p-2.5 md:p-3 rounded-2xl bg-slate-950/60 border border-white/5 ${style.text}`}>
+                          <IconComp className="w-5 h-5 md:w-5 md:h-5" />
                         </div>
-                        <h3 className="text-lg font-black text-white tracking-tight group-hover:text-emerald-400 transition-colors">
+                        <h3 className="text-base md:text-lg font-black text-white tracking-tight group-hover:text-emerald-400 transition-colors leading-tight">
                           {action.title}
                         </h3>
                       </div>
 
                       {/* Descrição */}
-                      <p className="text-sm text-slate-400 mb-4 line-clamp-2 font-medium italic relative z-10">
+                      <p className="text-xs md:text-sm text-slate-400 mb-3 md:mb-4 line-clamp-2 font-medium italic relative z-10 min-h-[32px] md:min-h-[40px]">
                         {action.description}
                       </p>
 
                       {/* Rodapé do Card (Link HUD + Subtext) */}
-                      <div className="flex items-center justify-between relative z-10">
-                         <div className={`flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest ${style.text} group-hover:translate-x-1 transition-transform`}>
+                      <div className="flex items-center justify-between relative z-10 mt-auto">
+                         <div className={`flex items-center gap-1.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest ${style.text} group-hover:translate-x-1 transition-transform`}>
                             {action.actionLabel || "Acessar"}
                             <ArrowUpRight className="w-3.5 h-3.5" />
                          </div>
 
                          {action.subText && (
-                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/50 border border-white/5">
-                               <IconComp className={`w-3 h-3 ${style.text} opacity-50`} />
-                               <span className="text-[9px] text-slate-500 font-bold uppercase tracking-tighter">
+                            <div className="flex items-center gap-1.5 px-2 md:px-2.5 py-1 rounded-full bg-slate-950/50 border border-white/5 max-w-[65%]">
+                               <IconComp className={`w-2.5 h-2.5 md:w-3 md:h-3 ${style.text} opacity-50 shrink-0`} />
+                               <span className="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase tracking-tighter truncate">
                                   {action.subText}
                                </span>
                             </div>
@@ -263,7 +277,7 @@ export function AcoesRapidas({ onNewTransaction }: QuickActionsProps) {
                            transition={{ duration: 0.6 }}
                          />
                       </div>
-                   </Link>
+                   </div>
                 </motion.div>
               </TooltipTrigger>
               <TooltipContent className="bg-slate-950/95 border-slate-700 text-white shadow-2xl backdrop-blur-md max-w-xs p-4">
