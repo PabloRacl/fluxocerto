@@ -8,8 +8,14 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Componente para Folhas Flutuantes (Orgânico)
 const LeavesBackground = () => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  
   // Aumentamos para 20 folhas para melhor preenchimento
   const leaves = Array.from({ length: 20 });
+  
+  if (!mounted) return null;
+
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       {leaves.map((_, i) => (

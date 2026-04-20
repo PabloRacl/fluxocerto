@@ -59,17 +59,6 @@ export default function ForgotPasswordPage() {
               Se o e-mail estiver cadastrado, você receberá instruções em instantes. Verifique também sua caixa de spam.
             </div>
 
-            {debugLink && (
-              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl animate-pulse">
-                <p className="text-[10px] text-emerald-500 uppercase font-black mb-2">Protocolo Debug Ativo</p>
-                <Link 
-                  href={debugLink}
-                  className="text-xs text-white underline hover:text-emerald-400 break-all"
-                >
-                  Confirmar Acesso: {debugLink}
-                </Link>
-              </div>
-            )}
             <Link 
               href="/entrar"
               className="block w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"

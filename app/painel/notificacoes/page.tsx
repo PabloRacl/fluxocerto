@@ -135,61 +135,70 @@ export default function NotificacoesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-slate-950">
       <CabecalhoPagina
-        title="Notificações"
-        subtitle={naoLidas > 0 ? `${naoLidas} não lida(s)` : "Tudo em dia!"}
+        title="Central Neural"
+        subtitle={naoLidas > 0 ? `${naoLidas} evento(s) pendente(s)` : "Sistemas operando normalmente"}
+        breadcrumbs={[
+          { label: "Painel", href: "/painel" },
+          { label: "Notificações" }
+        ]}
         onRefresh={fetchNotificacoes}
         showFilters
         filters={
           <div className="flex items-center gap-2">
-            <div className="flex bg-slate-800 rounded-lg p-1">
+            <div className="flex bg-slate-900/80 border border-slate-800 rounded-xl p-1 backdrop-blur-md relative z-20">
               <button
                 onClick={() => setFiltro("TODAS")}
-                className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-md transition-all ${filtro === "TODAS" ? "bg-emerald-600 text-white" : "text-slate-400"}`}
+                className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${filtro === "TODAS" ? "bg-white/10 text-white shadow-[0_0_10px_rgba(255,255,255,0.1)] border border-white/10" : "text-slate-500 hover:text-white"}`}
               >
                 <Bell className="w-3 h-3" />
-                Todas
+                Log Completo
               </button>
               <button
                 onClick={() => setFiltro("NAO_LIDAS")}
-                className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-md transition-all ${filtro === "NAO_LIDAS" ? "bg-blue-600 text-white" : "text-slate-400"}`}
+                className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${filtro === "NAO_LIDAS" ? "bg-blue-500/20 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)] border border-blue-500/30" : "text-slate-500 hover:text-white"}`}
               >
                 <BellOff className="w-3 h-3" />
-                Não Lidas {naoLidas > 0 && `(${naoLidas})`}
+                Pendentes {naoLidas > 0 && `(${naoLidas})`}
               </button>
             </div>
             {naoLidas > 0 && (
               <button
                 onClick={marcarTodasLidas}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:scale-105"
               >
-                <CheckCheck className="w-3 h-3" /> Marcar todas
+                <CheckCheck className="w-4 h-4" /> Resetar Alertas
               </button>
             )}
           </div>
         }
       />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+        {/* Glow de fundo (Neuro style) */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
+
         {loading && (
-          <CarregamentoNeural message="Sincronizando Alertas..." variant="card" />
+          <CarregamentoNeural message="Sincronizando Nódulos de Alerta..." variant="card" />
         )}
 
         {!loading && notificacoes.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16">
-            <BellOff className="w-16 h-16 text-slate-600 mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">
-              Nenhuma notificação
+          <div className="flex flex-col items-center justify-center py-24 relative">
+            <div className="w-32 h-32 bg-slate-900/50 backdrop-blur-2xl border border-white/5 rounded-[2rem] flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+               <BellOff className="w-12 h-12 text-slate-700" />
+            </div>
+            <h3 className="text-xl font-black text-white uppercase tracking-widest mb-2">
+              Sinal Limpo
             </h3>
-            <p className="text-slate-400">
-              Você será notificado sobre vencimentos, metas e alertas aqui
+            <p className="text-slate-500 text-sm font-medium tracking-wide">
+              Não há anomalias no sistema no momento
             </p>
           </div>
         )}
 
         {!loading && notificacoes.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-4 relative z-10">
             {notificacoes.map((notif) => {
               const tipoConfig = TIPO_ICONS[notif.tipo] || TIPO_ICONS.GERAL;
               const Icon = tipoConfig.icon;
@@ -198,46 +207,68 @@ export default function NotificacoesPage() {
                 <div
                   key={notif.id}
                   onClick={() => !notif.lido && marcarLida(notif.id)}
-                  className={`flex items-start gap-4 p-4 rounded-xl border transition-all cursor-pointer ${
+                  className={`relative p-5 bg-slate-950/40 backdrop-blur-2xl rounded-3xl border transition-all duration-500 overflow-hidden cursor-pointer group ${
                     notif.lido
-                      ? "bg-slate-900/30 border-slate-800/50 opacity-60"
-                      : "bg-slate-900/80 border-slate-700 hover:border-slate-600"
+                      ? "border-white/5 opacity-50 blur-[0.5px] hover:blur-none"
+                      : "border-white/10 hover:border-blue-500/30 shadow-[0_0_30px_rgba(0,0,0,0.2)] hover:-translate-y-1"
                   }`}
                 >
-                  <div
-                    className={`w-10 h-10 rounded-xl ${tipoConfig.bg} flex items-center justify-center flex-shrink-0`}
-                  >
-                    <Icon className={`w-5 h-5 ${tipoConfig.color}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3
-                        className={`text-sm font-medium ${notif.lido ? "text-slate-400" : "text-white"}`}
-                      >
-                        {notif.titulo}
-                      </h3>
-                      {!notif.lido && (
-                        <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
+                  {/* Laser Scan Animation */}
+                  <div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                    style={{ transform: "skewX(-20deg)" }}
+                  />
+
+                  <div className="flex items-start gap-5 relative z-10">
+                    {/* Icone HUD */}
+                    <div
+                      className={`w-14 h-14 rounded-2xl ${tipoConfig.bg} flex items-center justify-center flex-shrink-0 border border-white/5 shadow-[0_0_20px_rgba(0,0,0,0.2)] group-hover:scale-110 transition-transform duration-500`}
+                    >
+                      <Icon className={`w-6 h-6 ${tipoConfig.color}`} />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-4 mb-2">
+                        <h3 className={`text-sm font-black uppercase tracking-wide ${notif.lido ? "text-slate-400" : "text-white group-hover:text-blue-400 transition-colors"}`}>
+                          {notif.titulo}
+                        </h3>
+                        {/* Status Lida/NaoLida */}
+                        <div className="flex items-center gap-2">
+                          {!notif.lido ? (
+                            <span className="flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500/50">Resolvido</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {notif.mensagem && (
+                         <div className="p-3 bg-white/[0.02] rounded-xl border border-white/5">
+                           <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                             {notif.mensagem}
+                           </p>
+                         </div>
                       )}
+
+                      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/5">
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 bg-white/5 border border-white/5 rounded-lg text-slate-500">
+                          {TIPO_LABELS[notif.tipo] || notif.tipo}
+                        </span>
+                        <div className="text-[9px] font-black uppercase tracking-[0.1em] text-slate-600 italic">
+                          <span>{new Date(notif.criadoEm).toLocaleDateString("pt-BR")}</span>
+                          <span className="mx-2">•</span>
+                          <span>{new Date(notif.criadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                        </div>
+                      </div>
                     </div>
-                    {notif.mensagem && (
-                      <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
-                        {notif.mensagem}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">
-                        {TIPO_LABELS[notif.tipo] || notif.tipo}
-                      </span>
-                      <span className="text-[10px] text-slate-500">
-                        {new Date(notif.criadoEm).toLocaleDateString("pt-BR")}{" "}
-                        às{" "}
-                        {new Date(notif.criadoEm).toLocaleTimeString("pt-BR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
+                  </div>
+
+                  {/* Glow Line Bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-slate-800/30 overflow-hidden">
+                     <div className={`h-full opacity-0 group-hover:opacity-100 transition-all duration-700 w-0 group-hover:w-full ${notif.lido ? 'bg-slate-600' : 'bg-blue-500'}`} />
                   </div>
                 </div>
               );

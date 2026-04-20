@@ -7,12 +7,21 @@ import Script from "next/script";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FluxoCerto - Controle Financeiro Inteligente",
+  title: {
+    default: "FluxoCerto · Suas Finanças em Ordem",
+    template: "%s · FluxoCerto",
+  },
   description: "A plataforma definitiva para controle de finanças, gestão de estoque atacarejo e planejamento de dívidas com inteligência neural.",
   keywords: ["finanças", "controle financeiro", "gestão de estoque", "atacarejo", "planejamento financeiro", "mestre dino"],
   authors: [{ name: "FluxoCerto Team" }],
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/favicon.svg",
+  },
   openGraph: {
-    title: "FluxoCerto - Inteligência Financeira",
+    title: "FluxoCerto · Suas Finanças em Ordem",
     description: "A plataforma definitiva para controle de finanças e gestão de estoque.",
     url: "https://fluxocerto.com",
     siteName: "FluxoCerto",
@@ -29,8 +38,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "FluxoCerto",
-    description: "Controle financeiro inteligente.",
+    title: "FluxoCerto · Suas Finanças em Ordem",
+    description: "Controle financeiro inteligente com visão total do seu dinheiro.",
     images: ["/og-image.png"],
   },
   manifest: "/manifest.json",

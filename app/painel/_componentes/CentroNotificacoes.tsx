@@ -94,29 +94,36 @@ export function CentroNotificacoes() {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-4 w-80 md:w-96 bg-slate-900/90 border border-slate-800 rounded-3xl shadow-2xl backdrop-blur-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200">
-            <div className="p-4 border-b border-slate-800 flex justify-between items-center">
-              <h3 className="font-bold text-white">Notificações</h3>
-              <span className="text-[10px] bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full uppercase font-bold tracking-widest">
-                Proativo (P14)
-              </span>
+          <div className="absolute right-0 mt-4 w-80 md:w-96 bg-slate-950/80 border border-white/10 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200">
+            {/* Glow Interno */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[50px] pointer-events-none" />
+
+            <div className="p-4 border-b border-white/5 flex justify-between items-center bg-slate-900/50 relative z-10">
+              <h3 className="font-black text-white text-xs uppercase tracking-widest">Notificações</h3>
+              {unreadCount > 0 && (
+                <span className="text-[9px] bg-blue-500 text-white px-2 py-0.5 rounded-lg uppercase font-black tracking-widest shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                  {unreadCount} Novas
+                </span>
+              )}
             </div>
 
-            <div className="max-h-[400px] overflow-y-auto">
+            <div className="max-h-[400px] overflow-y-auto relative z-10">
               {notificationList.length === 0 ? (
-                <div className="p-12 text-center">
-                   <Bell className="w-8 h-8 text-slate-800 mx-auto mb-3" />
-                   <p className="text-sm text-slate-500 font-medium">Tudo certo por aqui!</p>
+                <div className="flex flex-col items-center justify-center py-12 relative">
+                   <div className="w-16 h-16 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+                     <Bell className="w-8 h-8 text-slate-700" />
+                   </div>
+                   <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Sinal Limpo</p>
                 </div>
               ) : (
                 notificationList.map((n) => {
                   const tone = getNotificationTone(n.tipo);
                   const toneClasses =
                     tone === "warning"
-                      ? "bg-amber-500/10 text-amber-500"
+                      ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
                       : tone === "success"
-                        ? "bg-emerald-500/10 text-emerald-500"
-                        : "bg-blue-500/10 text-blue-400";
+                        ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                        : "bg-blue-500/10 text-blue-400 border border-blue-500/20";
 
                   const Icon =
                     tone === "warning" ? AlertTriangle : tone === "success" ? CheckCircle : Info;
@@ -124,28 +131,29 @@ export function CentroNotificacoes() {
                   return (
                   <div 
                     key={n.id} 
-                    className={`p-4 border-b border-slate-800 hover:bg-slate-800/40 transition-colors relative group ${!n.lido ? 'bg-emerald-500/5' : ''}`}
+                    className={`p-4 border-b transition-colors relative group ${!n.lido ? 'bg-blue-500/5 border-white/10' : 'bg-transparent border-white/5 hover:bg-white/[0.02]'}`}
                   >
-                    <div className="flex gap-3">
-                      <div className={`mt-1 shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
+                    <div className="flex gap-4">
+                      <div className={`mt-1 shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${
                         toneClasses
                       }`}>
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-5 h-5" />
                       </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                           <h4 className={`text-sm font-bold ${!n.lido ? 'text-white' : 'text-slate-400'}`}>{n.titulo}</h4>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                           <h4 className={`text-xs font-black uppercase tracking-wide truncate ${!n.lido ? 'text-white' : 'text-slate-400'}`}>{n.titulo}</h4>
                            {!n.lido && (
                               <button 
                                 onClick={() => markAsRead(n.id)}
-                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-700 rounded transition-all text-emerald-500"
+                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded-lg transition-all text-blue-400 ml-1 shrink-0"
+                                title="Marcar como lida"
                               >
-                                <Check className="w-3 h-3" />
+                                <Check className="w-3.5 h-3.5" />
                               </button>
                            )}
                         </div>
-                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">{n.mensagem}</p>
-                        <div className="text-[10px] text-slate-600 mt-2 font-medium uppercase tracking-tighter">
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed line-clamp-2">{n.mensagem}</p>
+                        <div className="text-[9px] text-slate-600 mt-2 font-black uppercase tracking-tighter">
                           {format(new Date(n.criadoEm), "dd MMM, HH:mm", { locale: ptBR })}
                         </div>
                       </div>
@@ -156,10 +164,13 @@ export function CentroNotificacoes() {
               )}
             </div>
 
-            <div className="p-3 bg-slate-950/50 text-center">
+            <div className="p-3 bg-slate-950/80 border-t border-white/5 text-center relative z-10">
               <button 
-                onClick={() => router.push("/painel/central-notificacoes")}
-                className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors"
+                onClick={() => {
+                  setIsOpen(false);
+                  router.push("/painel/notificacoes");
+                }}
+                className="text-[10px] font-black text-slate-500 hover:text-blue-400 uppercase tracking-widest transition-colors w-full py-1"
               >
                 Ver tudo na central ➔
               </button>

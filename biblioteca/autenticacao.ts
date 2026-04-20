@@ -15,6 +15,9 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
+    // FacebookProvider e LinkedInProvider comentados temporariamente 
+    // pois não possuem variáveis de ambiente definidas no .env, o que causa erro 500 no NextAuth
+    /*
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID as string,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
@@ -26,6 +29,7 @@ export const authOptions: NextAuthOptions = {
         params: { scope: "openid profile email" },
       },
     }),
+    */
 
     CredentialsProvider({
       name: "credentials",
@@ -103,7 +107,7 @@ export const authOptions: NextAuthOptions = {
         if (existingUser) {
           // Verifica se já existe essa conta OAuth vinculada
           const alreadyLinked = existingUser.accounts.some(
-            acc => acc.provider === account.provider && acc.providerAccountId === account.providerAccountId
+            (acc: any) => acc.provider === account.provider && acc.providerAccountId === account.providerAccountId
           );
           
           // Se não existe, vincula o provedor OAuth ao usuário existente
@@ -133,17 +137,18 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user, account }) {
+      // First login: user object is present — populate token from user
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
         token.plan = (user as any).plan;
       }
-      
-      // Garante que sessões OAuth peguem o role e plan atualizados do banco
-      if (token.email) {
-        const dbUser = await prisma.user.findUnique({ 
+
+      // OAuth sign-in: sync role/plan from DB (handles new OAuth users)
+      if (account && token.email) {
+        const dbUser = await prisma.user.findUnique({
           where: { email: token.email },
-          select: { id: true, role: true, plan: true }
+          select: { id: true, role: true, plan: true },
         });
         if (dbUser) {
           token.id = dbUser.id;
@@ -151,7 +156,7 @@ export const authOptions: NextAuthOptions = {
           token.plan = dbUser.plan;
         }
       }
-      
+
       return token;
     },
     async session({ session, token }) {

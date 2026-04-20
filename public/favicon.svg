@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <!-- Neuro: sombra suave interna -->
+    <filter id="neuro-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="-1.5" dy="-1.5" stdDeviation="1.2" flood-color="#1e4032" flood-opacity="0.9"/>
+      <feDropShadow dx="1.5" dy="1.5" stdDeviation="1.2" flood-color="#000000" flood-opacity="0.7"/>
+    </filter>
+    <filter id="text-emboss" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="-0.8" dy="-0.8" stdDeviation="0.5" flood-color="#34d399" flood-opacity="0.5"/>
+      <feDropShadow dx="0.8" dy="0.8" stdDeviation="0.5" flood-color="#000000" flood-opacity="0.8"/>
+    </filter>
+    <!-- Gradiente verde neuro -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f2d20"/>
+      <stop offset="100%" stop-color="#071a0f"/>
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <!-- Brilho top-left (efeito neuro claro) -->
+    <radialGradient id="shine" cx="30%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#1e4032" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Base escura com cantos arredondados -->
+  <rect width="32" height="32" rx="7" fill="url(#bg-grad)" filter="url(#neuro-shadow)"/>
+
+  <!-- Brilho neuro no canto superior esquerdo -->
+  <rect width="32" height="32" rx="7" fill="url(#shine)" opacity="0.6"/>
+
+  <!-- Borda sutil neuro: clarinha em cima/esquerda -->
+  <rect x="0.5" y="0.5" width="31" height="15.5" rx="6.5" fill="#1e4032" opacity="0.25"/>
+
+  <!-- Linha de acento verde neuro na base -->
+  <rect x="6" y="27" width="20" height="2" rx="1" fill="url(#accent-grad)" opacity="0.7"/>
+
+  <!-- Letras FC em relevo neuro -->
+  <text
+    x="16"
+    y="21"
+    text-anchor="middle"
+    fill="url(#accent-grad)"
+    font-family="'Arial Black', Arial, sans-serif"
+    font-size="14"
+    font-weight="900"
+    letter-spacing="-0.5"
+    filter="url(#text-emboss)"
+  >FC</text>
+</svg>

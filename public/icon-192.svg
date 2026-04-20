@@ -1,6 +1,67 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
-  <rect width="192" height="192" rx="32" fill="#0f172a"/>
-  <circle cx="96" cy="96" r="56" fill="#047857" opacity="0.2"/>
-  <path d="M96 48c26.5 0 48 21.5 48 48s-21.5 48-48 48-48-21.5-48-48 21.5-48 48-48z" fill="#047857"/>
-  <text x="96" y="108" text-anchor="middle" fill="white" font-family="Arial" font-size="36" font-weight="bold">FC</text>
+  <defs>
+    <linearGradient id="bg192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f2d20"/>
+      <stop offset="60%" stop-color="#0a1f15"/>
+      <stop offset="100%" stop-color="#071a0f"/>
+    </linearGradient>
+    <linearGradient id="acc192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <radialGradient id="shine192" cx="28%" cy="26%" r="52%">
+      <stop offset="0%" stop-color="#1e4032" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#0f2d20" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Sombra neumórfica externa (luz canto superior-esquerdo) -->
+    <filter id="neuro192" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="-8" dy="-8" stdDeviation="6" flood-color="#1e4032" flood-opacity="0.8"/>
+      <feDropShadow dx="8" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.9"/>
+    </filter>
+    <!-- Relevo nas letras -->
+    <filter id="emboss192" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="-3" dy="-3" stdDeviation="2" flood-color="#34d399" flood-opacity="0.5"/>
+      <feDropShadow dx="3" dy="3" stdDeviation="2" flood-color="#000000" flood-opacity="0.95"/>
+    </filter>
+    <!-- Brilho interno circular (simula luz) -->
+    <radialGradient id="inner-glow" cx="30%" cy="28%" r="45%">
+      <stop offset="0%" stop-color="#2d6b48" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Base neumórfica dark-green -->
+  <rect width="192" height="192" rx="40" fill="url(#bg192)" filter="url(#neuro192)"/>
+
+  <!-- Camada de brilho neuro -->
+  <rect width="192" height="192" rx="40" fill="url(#shine192)"/>
+
+  <!-- Inner glow sutil -->
+  <rect width="192" height="192" rx="40" fill="url(#inner-glow)"/>
+
+  <!-- Borda superior clara (luz em cima) -->
+  <rect x="4" y="4" width="184" height="5" rx="2.5" fill="#2d6b48" opacity="0.4"/>
+  <!-- Borda esquerda clara -->
+  <rect x="4" y="4" width="5" height="184" rx="2.5" fill="#2d6b48" opacity="0.2"/>
+
+  <!-- Decoração: traço verde horizontal (ritmo visual) -->
+  <rect x="40" y="148" width="112" height="8" rx="4" fill="url(#acc192)" opacity="0.6"/>
+  <rect x="60" y="160" width="72" height="4" rx="2" fill="url(#acc192)" opacity="0.25"/>
+
+  <!-- Ponto de acento no topo (detalhe neuro) -->
+  <circle cx="96" cy="36" r="4" fill="url(#acc192)" opacity="0.5"/>
+
+  <!-- Letras FC em relevo neumórfico -->
+  <text
+    x="96"
+    y="124"
+    text-anchor="middle"
+    fill="url(#acc192)"
+    font-family="'Arial Black', 'Arial Bold', Arial, sans-serif"
+    font-size="80"
+    font-weight="900"
+    letter-spacing="-3"
+    filter="url(#emboss192)"
+  >FC</text>
 </svg>

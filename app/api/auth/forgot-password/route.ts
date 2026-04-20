@@ -74,9 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ 
-      message: "Protocolo de recuperação iniciado.",
-      // Retornamos o link apenas em desenvolvimento para facilitar seu teste
-      debugLink: process.env.NODE_ENV === "development" ? resetUrl : undefined
+      message: "Protocolo de recuperação iniciado."
     });
   } catch (error) {
     console.error("Erro na recuperação de senha:", error);
